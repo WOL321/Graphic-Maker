@@ -1,0 +1,906 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Tangerine:wght@700&family=Cinzel:wght@600;700&family=Special+Elite&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+  :root{
+    --gold:#a9812f;
+    --gold-bright:#c79a3e;
+    --stage-bg:#15130f;
+    --panel-bg:#1c1a15;
+    --panel-line:#332d21;
+    --panel-text:#e7ddc4;
+    --panel-muted:#9c927a;
+
+    --paper:#f6efdd;
+    --paper-edge:#e9dfc2;
+    --ink:#241c12;
+    --ink-soft:#4a3d24;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:transparent;color:var(--panel-text);font-family:'EB Garamond', serif;}
+
+  .app{
+    display:grid;
+    grid-template-columns:350px 1fr;
+    min-height:640px;
+    background:var(--stage-bg);
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid #000;
+  }
+  @media (max-width:860px){ .app{grid-template-columns:1fr;} }
+
+  /* ---------- PANEL ---------- */
+  .panel{
+    background:var(--panel-bg);
+    padding:22px 20px 34px;
+    border-right:1px solid var(--panel-line);
+    max-height:920px;
+    overflow-y:auto;
+  }
+  .panel::-webkit-scrollbar{width:8px;}
+  .panel::-webkit-scrollbar-thumb{background:#3a3324;border-radius:4px;}
+
+  .panel h2{
+    font-family:'Cinzel',serif;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold-bright);
+    margin:22px 0 10px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--panel-line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .panel h2:first-child{margin-top:0;}
+  .panel h2 .tiny-btn{
+    font-family:'EB Garamond',serif;
+    text-transform:none; letter-spacing:0; font-size:11px;
+    color:var(--panel-muted); cursor:pointer; border:1px solid var(--panel-line);
+    padding:2px 7px; border-radius:5px; background:transparent;
+  }
+  .panel h2 .tiny-btn:hover{color:#fff;border-color:var(--gold);}
+
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--panel-muted); margin-bottom:5px;
+  }
+  .field input[type=text], .field textarea, .field select{
+    width:100%; background:#100e0a; border:1px solid var(--panel-line);
+    color:var(--panel-text); font-family:'EB Garamond',serif; font-size:14.5px;
+    padding:8px 10px; border-radius:6px; resize:vertical;
+  }
+  .field textarea{min-height:44px;line-height:1.4;}
+  .field input:focus, .field textarea:focus, .field select:focus{outline:none;border-color:var(--gold);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .checkbox-row input{accent-color:var(--gold-bright);width:15px;height:15px;}
+  .checkbox-row label{font-size:12.5px;color:var(--panel-text);text-transform:none;letter-spacing:0;margin:0;}
+
+  .swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
+  .swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.12);transition:transform .12s ease;}
+  .swatch:hover{transform:scale(1.12);}
+  .swatch.active{border-color:#fff;box-shadow:0 0 0 2px var(--gold-bright);}
+
+  .article-row{display:flex; gap:6px; margin-bottom:8px; align-items:flex-start;}
+  .article-row textarea{flex:1;min-height:38px;}
+  .icon-btn{
+    background:#2a2419; border:1px solid var(--panel-line); color:var(--panel-muted);
+    width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:15px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .icon-btn:hover{color:#fff;border-color:var(--gold);}
+
+  .add-btn{
+    width:100%;padding:9px;margin-top:2px;background:transparent;border:1px dashed var(--panel-line);
+    color:var(--panel-muted);border-radius:6px;cursor:pointer;font-family:'EB Garamond',serif;font-size:14px;
+  }
+  .add-btn:hover{border-color:var(--gold);color:var(--gold-bright);}
+
+  .party-card{
+    border:1px solid var(--panel-line); border-radius:8px; padding:12px; margin-bottom:12px; background:#181510;
+  }
+  .party-card .party-head{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
+  }
+  .party-card .party-head span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--panel-muted);}
+
+  .flag-upload{
+    display:flex; align-items:center; gap:10px; margin-top:4px;
+  }
+  .flag-preview{
+    width:46px;height:30px;border-radius:3px;border:1px solid var(--panel-line);
+    background:#100e0a center/cover no-repeat; flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--panel-muted);
+  }
+  .file-btn{
+    font-size:12px; padding:6px 10px; background:#2a2419; border:1px solid var(--panel-line);
+    color:var(--panel-text); border-radius:6px; cursor:pointer;
+  }
+  .file-btn:hover{border-color:var(--gold);}
+  .file-btn input{display:none;}
+  .clear-flag{font-size:11px;color:var(--panel-muted);text-decoration:underline;cursor:pointer;background:none;border:none;}
+
+  .export-bar{display:flex; gap:8px; margin-top:22px;}
+  .export-bar button{
+    flex:1;padding:11px 6px;border-radius:7px;border:none;font-family:'Cinzel',serif;font-size:11.5px;
+    letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  }
+  .btn-primary{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#241c12;font-weight:700;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-secondary{background:#2a2419;color:var(--panel-text);border:1px solid var(--panel-line) !important;}
+  .btn-secondary:hover{border-color:var(--gold);}
+
+  .hint{font-size:11px;color:var(--panel-muted);margin-top:16px;line-height:1.5;padding-top:14px;border-top:1px solid var(--panel-line);}
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    background:radial-gradient(ellipse at 50% 0%, #232019 0%, #15130f 60%);
+    padding:40px 30px; display:flex; align-items:flex-start; justify-content:center; overflow:auto;
+  }
+
+  #document{
+    width:700px; max-width:100%;
+    padding:54px 54px 46px;
+    position:relative;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.65);
+    border-radius:2px;
+    transition:background .3s ease, color .3s ease;
+  }
+
+  /* paper themes */
+  #document.paper-parchment{
+    background:radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.5), transparent 55%), var(--paper);
+    color:var(--ink); box-shadow:0 30px 60px -20px rgba(0,0,0,.65), 0 0 0 1px var(--paper-edge);
+  }
+  #document.paper-white{
+    background:#fdfdfb; color:#1c1c1c; box-shadow:0 30px 60px -20px rgba(0,0,0,.55), 0 0 0 1px #e4e4e0;
+  }
+  #document.paper-dark{
+    background:linear-gradient(160deg,#1b1b1d,#0f0f10); color:#e9e6dc;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.8), 0 0 0 1px #2c2c2c;
+  }
+
+  #document.paper-parchment::before{
+    content:""; position:absolute; inset:14px; border:1.5px solid var(--gold); outline:1px solid var(--gold);
+    outline-offset:4px; pointer-events:none; opacity:.75;
+  }
+  #document.paper-dark::before{
+    content:""; position:absolute; inset:14px; border:1px solid var(--gold-bright); opacity:.5; pointer-events:none;
+  }
+
+  .eyebrow{
+    text-align:center; font-family:'Cinzel',serif; font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:14px; outline:none;
+  }
+  .ornament{display:flex; justify-content:center; margin-bottom:16px;}
+  .ornament svg{width:60px;height:60px;}
+
+  .doc-title{
+    font-family:'Playfair Display',serif; font-weight:800; font-size:31px; line-height:1.15;
+    text-align:center; margin:0 0 10px; outline:none;
+  }
+  .doc-subtitle{
+    font-family:'EB Garamond',serif; font-style:italic; font-size:16px; text-align:center;
+    opacity:.82; margin:0 0 8px; outline:none;
+  }
+  .doc-meta{
+    text-align:center; font-size:12px; letter-spacing:.03em; opacity:.6; margin-bottom:26px; outline:none;
+  }
+
+  .doc-preamble{
+    font-family:'Cinzel',serif; font-size:12.5px; letter-spacing:.1em; text-transform:uppercase;
+    opacity:.85; margin-bottom:12px; outline:none;
+  }
+  ol.articles{margin:0 0 30px; padding-left:22px;}
+  ol.articles li{font-size:15.5px; line-height:1.65; margin-bottom:12px; text-align:justify; outline:none;}
+
+  .signatures{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:22px 30px; margin-top:34px;
+  }
+  .sig-block{flex:1 1 180px; max-width:220px; text-align:center;}
+  .sig-name{
+    font-family:'Tangerine',cursive; font-size:42px; line-height:1; border-bottom:1.5px solid currentColor;
+    opacity:.95; padding-bottom:4px; margin-bottom:6px; outline:none;
+  }
+  .sig-role{font-family:'EB Garamond',serif; font-size:12.5px; opacity:.75; margin-bottom:12px; outline:none;}
+
+  .seal-flag-row{display:flex; align-items:center; justify-content:center; gap:10px;}
+  .seal{
+    width:52px;height:52px;border-radius:50%; display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel',serif; font-weight:700; font-size:16px; color:#f4e8c8;
+    box-shadow:inset 0 2px 3px rgba(255,255,255,.25), inset 0 -3px 5px rgba(0,0,0,.4), 0 3px 6px rgba(0,0,0,.35);
+    outline:none; flex-shrink:0;
+  }
+  .flag{
+    width:44px;height:29px;background:center/cover no-repeat #ccc;
+    border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.25);
+    flex-shrink:0;
+  }
+  .flag.empty{display:none;}
+
+  .stamp{
+    position:absolute; top:64px; right:18px; width:120px; height:120px;
+    display:flex; align-items:center; justify-content:center; pointer-events:none;
+    transform:rotate(-18deg);
+  }
+  .stamp span{
+    font-family:'Cinzel',serif; font-weight:700; font-size:17px; letter-spacing:.12em; text-transform:uppercase;
+    color:#a02020; border:3px solid #a02020; border-radius:50%; padding:18px 10px; text-align:center;
+    opacity:.72; line-height:1.15;
+  }
+  #document.paper-dark .stamp span{color:#c79a3e; border-color:#c79a3e;}
+
+  [contenteditable]:hover{background:rgba(169,129,47,.1);border-radius:3px;}
+  [contenteditable]:focus{background:rgba(169,129,47,.16);border-radius:3px;}
+
+  /* ---------- CORNER EMBLEMS (Field Report layout) ---------- */
+  .corner-emblem{
+    position:absolute; top:30px; width:76px; height:76px;
+    background:center/contain no-repeat; display:none;
+  }
+  .corner-emblem.left{left:30px;}
+  .corner-emblem.right{right:30px;}
+  .layout-field .corner-emblem.filled{display:block;}
+
+  /* ---------- FIELD REPORT (typewriter) LAYOUT ---------- */
+  .layout-field .eyebrow, .layout-field .ornament{display:none;}
+  .layout-field .doc-title{
+    font-family:'Special Elite', 'Courier New', monospace;
+    font-weight:400;
+    font-size:25px;
+    text-decoration:underline;
+    text-underline-offset:5px;
+    letter-spacing:.01em;
+    margin-top:6px;
+  }
+  .layout-field .doc-subtitle{
+    font-family:'UnifrakturCook', cursive;
+    font-style:normal;
+    font-size:23px;
+    opacity:1;
+  }
+  .layout-field .doc-meta, .layout-field .doc-preamble{
+    font-family:'Special Elite','Courier New',monospace;
+    letter-spacing:.01em;
+  }
+  .layout-field ol.articles{
+    list-style:none; padding-left:0; counter-reset:none;
+  }
+  .layout-field ol.articles li{
+    font-family:'Special Elite','Courier New',monospace;
+    font-size:13.5px; line-height:1.7;
+    text-align:center;
+  }
+  .layout-field ol.articles li::before{
+    content: attr(data-roman);
+    display:block; font-weight:700; margin-bottom:4px; letter-spacing:.08em;
+  }
+
+  .layout-field .signatures{ justify-content:space-between; margin-top:60px; }
+  .layout-field .sig-block{ text-align:left; max-width:none; flex:1 1 200px; }
+  .layout-field .sig-name, .layout-field .seal-flag-row{ display:none; }
+  .layout-field .sig-role{
+    font-family:'Special Elite','Courier New',monospace;
+    font-size:15px; opacity:1; margin-bottom:10px; text-align:left;
+  }
+  .layout-field .sig-role::before{ content:"x, "; }
+  .sig-scribble, .sig-stamp{ display:none; }
+  .layout-field .sig-scribble{ display:block; position:relative; height:64px; }
+  .layout-field .sig-scribble svg{ position:absolute; left:0; top:0; width:150px; height:60px; }
+  .layout-field .sig-stamp{
+    display:flex; position:absolute; width:74px; height:74px; border-radius:50%;
+    border:2.5px solid currentColor; opacity:.55; align-items:center; justify-content:center;
+    font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; text-align:center;
+    transform:rotate(-14deg);
+  }
+</style>
+
+<div class="app">
+  <div class="panel">
+    <h2>Agreement type</h2>
+    <div class="field">
+      <label>Preset (loads a starting template)</label>
+      <select id="preset-select">
+        <option value="">— Choose a preset —</option>
+        <option value="treaty">Non-Aggression Treaty</option>
+        <option value="alliance">Alliance Pact</option>
+        <option value="peace">Peace Accord</option>
+        <option value="ceasefire">Ceasefire Agreement</option>
+        <option value="trade">Trade Agreement</option>
+        <option value="defense">Mutual Defense Pact</option>
+        <option value="protectorate">Protectorate / Vassal Agreement</option>
+        <option value="territory">Border &amp; Territory Agreement</option>
+        <option value="surrender">Terms of Surrender</option>
+        <option value="blank">Blank Document</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Layout style</label>
+      <select id="layout-select">
+        <option value="layout-classic">Classic Ornate</option>
+        <option value="layout-field">Field Report (typewriter)</option>
+      </select>
+    </div>
+
+    <h2>Document</h2>
+    <div class="field"><label>Eyebrow tag (optional)</label><input type="text" id="in-eyebrow" value="Official Diplomatic Record"></div>
+    <div class="field"><label>Title</label><input type="text" id="in-title" value="Treaty of Non-Aggression &amp; Cooperation"></div>
+    <div class="field"><label>Subtitle</label><input type="text" id="in-subtitle" value="Between the High Kingdom of Ireland and the Commonwealth of America"></div>
+    <div class="field"><label>Meta line (date / ref, optional)</label><input type="text" id="in-meta" value="Ratified August 15, 2026"></div>
+    <div class="field"><label>Preamble line</label><input type="text" id="in-preamble" value="These nations hereby declare:"></div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Paper style</label>
+        <select id="paper-select">
+          <option value="paper-parchment">Parchment</option>
+          <option value="paper-white">Clean White</option>
+          <option value="paper-dark">War Room Dark</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Accent theme</label>
+        <div class="swatches" id="theme-swatches"></div>
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="stamp-toggle" checked>
+      <label for="stamp-toggle">Show ratified stamp</label>
+    </div>
+    <div class="field" id="stamp-text-field"><label>Stamp text</label><input type="text" id="in-stamp" value="Ratified"></div>
+
+    <h2>Articles</h2>
+    <div id="article-list"></div>
+    <button class="add-btn" id="add-article">+ Add article</button>
+
+    <h2>Signatories <button class="tiny-btn" id="add-party">+ add party</button></h2>
+    <div id="party-list"></div>
+
+    <div class="export-bar">
+      <button class="btn-secondary" id="btn-pdf">Print / PDF</button>
+      <button class="btn-primary" id="btn-png">Download PNG</button>
+    </div>
+    <div class="hint">Click directly on any text in the document to edit it in place. Upload a flag image per party — it'll appear beside their seal.</div>
+  </div>
+
+  <div class="stage">
+    <div id="document" class="paper-parchment layout-classic">
+      <div class="corner-emblem left" id="corner-emblem-a"></div>
+      <div class="corner-emblem right" id="corner-emblem-b"></div>
+      <div class="stamp" id="stamp-el"><span id="stamp-text">Ratified</span></div>
+      <p class="eyebrow" id="doc-eyebrow" contenteditable="true">Official Diplomatic Record</p>
+      <div class="ornament" id="ornament-slot"></div>
+      <h1 class="doc-title" id="doc-title" contenteditable="true">Treaty of Non-Aggression &amp; Cooperation</h1>
+      <p class="doc-subtitle" id="doc-subtitle" contenteditable="true">Between the High Kingdom of Ireland and the Commonwealth of America</p>
+      <p class="doc-meta" id="doc-meta" contenteditable="true">Ratified August 15, 2026</p>
+      <p class="doc-preamble" id="doc-preamble" contenteditable="true">These nations hereby declare:</p>
+      <ol class="articles" id="doc-articles"></ol>
+      <div class="signatures" id="doc-signatures"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const themes = {
+    "Parchment & Gold": { gold:"#a9812f", goldBright:"#c79a3e" },
+    "Iron & Crimson":   { gold:"#8a2f2f", goldBright:"#a8433f" },
+    "Naval Blue":       { gold:"#2f4d6b", goldBright:"#3c6690" },
+    "Verdant Accord":   { gold:"#3f5b3a", goldBright:"#537849" },
+    "Royal Violet":     { gold:"#5a3a7a", goldBright:"#75509a" }
+  };
+  const sealColors = ["#7a2323","#1f3a52","#3f5b3a","#5a3a1f","#4a2e5c","#2b2b2b","#8a6d1a"];
+
+  const presets = {
+    treaty: {
+      eyebrow:"Official Diplomatic Record",
+      title:"Treaty of Non-Aggression &amp; Cooperation",
+      subtitle:"Between the High Kingdom of Ireland and the Commonwealth of America",
+      meta:"Ratified August 15, 2026",
+      preamble:"These nations hereby declare:",
+      articles:[
+        "Both parties agree to non-aggression, neither party shall engage in hostile activity against the other, including raiding, trapping, or sniping territory.",
+        "Both parties agree to respect each other's sovereignty and not infringe upon it, directly or indirectly.",
+        "Both parties agree to cooperate diplomatically for the mutual benefit of both nations.",
+        "Both parties agree this pact is binding within the game and among its players."
+      ],
+      stamp:"Ratified"
+    },
+    alliance: {
+      eyebrow:"Alliance Charter",
+      title:"Pact of Mutual Alliance",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Signed this day",
+      preamble:"In the interest of mutual strength, the undersigned agree:",
+      articles:[
+        "Both nations shall come to the other's defense if either is attacked by a third party.",
+        "Both nations shall share intelligence, resources, and strategic support as needed.",
+        "Neither nation shall enter a rival alliance without first consulting the other.",
+        "This alliance shall stand until dissolved by mutual written agreement."
+      ],
+      stamp:"Allied"
+    },
+    peace: {
+      eyebrow:"Peace Accord",
+      title:"Accord of Lasting Peace",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Concluding hostilities as of this date",
+      preamble:"Wishing to end conflict, the undersigned agree:",
+      articles:[
+        "All hostilities between both parties shall cease immediately and permanently.",
+        "Both parties shall withdraw forces to their recognized borders.",
+        "Prisoners and captured territory shall be returned within seven days.",
+        "Both parties agree to submit future disputes to negotiation rather than conflict."
+      ],
+      stamp:"Peace"
+    },
+    ceasefire: {
+      eyebrow:"Ceasefire Notice",
+      title:"Temporary Ceasefire Agreement",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"In effect for 72 hours from signing",
+      preamble:"For the duration of this agreement, both parties agree:",
+      articles:[
+        "All offensive action between both parties shall halt immediately.",
+        "Neither party shall move troops or assets across the current front line.",
+        "This ceasefire may be extended by mutual agreement before it expires.",
+        "Violation by either party voids this agreement without warning."
+      ],
+      stamp:"Ceasefire"
+    },
+    trade: {
+      eyebrow:"Commercial Accord",
+      title:"Agreement of Trade &amp; Commerce",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Effective immediately upon signing",
+      preamble:"For the benefit of both economies, the undersigned agree:",
+      articles:[
+        "Both nations shall permit the free movement of goods across their shared border.",
+        "Neither party shall impose tariffs exceeding an agreed threshold on the other.",
+        "Both parties shall establish a shared market or trade route for mutual benefit.",
+        "Disputes over trade shall be settled through direct negotiation."
+      ],
+      stamp:"Approved"
+    },
+    defense: {
+      eyebrow:"Defense Charter",
+      title:"Mutual Defense Pact",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Ratified this day",
+      preamble:"For their mutual security, the undersigned agree:",
+      articles:[
+        "An attack on either party shall be considered an attack on both.",
+        "Both parties shall maintain open communication regarding military movements.",
+        "Both parties shall render aid, including troops or resources, upon request in the event of invasion.",
+        "This pact remains active until formally revoked by either signatory."
+      ],
+      stamp:"Ratified"
+    },
+    protectorate: {
+      eyebrow:"Protectorate Charter",
+      title:"Agreement of Protection &amp; Vassalage",
+      subtitle:"Between [Overlord Nation] and [Vassal Nation]",
+      meta:"Effective upon signing",
+      preamble:"In exchange for protection and guidance, the undersigned agree:",
+      articles:[
+        "The protector shall defend the vassal from external aggression upon request.",
+        "The vassal shall retain internal self-governance over its own territory.",
+        "The vassal shall provide agreed tribute, resources, or support to the protector.",
+        "This agreement may be dissolved if either party fails to uphold its obligations."
+      ],
+      stamp:"Sealed"
+    },
+    territory: {
+      eyebrow:"Territorial Accord",
+      title:"Border &amp; Territory Agreement",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Surveyed and signed this day",
+      preamble:"To avoid future dispute, the undersigned agree to the following borders:",
+      articles:[
+        "The border between both nations shall follow the line agreed upon and marked on the attached map.",
+        "Neither party shall construct or claim territory beyond the recognized border.",
+        "Any resources found on the border shall be shared equally between both parties.",
+        "Disputes over the border shall be settled by neutral arbitration, not force."
+      ],
+      stamp:"Surveyed"
+    },
+    surrender: {
+      eyebrow:"Terms of Surrender",
+      title:"Instrument of Surrender",
+      subtitle:"Presented to [Nation A] by [Nation B]",
+      meta:"Effective upon signature",
+      preamble:"The undersigned acknowledges defeat and agrees to the following terms:",
+      articles:[
+        "All remaining forces shall lay down arms and cease resistance immediately.",
+        "Territory shall be ceded as outlined in the attached terms.",
+        "Reparations shall be paid according to the agreed schedule.",
+        "Both parties agree this ends the current conflict permanently."
+      ],
+      stamp:"Concluded"
+    },
+    blank: {
+      eyebrow:"",
+      title:"Untitled Agreement",
+      subtitle:"Between [Party A] and [Party B]",
+      meta:"",
+      preamble:"The undersigned agree to the following terms:",
+      articles:["First term..."],
+      stamp:"Draft"
+    }
+  };
+
+  let state = {
+    theme: "Parchment & Gold",
+    paper: "paper-parchment",
+    layout: "layout-classic",
+    showStamp: true,
+    articles: presets.treaty.articles.slice(),
+    parties: [
+      { name:"Sly Prince", role:"High King of Ireland", initials:"HK", color:"#7a2323", flag:null },
+      { name:"HibachiBeamz", role:"President of America", initials:"US", color:"#1f3a52", flag:null }
+    ]
+  };
+
+  const root = document.documentElement;
+  function applyTheme(name){
+    const t = themes[name];
+    root.style.setProperty('--gold', t.gold);
+    root.style.setProperty('--gold-bright', t.goldBright);
+    renderOrnament();
+  }
+
+  function renderOrnament(){
+    document.getElementById('ornament-slot').innerHTML = `
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="var(--gold)" stroke-width="2">
+          <circle cx="32" cy="32" r="4" fill="var(--gold)"/>
+          <path d="M32 8 C 20 8, 20 32, 32 32 C 44 32, 44 8, 32 8 Z"/>
+          <path d="M32 56 C 44 56, 44 32, 32 32 C 20 32, 20 56, 32 56 Z"/>
+          <path d="M8 32 C 8 20, 32 20, 32 32 C 32 44, 8 44, 8 32 Z"/>
+          <path d="M56 32 C 56 44, 32 44, 32 32 C 32 20, 56 20, 56 32 Z"/>
+        </g>
+      </svg>`;
+  }
+
+  function buildSwatchRow(container, selected, onPick){
+    container.innerHTML = "";
+    Object.keys(themes).forEach(name=>{
+      const t = themes[name];
+      const sw = document.createElement('div');
+      sw.className = 'swatch' + (name===selected ? ' active':'');
+      sw.style.background = `linear-gradient(135deg, ${t.goldBright}, ${t.gold})`;
+      sw.title = name;
+      sw.onclick = ()=>{ onPick(name); buildSwatchRow(container, name, onPick); };
+      container.appendChild(sw);
+    });
+  }
+
+  function buildColorRow(container, selected, onPick){
+    container.innerHTML = "";
+    sealColors.forEach(c=>{
+      const sw = document.createElement('div');
+      sw.className = 'swatch' + (c===selected ? ' active':'');
+      sw.style.background = c;
+      sw.onclick = ()=>{ onPick(c); buildColorRow(container, c, onPick); };
+      container.appendChild(sw);
+    });
+  }
+
+  function shade(hex, percent){
+    const num = parseInt(hex.slice(1),16);
+    let r = (num>>16) + Math.round(255*(percent/100));
+    let g = ((num>>8)&0xff) + Math.round(255*(percent/100));
+    let b = (num&0xff) + Math.round(255*(percent/100));
+    r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+    return "#" + (r<<16|g<<8|b).toString(16).padStart(6,'0');
+  }
+
+  /* ---------------- ARTICLES ---------------- */
+  function renderArticleInputs(){
+    const list = document.getElementById('article-list');
+    list.innerHTML = "";
+    state.articles.forEach((text, i)=>{
+      const row = document.createElement('div');
+      row.className = 'article-row';
+      row.innerHTML = `<textarea data-i="${i}"></textarea><button class="icon-btn" data-remove="${i}">&times;</button>`;
+      row.querySelector('textarea').value = text;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('textarea').forEach(ta=>{
+      ta.addEventListener('input', e=>{
+        state.articles[+e.target.dataset.i] = e.target.value;
+        renderArticleDoc();
+      });
+    });
+    list.querySelectorAll('[data-remove]').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        state.articles.splice(+e.target.dataset.remove, 1);
+        renderArticleInputs();
+        renderArticleDoc();
+      });
+    });
+  }
+
+  function toRoman(num){
+    const map = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+    let n = num, out = '';
+    for(const [val, sym] of map){ while(n >= val){ out += sym; n -= val; } }
+    return out;
+  }
+
+  function renderArticleDoc(){
+    const ol = document.getElementById('doc-articles');
+    ol.innerHTML = "";
+    state.articles.forEach((text, i)=>{
+      const li = document.createElement('li');
+      li.contentEditable = "true";
+      li.textContent = text;
+      li.dataset.roman = toRoman(i+1);
+      li.addEventListener('input', ()=>{
+        state.articles[i] = li.textContent;
+        const ta = document.querySelector(`#article-list textarea[data-i="${i}"]`);
+        if(ta) ta.value = li.textContent;
+      });
+      ol.appendChild(li);
+    });
+  }
+
+  /* ---------------- PARTIES ---------------- */
+  function renderPartyInputs(){
+    const list = document.getElementById('party-list');
+    list.innerHTML = "";
+    state.parties.forEach((p,i)=>{
+      const card = document.createElement('div');
+      card.className = 'party-card';
+      card.innerHTML = `
+        <div class="party-head">
+          <span>Party ${i+1}</span>
+          ${state.parties.length > 2 ? `<button class="icon-btn" data-remove-party="${i}">&times;</button>` : ''}
+        </div>
+        <div class="field"><label>Signature name</label><input type="text" data-field="name" data-i="${i}" value="${escapeAttr(p.name)}"></div>
+        <div class="field"><label>Title / role</label><input type="text" data-field="role" data-i="${i}" value="${escapeAttr(p.role)}"></div>
+        <div class="row2">
+          <div class="field"><label>Seal initials</label><input type="text" maxlength="3" data-field="initials" data-i="${i}" value="${escapeAttr(p.initials)}"></div>
+          <div class="field"><label>Seal color</label><div class="swatches" data-colors="${i}"></div></div>
+        </div>
+        <div class="field">
+          <label>Flag image</label>
+          <div class="flag-upload">
+            <div class="flag-preview" data-flagprev="${i}">${p.flag ? '' : 'none'}</div>
+            <label class="file-btn">Upload<input type="file" accept="image/*" data-flaginput="${i}"></label>
+            <button class="clear-flag" data-clearflag="${i}" style="${p.flag ? '' : 'display:none;'}">remove</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('input[data-field]').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        const i = +e.target.dataset.i, field = e.target.dataset.field;
+        state.parties[i][field] = e.target.value;
+        renderSignatures();
+      });
+    });
+    list.querySelectorAll('[data-colors]').forEach(el=>{
+      const i = +el.dataset.colors;
+      buildColorRow(el, state.parties[i].color, (c)=>{ state.parties[i].color = c; renderSignatures(); });
+    });
+    list.querySelectorAll('[data-flaginput]').forEach(inp=>{
+      inp.addEventListener('change', e=>{
+        const i = +e.target.dataset.flaginput;
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          state.parties[i].flag = reader.result;
+          renderPartyInputs();
+          renderSignatures();
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+    list.querySelectorAll('[data-flagprev]').forEach(el=>{
+      const i = +el.dataset.flagprev;
+      if(state.parties[i].flag){
+        el.style.backgroundImage = `url(${state.parties[i].flag})`;
+        el.textContent = "";
+      }
+    });
+    list.querySelectorAll('[data-clearflag]').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const i = +e.target.dataset.clearflag;
+        state.parties[i].flag = null;
+        renderPartyInputs();
+        renderSignatures();
+      });
+    });
+    list.querySelectorAll('[data-remove-party]').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        state.parties.splice(+e.target.dataset.removeParty, 1);
+        renderPartyInputs();
+        renderSignatures();
+      });
+    });
+  }
+
+  function escapeAttr(s){
+    return (s||"").replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  }
+
+  function scribbleSVG(color, seed){
+    // A few hand-picked squiggle paths for variety, picked by seed
+    const paths = [
+      "M4 40 C 20 10, 35 50, 55 20 S 90 45, 110 15 S 140 35, 146 12",
+      "M4 30 C 15 45, 30 5, 45 35 S 70 8, 90 38 S 120 10, 146 30",
+      "M4 20 C 25 45, 40 8, 60 30 S 85 50, 105 18 S 130 45, 146 20"
+    ];
+    const d = paths[seed % paths.length];
+    return `<svg viewBox="0 0 150 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  function renderSignatures(){
+    const wrap = document.getElementById('doc-signatures');
+    wrap.innerHTML = "";
+    state.parties.forEach((p,i)=>{
+      const block = document.createElement('div');
+      block.className = 'sig-block';
+      block.innerHTML = `
+        <div class="sig-name" contenteditable="true">${p.name}</div>
+        <div class="sig-role" contenteditable="true">${p.role}</div>
+        <div class="seal-flag-row">
+          <div class="seal">${(p.initials||'').toUpperCase()}</div>
+          <div class="flag ${p.flag ? '' : 'empty'}" style="${p.flag ? `background-image:url(${p.flag})` : ''}"></div>
+        </div>
+        <div class="sig-scribble" style="color:${p.color}">
+          ${scribbleSVG(p.color, i)}
+          <div class="sig-stamp" style="color:${p.color}; top:${i%2===0?'14px':'6px'}; left:${i%2===0?'62px':'70px'};">${(p.initials||'').toUpperCase()}</div>
+        </div>
+      `;
+      const seal = block.querySelector('.seal');
+      seal.style.background = `radial-gradient(circle at 35% 30%, ${p.color}, ${shade(p.color,-25)})`;
+
+      const nameEl = block.querySelector('.sig-name');
+      nameEl.addEventListener('input', ()=>{
+        p.name = nameEl.textContent;
+        const inp = document.querySelector(`#party-list input[data-field="name"][data-i="${i}"]`);
+        if(inp) inp.value = p.name;
+      });
+      const roleEl = block.querySelector('.sig-role');
+      roleEl.addEventListener('input', ()=>{
+        p.role = roleEl.textContent;
+        const inp = document.querySelector(`#party-list input[data-field="role"][data-i="${i}"]`);
+        if(inp) inp.value = p.role;
+      });
+      wrap.appendChild(block);
+    });
+    renderCornerEmblems();
+  }
+
+  function renderCornerEmblems(){
+    const a = document.getElementById('corner-emblem-a');
+    const b = document.getElementById('corner-emblem-b');
+    const pa = state.parties[0], pb = state.parties[1];
+    if(pa && pa.flag){ a.style.backgroundImage = `url(${pa.flag})`; a.classList.add('filled'); }
+    else { a.style.backgroundImage = ''; a.classList.remove('filled'); }
+    if(pb && pb.flag){ b.style.backgroundImage = `url(${pb.flag})`; b.classList.add('filled'); }
+    else { b.style.backgroundImage = ''; b.classList.remove('filled'); }
+  }
+
+  /* ---------------- TEXT BINDINGS ---------------- */
+  function bindText(inputId, targetId){
+    const input = document.getElementById(inputId);
+    const target = document.getElementById(targetId);
+    input.addEventListener('input', ()=>{ target.textContent = input.value; });
+    target.addEventListener('input', ()=>{ input.value = target.textContent; });
+  }
+
+  /* ---------------- INIT ---------------- */
+  applyTheme(state.theme);
+  buildSwatchRow(document.getElementById('theme-swatches'), state.theme, (name)=>{ state.theme = name; applyTheme(name); });
+
+  bindText('in-eyebrow','doc-eyebrow');
+  bindText('in-title','doc-title');
+  bindText('in-subtitle','doc-subtitle');
+  bindText('in-meta','doc-meta');
+  bindText('in-preamble','doc-preamble');
+
+  renderArticleInputs();
+  renderArticleDoc();
+  renderPartyInputs();
+  renderSignatures();
+
+  document.getElementById('add-article').addEventListener('click', ()=>{
+    state.articles.push("Both parties agree to...");
+    renderArticleInputs();
+    renderArticleDoc();
+  });
+
+  document.getElementById('add-party').addEventListener('click', ()=>{
+    if(state.parties.length >= 5) return;
+    const colors = sealColors.filter(c => !state.parties.some(p=>p.color===c));
+    state.parties.push({ name:"New Signatory", role:"Representative", initials:"NS", color:(colors[0]||sealColors[0]), flag:null });
+    renderPartyInputs();
+    renderSignatures();
+  });
+
+  document.getElementById('paper-select').addEventListener('change', (e)=>{
+    const docEl = document.getElementById('document');
+    docEl.classList.remove('paper-parchment','paper-white','paper-dark');
+    docEl.classList.add(e.target.value);
+    state.paper = e.target.value;
+  });
+
+  document.getElementById('layout-select').addEventListener('change', (e)=>{
+    const docEl = document.getElementById('document');
+    docEl.classList.remove('layout-classic','layout-field');
+    docEl.classList.add(e.target.value);
+    state.layout = e.target.value;
+    renderArticleDoc();
+    renderSignatures();
+  });
+
+  const stampToggle = document.getElementById('stamp-toggle');
+  const stampEl = document.getElementById('stamp-el');
+  const stampTextField = document.getElementById('stamp-text-field');
+  const stampTextInput = document.getElementById('in-stamp');
+  const stampTextTarget = document.getElementById('stamp-text');
+  function syncStamp(){
+    stampEl.style.display = stampToggle.checked ? 'flex' : 'none';
+    stampTextField.style.display = stampToggle.checked ? 'block' : 'none';
+  }
+  stampToggle.addEventListener('change', syncStamp);
+  stampTextInput.addEventListener('input', ()=>{ stampTextTarget.textContent = stampTextInput.value; });
+  syncStamp();
+
+  document.getElementById('preset-select').addEventListener('change', (e)=>{
+    const p = presets[e.target.value];
+    if(!p) return;
+    document.getElementById('in-eyebrow').value = p.eyebrow;
+    document.getElementById('doc-eyebrow').innerHTML = p.eyebrow;
+    document.getElementById('in-title').value = p.title.replace(/&amp;/g,'&');
+    document.getElementById('doc-title').innerHTML = p.title;
+    document.getElementById('in-subtitle').value = p.subtitle;
+    document.getElementById('doc-subtitle').textContent = p.subtitle;
+    document.getElementById('in-meta').value = p.meta;
+    document.getElementById('doc-meta').textContent = p.meta;
+    document.getElementById('in-preamble').value = p.preamble;
+    document.getElementById('doc-preamble').textContent = p.preamble;
+    document.getElementById('in-stamp').value = p.stamp;
+    document.getElementById('stamp-text').textContent = p.stamp;
+    state.articles = p.articles.slice();
+    renderArticleInputs();
+    renderArticleDoc();
+  });
+
+  document.getElementById('btn-png').addEventListener('click', ()=>{
+    const el = document.getElementById('document');
+    html2canvas(el, {scale:3, backgroundColor:null, useCORS:true}).then(canvas=>{
+      const link = document.createElement('a');
+      link.download = 'agreement.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  });
+
+  document.getElementById('btn-pdf').addEventListener('click', ()=>{
+    window.print();
+  });
+})();
+</script>
+
+<style media="print">
+  body *{ visibility:hidden; }
+  #document, #document *{ visibility:visible; }
+  #document{ position:absolute; left:0; top:0; box-shadow:none !important; width:100% !important; }
+  .stage, .panel, .app{ background:transparent !important; }
+</style>
