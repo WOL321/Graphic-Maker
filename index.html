@@ -1,7 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiplomaticaMC Graphic Maker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Tangerine:wght@700&family=Cinzel:wght@600;700&family=Special+Elite&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <style>
   :root{
     --gold:#a9812f;
@@ -11,35 +16,66 @@
     --panel-line:#332d21;
     --panel-text:#e7ddc4;
     --panel-muted:#9c927a;
-
     --paper:#f6efdd;
     --paper-edge:#e9dfc2;
     --ink:#241c12;
     --ink-soft:#4a3d24;
   }
-
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   body{background:var(--stage-bg);color:var(--panel-text);font-family:'EB Garamond', serif;}
 
   .app{
     display:grid;
-    grid-template-columns:350px 1fr;
+    grid-template-columns:360px 1fr;
     width:100%;
     min-height:100vh;
     background:var(--stage-bg);
-    border-radius:0;
-    overflow:hidden;
-    border:none;
   }
-  @media (max-width:860px){ .app{grid-template-columns:1fr;} }
+  @media (max-width:900px){ .app{grid-template-columns:1fr;} }
 
-  /* ---------- PANEL ---------- */
+  /* MODE TABS */
+  .mode-tabs{
+    display:flex;
+    gap:4px;
+    margin-bottom:18px;
+    background:#100e0a;
+    padding:4px;
+    border-radius:8px;
+    border:1px solid var(--panel-line);
+  }
+  .mode-tab{
+    flex:1 1 30%;
+    min-width:70px;
+    padding:8px 4px;
+    text-align:center;
+    font-family:'Cinzel',serif;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--panel-muted);
+    background:transparent;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .mode-tab:hover{color:var(--panel-text);}
+  .mode-tab.active{
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    color:#241c12;
+    font-weight:700;
+  }
+
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block;}
+
+  /* PANEL */
   .panel{
     background:var(--panel-bg);
-    padding:22px 20px 34px;
+    padding:18px 18px 40px;
     border-right:1px solid var(--panel-line);
-    max-height:920px;
+    max-height:100vh;
     overflow-y:auto;
   }
   .panel::-webkit-scrollbar{width:8px;}
@@ -47,16 +83,16 @@
 
   .panel h2{
     font-family:'Cinzel',serif;
-    font-size:12.5px;
+    font-size:12px;
     letter-spacing:.14em;
     text-transform:uppercase;
     color:var(--gold-bright);
-    margin:22px 0 10px;
+    margin:20px 0 10px;
     padding-bottom:6px;
     border-bottom:1px solid var(--panel-line);
     display:flex; align-items:center; justify-content:space-between;
   }
-  .panel h2:first-child{margin-top:0;}
+  .panel h2:first-of-type{margin-top:0;}
   .panel h2 .tiny-btn{
     font-family:'EB Garamond',serif;
     text-transform:none; letter-spacing:0; font-size:11px;
@@ -70,7 +106,7 @@
     display:block; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
     color:var(--panel-muted); margin-bottom:5px;
   }
-  .field input[type=text], .field textarea, .field select{
+  .field input[type=text], .field textarea, .field select, .field input[type=number]{
     width:100%; background:#100e0a; border:1px solid var(--panel-line);
     color:var(--panel-text); font-family:'EB Garamond',serif; font-size:14.5px;
     padding:8px 10px; border-radius:6px; resize:vertical;
@@ -78,6 +114,7 @@
   .field textarea{min-height:44px;line-height:1.4;}
   .field input:focus, .field textarea:focus, .field select:focus{outline:none;border-color:var(--gold);}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
   .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
   .checkbox-row input{accent-color:var(--gold-bright);width:15px;height:15px;}
   .checkbox-row label{font-size:12.5px;color:var(--panel-text);text-transform:none;letter-spacing:0;margin:0;}
@@ -86,6 +123,15 @@
   .swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.12);transition:transform .12s ease;}
   .swatch:hover{transform:scale(1.12);}
   .swatch.active{border-color:#fff;box-shadow:0 0 0 2px var(--gold-bright);}
+
+  .color-input{
+    display:flex;align-items:center;gap:8px;
+  }
+  .color-input input[type=color]{
+    width:36px;height:32px;border:1px solid var(--panel-line);border-radius:6px;
+    background:#100e0a;cursor:pointer;padding:2px;
+  }
+  .color-input input[type=text]{flex:1;}
 
   .article-row{display:flex; gap:6px; margin-bottom:8px; align-items:flex-start;}
   .article-row textarea{flex:1;min-height:38px;}
@@ -126,9 +172,9 @@
   .file-btn input{display:none;}
   .clear-flag{font-size:11px;color:var(--panel-muted);text-decoration:underline;cursor:pointer;background:none;border:none;}
 
-  .export-bar{display:flex; gap:8px; margin-top:22px;}
+  .export-bar{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
   .export-bar button{
-    flex:1;padding:11px 6px;border-radius:7px;border:none;font-family:'Cinzel',serif;font-size:11.5px;
+    flex:1;min-width:110px;padding:11px 6px;border-radius:7px;border:none;font-family:'Cinzel',serif;font-size:11.5px;
     letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
   }
   .btn-primary{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#241c12;font-weight:700;}
@@ -154,10 +200,6 @@
     -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
     background:var(--gold-bright); cursor:pointer; border:2px solid #100e0a;
   }
-  input[type=range]::-moz-range-thumb{
-    width:16px; height:16px; border-radius:50%; background:var(--gold-bright);
-    cursor:pointer; border:2px solid #100e0a;
-  }
 
   .saved-item{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -176,12 +218,14 @@
   .saved-item-actions button.danger:hover{color:#c94b4b; border-color:#c94b4b;}
   .saved-empty{font-size:12px; color:var(--panel-muted); font-style:italic; padding:6px 2px 2px;}
 
-  /* ---------- STAGE ---------- */
+  /* STAGE */
   .stage{
     background:radial-gradient(ellipse at 50% 0%, #232019 0%, #15130f 60%);
     padding:40px 30px; display:flex; align-items:flex-start; justify-content:center; overflow:auto;
+    min-height:100vh;
   }
 
+  /* DOCUMENT STYLES (kept from original) */
   #document{
     width:var(--doc-width, 700px); max-width:100%;
     padding:54px 54px 46px;
@@ -190,8 +234,6 @@
     border-radius:2px;
     transition:background .3s ease, color .3s ease, width .12s ease;
   }
-
-  /* paper themes */
   #document.paper-parchment{
     background:radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.5), transparent 55%), var(--paper);
     color:var(--ink); box-shadow:0 30px 60px -20px rgba(0,0,0,.65), 0 0 0 1px var(--paper-edge);
@@ -203,13 +245,36 @@
     background:linear-gradient(160deg,#1b1b1d,#0f0f10); color:#e9e6dc;
     box-shadow:0 30px 60px -20px rgba(0,0,0,.8), 0 0 0 1px #2c2c2c;
   }
-
-  #document.paper-parchment::before{
+  #document.paper-cream{
+    background:linear-gradient(180deg,#faf3e0,#f0e4c8); color:#2a2118;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.55), 0 0 0 1px #e0d4b0;
+  }
+  #document.paper-navy{
+    background:linear-gradient(160deg,#0c1a2e,#152238); color:#e8eef5;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.8), 0 0 0 1px #1e3a5f;
+  }
+  #document.paper-crimson{
+    background:linear-gradient(160deg,#2a0f12,#1a080a); color:#f5e0e0;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.8), 0 0 0 1px #5a2020;
+  }
+  #document.border-double::before{
     content:""; position:absolute; inset:14px; border:1.5px solid var(--gold); outline:1px solid var(--gold);
     outline-offset:4px; pointer-events:none; opacity:.75;
   }
-  #document.paper-dark::before{
-    content:""; position:absolute; inset:14px; border:1px solid var(--gold-bright); opacity:.5; pointer-events:none;
+  #document.border-single::before{
+    content:""; position:absolute; inset:16px; border:1px solid var(--gold); pointer-events:none; opacity:.7;
+  }
+  #document.border-ornate::before{
+    content:""; position:absolute; inset:12px; border:2px solid var(--gold); pointer-events:none; opacity:.8;
+    box-shadow: inset 0 0 0 6px rgba(169,129,47,.08), 0 0 0 1px var(--gold);
+  }
+  #document.border-ornate::after{
+    content:"❖"; position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    font-size:14px; color:var(--gold); opacity:.7; pointer-events:none;
+  }
+  #document.border-none::before{ display:none; }
+  #document.paper-parchment, #document.paper-cream, #document.paper-dark, #document.paper-navy, #document.paper-crimson{
+    /* border handled by border-* classes */
   }
 
   .eyebrow{
@@ -230,7 +295,6 @@
   .doc-meta{
     text-align:center; font-size:12px; letter-spacing:.03em; opacity:.6; margin-bottom:26px; outline:none;
   }
-
   .doc-preamble{
     font-family:'Cinzel',serif; font-size:12.5px; letter-spacing:.1em; text-transform:uppercase;
     opacity:.85; margin-bottom:12px; outline:none;
@@ -250,10 +314,56 @@
 
   .seal-flag-row{display:flex; align-items:center; justify-content:center; gap:10px;}
   .seal{
-    width:52px;height:52px;border-radius:50%; display:flex;align-items:center;justify-content:center;
-    font-family:'Cinzel',serif; font-weight:700; font-size:16px; color:#f4e8c8;
-    box-shadow:inset 0 2px 3px rgba(255,255,255,.25), inset 0 -3px 5px rgba(0,0,0,.4), 0 3px 6px rgba(0,0,0,.35);
+    --wax: #9b1b1b;
+    --wax-hi: #d43c3c;
+    --wax-mid: #b22222;
+    --wax-lo: #5c0e0e;
+    --wax-deep: #3a0808;
+    position:relative;
+    width:58px; height:58px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cinzel',serif; font-weight:700; font-size:13px; color:#f8e8c0;
+    letter-spacing:.04em;
+    background:
+      radial-gradient(circle at 32% 28%, var(--wax-hi) 0%, var(--wax-mid) 28%, var(--wax) 55%, var(--wax-lo) 78%, var(--wax-deep) 100%);
+    box-shadow:
+      /* outer drop */
+      0 4px 10px rgba(0,0,0,.4),
+      0 1px 2px rgba(0,0,0,.3),
+      /* raised rim highlight */
+      inset 0 3px 5px rgba(255,180,160,.35),
+      inset 0 -4px 8px rgba(0,0,0,.45),
+      inset 2px 2px 4px rgba(255,200,180,.2),
+      inset -2px -2px 5px rgba(0,0,0,.35);
     outline:none; flex-shrink:0;
+    text-shadow: 0 1px 1px rgba(0,0,0,.6);
+  }
+  .seal::before{
+    content:"";
+    position:absolute; inset:5px;
+    border-radius:50%;
+    border:1.5px solid rgba(248,220,160,.35);
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,.25),
+      0 0 0 1px rgba(0,0,0,.15);
+    pointer-events:none;
+  }
+  .seal::after{
+    content:"";
+    position:absolute; inset:9px;
+    border-radius:50%;
+    background: radial-gradient(circle at 40% 35%, rgba(0,0,0,.12), rgba(0,0,0,.28) 70%);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.35);
+    pointer-events:none;
+    z-index:0;
+  }
+  .seal{
+    z-index:1;
+  }
+  /* slight organic edge — soft irregularity via layered shadow */
+  .seal{
+    border: 1px solid rgba(80,10,10,.4);
   }
   .flag{
     width:44px;height:29px;background:center/cover no-repeat #ccc;
@@ -277,7 +387,6 @@
   [contenteditable]:hover{background:rgba(169,129,47,.1);border-radius:3px;}
   [contenteditable]:focus{background:rgba(169,129,47,.16);border-radius:3px;}
 
-  /* ---------- CORNER EMBLEMS (Field Report layout) ---------- */
   .corner-emblem{
     position:absolute; top:30px; width:76px; height:76px;
     background:center/contain no-repeat; display:none;
@@ -286,46 +395,30 @@
   .corner-emblem.right{right:30px;}
   .layout-field .corner-emblem.filled{display:block;}
 
-  /* ---------- FIELD REPORT (typewriter) LAYOUT ---------- */
   .layout-field .eyebrow, .layout-field .ornament{display:none;}
   .layout-field .doc-title{
     font-family:'Special Elite', 'Courier New', monospace;
-    font-weight:400;
-    font-size:25px;
-    text-decoration:underline;
-    text-underline-offset:5px;
-    letter-spacing:.01em;
-    margin-top:6px;
+    font-weight:400; font-size:25px; text-decoration:underline; text-underline-offset:5px;
+    letter-spacing:.01em; margin-top:6px;
   }
   .layout-field .doc-subtitle{
-    font-family:'UnifrakturCook', cursive;
-    font-style:normal;
-    font-size:23px;
-    opacity:1;
+    font-family:'UnifrakturCook', cursive; font-style:normal; font-size:23px; opacity:1;
   }
   .layout-field .doc-meta, .layout-field .doc-preamble{
-    font-family:'Special Elite','Courier New',monospace;
-    letter-spacing:.01em;
+    font-family:'Special Elite','Courier New',monospace; letter-spacing:.01em;
   }
-  .layout-field ol.articles{
-    list-style:none; padding-left:0; counter-reset:none;
-  }
+  .layout-field ol.articles{ list-style:none; padding-left:0; }
   .layout-field ol.articles li{
-    font-family:'Special Elite','Courier New',monospace;
-    font-size:13.5px; line-height:1.7;
-    text-align:center;
+    font-family:'Special Elite','Courier New',monospace; font-size:13.5px; line-height:1.7; text-align:center;
   }
   .layout-field ol.articles li::before{
-    content: attr(data-roman);
-    display:block; font-weight:700; margin-bottom:4px; letter-spacing:.08em;
+    content: attr(data-roman); display:block; font-weight:700; margin-bottom:4px; letter-spacing:.08em;
   }
-
   .layout-field .signatures{ justify-content:space-between; margin-top:60px; }
   .layout-field .sig-block{ text-align:left; max-width:none; flex:1 1 200px; }
   .layout-field .sig-name, .layout-field .seal-flag-row{ display:none; }
   .layout-field .sig-role{
-    font-family:'Special Elite','Courier New',monospace;
-    font-size:15px; opacity:1; margin-bottom:10px; text-align:left;
+    font-family:'Special Elite','Courier New',monospace; font-size:15px; opacity:1; margin-bottom:10px; text-align:left;
   }
   .layout-field .sig-role::before{ content:"x, "; }
   .sig-scribble, .sig-stamp{ display:none; }
@@ -337,117 +430,772 @@
     font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; text-align:center;
     transform:rotate(-14deg);
   }
-</style>
 
+  /* ROYAL ALLIANCE LAYOUT — matches real diplomatic treaty examples */
+  .heraldry-row{display:none; justify-content:center; align-items:center; gap:22px; margin:0 0 14px; flex-wrap:wrap;}
+  .layout-royal .heraldry-row{display:flex;}
+  .layout-royal .ornament{display:none;}
+  .layout-royal .eyebrow{display:none;}
+  .heraldry-party{display:flex; flex-direction:row; align-items:center; gap:10px;}
+  .heraldry-party .h-emblem{
+    width:68px; height:68px; background:center/contain no-repeat;
+  }
+  .heraldry-party .h-flag{
+    width:62px; height:40px; background:center/cover no-repeat #ccc;
+    border-radius:2px; box-shadow:0 2px 6px rgba(0,0,0,.3), 0 0 0 1px rgba(0,0,0,.12);
+  }
+  .heraldry-party .h-flag.empty{display:none;}
+  .layout-royal{ padding-top:42px !important; }
+  .layout-royal .doc-meta{
+    font-family:'Cinzel',serif; font-size:11.5px; letter-spacing:.16em;
+    text-transform:uppercase; opacity:.6; margin:2px 0 8px; text-align:center;
+  }
+  .layout-royal .doc-title{
+    font-family:'Playfair Display',serif; font-weight:900; font-size:25px;
+    text-decoration:underline; text-underline-offset:5px; text-decoration-thickness:1.5px;
+    margin:0 0 18px; letter-spacing:.015em; text-align:center;
+  }
+  .layout-royal .doc-subtitle{display:none;}
+  .layout-royal .doc-preamble{display:none;}
+  .doc-closing{display:none; text-align:center; font-family:'EB Garamond',serif; font-style:italic; font-size:13.5px; opacity:.75; margin:6px 0 18px; outline:none;}
+  .layout-royal .doc-closing{display:block;}
+  .layout-royal ol.articles{list-style:none; padding-left:0; margin:0 0 12px;}
+  .layout-royal ol.articles li{
+    font-family:'EB Garamond',serif; font-size:14.5px; line-height:1.48;
+    margin-bottom:10px; text-align:justify;
+  }
+  .layout-royal ol.articles li::before{content:none;}
+  .layout-royal ol.articles li strong{
+    font-family:'Playfair Display',serif; font-weight:700;
+  }
+  .layout-royal .signatures{justify-content:space-around; gap:36px; margin-top:16px;}
+  .layout-royal .sig-block{max-width:190px;}
+  .layout-royal .sig-name{
+    font-family:'Tangerine',cursive; font-size:38px; line-height:1.05;
+    border-bottom:none; margin-bottom:2px;
+  }
+  .layout-royal .sig-role{
+    font-family:'Cinzel',serif; font-size:9.5px; letter-spacing:.12em;
+    text-transform:uppercase; opacity:.72; margin-bottom:8px;
+  }
+  .layout-royal .seal-flag-row{flex-direction:column; gap:4px;}
+  .layout-royal .seal{
+    width:62px; height:62px;
+    font-size:12px;
+  }
+  .layout-royal .flag{display:none;}
+  .layout-royal .stamp{display:none !important;}
+  .layout-royal .sig-scribble{display:none !important;}
+  .layout-royal .sig-stamp{display:none !important;}
+  .layout-royal.paper-parchment, .layout-royal.paper-cream{
+    background:
+      radial-gradient(ellipse at 12% 8%, rgba(255,255,255,.4), transparent 50%),
+      radial-gradient(ellipse at 88% 92%, rgba(160,130,90,.1), transparent 40%),
+      #f2e8cc;
+  }
+
+  /* MODERN CLEAN LAYOUT */
+  .layout-modern .ornament{display:none;}
+  .layout-modern .eyebrow{
+    font-family:'Cinzel',serif; font-size:10px; letter-spacing:.25em;
+    border-bottom:1px solid var(--gold); display:inline-block; padding-bottom:6px; margin:0 auto 16px;
+    width:auto;
+  }
+  .layout-modern .doc-title{
+    font-family:'Playfair Display',serif; font-weight:700; font-size:26px;
+    letter-spacing:.02em; margin-bottom:8px;
+  }
+  .layout-modern .doc-subtitle{font-style:normal; font-size:14px; opacity:.7;}
+  .layout-modern ol.articles{padding-left:18px;}
+  .layout-modern ol.articles li{font-size:14.5px; line-height:1.7; margin-bottom:10px;}
+  .layout-modern .seal{border-radius:8px;}
+  .layout-modern .sig-name{font-family:'EB Garamond',serif; font-size:20px; font-style:italic;}
+
+  /* IMPERIAL DECREE LAYOUT */
+  .layout-imperial .ornament{display:none;}
+  .layout-imperial .eyebrow{
+    font-family:'Cinzel',serif; font-size:11px; letter-spacing:.2em;
+    color:var(--gold); border:1px solid var(--gold); display:inline-block;
+    padding:4px 14px; margin:0 auto 14px;
+  }
+  .layout-imperial .doc-title{
+    font-family:'Cinzel',serif; font-weight:700; font-size:24px;
+    letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px;
+  }
+  .layout-imperial .doc-subtitle{font-family:'Cinzel',serif; font-style:normal; font-size:13px; letter-spacing:.06em;}
+  .layout-imperial .doc-preamble{
+    font-family:'Cinzel',serif; text-align:center; margin:18px 0 14px;
+  }
+  .layout-imperial ol.articles{list-style:none; padding-left:0;}
+  .layout-imperial ol.articles li{
+    font-size:14px; line-height:1.65; margin-bottom:12px; text-align:center;
+  }
+  .layout-imperial ol.articles li::before{
+    content: attr(data-roman); display:block; font-family:'Cinzel',serif;
+    font-weight:700; font-size:12px; letter-spacing:.15em; color:var(--gold); margin-bottom:4px;
+  }
+  .layout-imperial .sig-name{font-family:'Cinzel',serif; font-size:16px; letter-spacing:.05em;}
+
+  /* FLAG + EMBLEM PREVIEW */
+  .preview-frame{
+    background:#0d0c0a;
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:30px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);
+  }
+  .preview-label{
+    font-family:'Cinzel',serif;
+    font-size:12px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--gold-bright);
+  }
+  #flag-canvas, #emblem-canvas{
+    border-radius:4px;
+    box-shadow:0 8px 30px rgba(0,0,0,.6);
+    max-width:100%;
+  }
+  .flag-ratio-note{font-size:12px;color:var(--panel-muted);margin-top:6px;}
+</style>
+</head>
+<body>
 <div class="app">
   <div class="panel">
-    <button class="add-btn" id="btn-surprise" style="border-style:solid;border-color:var(--gold);color:var(--gold-bright);margin-bottom:16px;">🎲 Surprise me</button>
-
-    <h2>Agreement type</h2>
-    <div class="field">
-      <label>Preset (loads a starting template)</label>
-      <select id="preset-select">
-        <option value="">— Choose a preset —</option>
-        <option value="treaty">Non-Aggression Treaty</option>
-        <option value="alliance">Alliance Pact</option>
-        <option value="peace">Peace Accord</option>
-        <option value="ceasefire">Ceasefire Agreement</option>
-        <option value="trade">Trade Agreement</option>
-        <option value="defense">Mutual Defense Pact</option>
-        <option value="protectorate">Protectorate / Vassal Agreement</option>
-        <option value="territory">Border &amp; Territory Agreement</option>
-        <option value="surrender">Terms of Surrender</option>
-        <option value="blank">Blank Document</option>
-      </select>
+    <div class="mode-tabs" style="flex-wrap:wrap;">
+      <button class="mode-tab active" data-mode="docs">Docs</button>
+      <button class="mode-tab" data-mode="flags">Flags</button>
+      <button class="mode-tab" data-mode="emblems">Emblems</button>
+      <button class="mode-tab" data-mode="posters">Propaganda</button>
+      <button class="mode-tab" data-mode="maps">Claim Maps</button>
+      <button class="mode-tab" data-mode="discord">Discord</button>
     </div>
 
-    <div class="field">
-      <label>Layout style</label>
-      <select id="layout-select">
-        <option value="layout-classic">Classic Ornate</option>
-        <option value="layout-field">Field Report (typewriter)</option>
-      </select>
-    </div>
+    <!-- ===================== DOCUMENTS MODE ===================== -->
+    <div class="mode-panel active" id="mode-docs">
+      <button class="add-btn" id="btn-surprise" style="border-style:solid;border-color:var(--gold);color:var(--gold-bright);margin-bottom:14px;">🎲 Surprise me</button>
 
-    <h2>Document</h2>
-    <div class="field"><label>Eyebrow tag (optional)</label><input type="text" id="in-eyebrow" value="Official Diplomatic Record"></div>
-    <div class="field"><label>Title</label><input type="text" id="in-title" value="Treaty of Non-Aggression &amp; Cooperation"></div>
-    <div class="field"><label>Subtitle</label><input type="text" id="in-subtitle" value="Between the High Kingdom of Ireland and the Commonwealth of America"></div>
-    <div class="field"><label>Meta line (date / ref, optional)</label><input type="text" id="in-meta" value="Ratified August 15, 2026"></div>
-    <div class="field"><label>Preamble line</label><input type="text" id="in-preamble" value="These nations hereby declare:"></div>
-
-    <div class="row2">
+      <h2>Agreement type</h2>
       <div class="field">
-        <label>Paper style</label>
-        <select id="paper-select">
-          <option value="paper-parchment">Parchment</option>
-          <option value="paper-white">Clean White</option>
-          <option value="paper-dark">War Room Dark</option>
+        <label>Preset</label>
+        <select id="preset-select">
+          <option value="">— Choose a preset —</option>
+          <option value="treaty">Non-Aggression Treaty</option>
+          <option value="alliance">Alliance Pact</option>
+          <option value="peace">Peace Accord</option>
+          <option value="ceasefire">Ceasefire Agreement</option>
+          <option value="trade">Trade Agreement</option>
+          <option value="defense">Mutual Defense Pact</option>
+          <option value="protectorate">Protectorate / Vassal</option>
+          <option value="territory">Border & Territory</option>
+          <option value="surrender">Terms of Surrender</option>
+          <option value="declaration">Declaration of Independence</option>
+          <option value="ultimatum">Ultimatum</option>
+          <option value="war">Declaration of War</option>
+          <option value="federation">Federation Charter</option>
+          <option value="embargo">Trade Embargo</option>
+          <option value="military">Military Access Pact</option>
+          <option value="culture">Cultural Exchange</option>
+          <option value="blank">Blank Document</option>
         </select>
       </div>
       <div class="field">
-        <label>Accent theme</label>
-        <div class="swatches" id="theme-swatches"></div>
+        <label>Layout style</label>
+        <select id="layout-select">
+          <option value="layout-royal">Royal Alliance (coats + flags)</option>
+          <option value="layout-classic">Classic Ornate</option>
+          <option value="layout-modern">Modern Clean</option>
+          <option value="layout-imperial">Imperial Decree</option>
+          <option value="layout-field">Field Report (typewriter)</option>
+        </select>
       </div>
+      <div class="field">
+        <label>Language flavor</label>
+        <select id="lang-select">
+          <option value="en">English</option>
+          <option value="la">Latin</option>
+          <option value="es">Spanish</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Border ornament</label>
+        <select id="border-select">
+          <option value="double">Double gold frame</option>
+          <option value="single">Single thin frame</option>
+          <option value="ornate">Ornate corners</option>
+          <option value="none">No border</option>
+        </select>
+      </div>
+
+      <h2>Document</h2>
+      <div class="field"><label>Eyebrow tag</label><input type="text" id="in-eyebrow" value="Alliance Charter"></div>
+      <div class="field"><label>Title</label><input type="text" id="in-title" value="Alliance Treaty"></div>
+      <div class="field"><label>Subtitle</label><input type="text" id="in-subtitle" value="Between [Nation A] and [Nation B]"></div>
+      <div class="field"><label>Meta line</label><input type="text" id="in-meta" value="August 15, 2026"></div>
+      <div class="field"><label>Preamble</label><input type="text" id="in-preamble" value=""></div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Paper style</label>
+          <select id="paper-select">
+            <option value="paper-parchment">Parchment</option>
+            <option value="paper-white">Clean White</option>
+            <option value="paper-cream">Aged Cream</option>
+            <option value="paper-dark">War Room Dark</option>
+            <option value="paper-navy">Navy Official</option>
+            <option value="paper-crimson">Crimson Decree</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Accent theme</label>
+          <div class="swatches" id="theme-swatches"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Document size <span id="size-readout" style="text-transform:none;color:var(--panel-text);">700px</span></label>
+        <div class="size-presets" id="size-presets"></div>
+        <input type="range" id="size-slider" min="480" max="1000" step="10" value="700">
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="stamp-toggle" checked>
+        <label for="stamp-toggle">Show stamp</label>
+      </div>
+      <div class="field" id="stamp-text-field"><label>Stamp text</label><input type="text" id="in-stamp" value="Ratified"></div>
+
+      <h2>Articles</h2>
+      <div id="article-list"></div>
+      <button class="add-btn" id="add-article">+ Add article</button>
+
+      <h2>Signatories <button class="tiny-btn" id="add-party">+ add party</button></h2>
+      <div id="party-list"></div>
+
+      <div class="field">
+        <label>Export resolution</label>
+        <select id="export-scale">
+          <option value="2">2× (standard, crisp)</option>
+          <option value="3">3× (high quality)</option>
+          <option value="4">4× (print / Discord max)</option>
+        </select>
+      </div>
+      <div class="export-bar" style="display:grid;grid-template-columns:1fr 1fr;">
+        <button class="btn-secondary" id="btn-pdf">Print / PDF</button>
+        <button class="btn-secondary" id="btn-copy">Copy image</button>
+        <button class="btn-primary" id="btn-png">Download PNG</button>
+        <button class="btn-primary" id="btn-jpg">Download JPG</button>
+      </div>
+
+      <h2>My saved documents</h2>
+      <div class="field"><label>Save current as</label><input type="text" id="save-name" placeholder="e.g. Zion & Texas Pact"></div>
+      <div class="export-bar" style="margin-top:0;">
+        <button class="btn-secondary" id="btn-save-new">Save as new</button>
+        <button class="btn-primary" id="btn-update-current" style="display:none;">Update saved</button>
+      </div>
+      <div id="saved-list"></div>
+      <div class="hint" id="save-status" style="display:none;padding-top:0;border-top:none;"></div>
+      <div class="hint">Click any text on the document to edit it live. Upload flags per party for seals.</div>
     </div>
 
-    <div class="field">
-      <label>Document size <span id="size-readout" style="text-transform:none;color:var(--panel-text);">700px</span></label>
-      <div class="size-presets" id="size-presets"></div>
-      <input type="range" id="size-slider" min="480" max="1000" step="10" value="700">
+    <!-- ===================== FLAGS MODE ===================== -->
+    <div class="mode-panel" id="mode-flags">
+      <h2>Flag Design</h2>
+      <div class="field">
+        <label>Layout</label>
+        <select id="flag-layout">
+          <option value="h3">3 Horizontal Stripes</option>
+          <option value="h2">2 Horizontal Stripes (Bicolor)</option>
+          <option value="h4">4 Horizontal Stripes</option>
+          <option value="h5">5 Horizontal Stripes</option>
+          <option value="v2">2 Vertical Stripes</option>
+          <option value="v3">3 Vertical Stripes</option>
+          <option value="nordic">Nordic Cross</option>
+          <option value="cross">Centered Cross</option>
+          <option value="saltire">Saltire (X Cross)</option>
+          <option value="canton">Canton + Field</option>
+          <option value="diagonal">Diagonal Bicolor</option>
+          <option value="tricolor-diag">Diagonal Tricolor</option>
+          <option value="quartered">Quartered</option>
+          <option value="border">Bordered Field</option>
+          <option value="solid">Solid Field + Emblem</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Ratio</label>
+        <select id="flag-ratio">
+          <option value="3:2">3:2 (common)</option>
+          <option value="5:3">5:3</option>
+          <option value="2:1">2:1</option>
+          <option value="1:1">1:1 (square)</option>
+        </select>
+      </div>
+
+      <h2>Colors</h2>
+      <div class="field">
+        <label>Color 1 (main / top / left)</label>
+        <div class="color-input">
+          <input type="color" id="flag-c1" value="#1a3a6e">
+          <input type="text" id="flag-c1-hex" value="#1a3a6e">
+        </div>
+      </div>
+      <div class="field">
+        <label>Color 2</label>
+        <div class="color-input">
+          <input type="color" id="flag-c2" value="#f5f5f5">
+          <input type="text" id="flag-c2-hex" value="#f5f5f5">
+        </div>
+      </div>
+      <div class="field">
+        <label>Color 3 (optional)</label>
+        <div class="color-input">
+          <input type="color" id="flag-c3" value="#c41e3a">
+          <input type="text" id="flag-c3-hex" value="#c41e3a">
+        </div>
+      </div>
+      <div class="field">
+        <label>Color 4 (for 4–5 stripe)</label>
+        <div class="color-input">
+          <input type="color" id="flag-c4" value="#0a1f3d">
+          <input type="text" id="flag-c4-hex" value="#0a1f3d">
+        </div>
+      </div>
+
+      <h2>Center / Emblem</h2>
+      <div class="field">
+        <label>Symbol</label>
+        <select id="flag-symbol">
+          <option value="none">None</option>
+          <option value="circle">Circle</option>
+          <option value="star">Star (5)</option>
+          <option value="star6">Star (6)</option>
+          <option value="cross">Cross</option>
+          <option value="diamond">Diamond</option>
+          <option value="crescent">Crescent</option>
+          <option value="sun">Sun</option>
+          <option value="crown">Crown</option>
+          <option value="eagle">Eagle (simple)</option>
+          <option value="text">Text / Initials</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Symbol placement</label>
+        <select id="flag-sym-pos">
+          <option value="center">Center</option>
+          <option value="canton">Canton (top-left)</option>
+          <option value="hoist">Hoist (left center)</option>
+        </select>
+      </div>
+      <div class="field" id="flag-text-field" style="display:none;">
+        <label>Text / Initials</label>
+        <input type="text" id="flag-text" value="DM" maxlength="6">
+      </div>
+      <div class="field">
+        <label>Symbol / Text color</label>
+        <div class="color-input">
+          <input type="color" id="flag-sym-color" value="#ffd700">
+          <input type="text" id="flag-sym-hex" value="#ffd700">
+        </div>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn-primary" id="btn-flag-png">Download PNG</button>
+        <button class="btn-secondary" id="btn-flag-copy">Copy</button>
+      </div>
+      <div class="hint">Common nation flag layouts. Adjust colors and add a simple emblem. Download at high resolution.</div>
     </div>
 
-    <div class="checkbox-row">
-      <input type="checkbox" id="stamp-toggle" checked>
-      <label for="stamp-toggle">Show ratified stamp</label>
+    <!-- ===================== EMBLEMS MODE ===================== -->
+    <div class="mode-panel" id="mode-emblems">
+      <h2>Seal / Emblem</h2>
+      <div class="field">
+        <label>Style</label>
+        <select id="emblem-style">
+          <option value="circle">Circular Seal</option>
+          <option value="shield">Shield</option>
+          <option value="rounded">Rounded Badge</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Main text (nation name)</label>
+        <input type="text" id="emblem-title" value="HIGH KINGDOM">
+      </div>
+      <div class="field">
+        <label>Secondary text</label>
+        <input type="text" id="emblem-sub" value="OF IRELAND">
+      </div>
+      <div class="field">
+        <label>Center initials / symbol</label>
+        <input type="text" id="emblem-center" value="HK" maxlength="4">
+      </div>
+
+      <h2>Colors</h2>
+      <div class="field">
+        <label>Background</label>
+        <div class="color-input">
+          <input type="color" id="emb-bg" value="#1a2a4a">
+          <input type="text" id="emb-bg-hex" value="#1a2a4a">
+        </div>
+      </div>
+      <div class="field">
+        <label>Border / Ring</label>
+        <div class="color-input">
+          <input type="color" id="emb-border" value="#c9a227">
+          <input type="text" id="emb-border-hex" value="#c9a227">
+        </div>
+      </div>
+      <div class="field">
+        <label>Text color</label>
+        <div class="color-input">
+          <input type="color" id="emb-text" value="#f5e6c8">
+          <input type="text" id="emb-text-hex" value="#f5e6c8">
+        </div>
+      </div>
+      <div class="field">
+        <label>Center fill</label>
+        <div class="color-input">
+          <input type="color" id="emb-center" value="#8b1a1a">
+          <input type="text" id="emb-center-hex" value="#8b1a1a">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Size</label>
+        <select id="emblem-size">
+          <option value="256">256 px</option>
+          <option value="512" selected>512 px</option>
+          <option value="768">768 px</option>
+          <option value="1024">1024 px</option>
+        </select>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn-primary" id="btn-emblem-png">Download PNG</button>
+        <button class="btn-secondary" id="btn-emblem-copy">Copy</button>
+      </div>
+      <div class="hint">Great for seals on documents, Discord icons, and nation branding.</div>
     </div>
-    <div class="field" id="stamp-text-field"><label>Stamp text</label><input type="text" id="in-stamp" value="Ratified"></div>
 
-    <h2>Articles</h2>
-    <div id="article-list"></div>
-    <button class="add-btn" id="add-article">+ Add article</button>
+    <!-- ===================== PROPAGANDA MODE (compositor) ===================== -->
+    <div class="mode-panel" id="mode-posters">
+      <h2>Base Image</h2>
+      <div class="field">
+        <label>Background / historical art</label>
+        <label class="file-btn" style="display:block;text-align:center;padding:12px;">
+          Upload base image
+          <input type="file" id="prop-bg-upload" accept="image/*">
+        </label>
+        <button class="add-btn" id="prop-bg-clear" style="margin-top:6px;">Clear background</button>
+      </div>
+      <div class="field">
+        <label>Or solid color if no image</label>
+        <div class="color-input">
+          <input type="color" id="prop-bg-color" value="#1a1208">
+          <input type="text" id="prop-bg-color-hex" value="#1a1208">
+        </div>
+      </div>
 
-    <h2>Signatories <button class="tiny-btn" id="add-party">+ add party</button></h2>
-    <div id="party-list"></div>
+      <h2>Minecraft Overlays</h2>
+      <div class="field">
+        <label>Add heads / skins / images</label>
+        <label class="file-btn" style="display:block;text-align:center;padding:10px;">
+          + Add overlay image
+          <input type="file" id="prop-overlay-upload" accept="image/*" multiple>
+        </label>
+      </div>
+      <div id="prop-overlays-list" style="margin-bottom:12px;"></div>
+      <div class="hint" style="margin-top:0;border:none;padding-top:0;">Upload Minecraft heads or skin renders. Click an overlay in the list to select it, then drag on the canvas to position.</div>
 
-    <div class="export-bar" style="display:grid;grid-template-columns:1fr 1fr;">
-      <button class="btn-secondary" id="btn-pdf">Print / PDF</button>
-      <button class="btn-secondary" id="btn-copy">Copy image</button>
-      <button class="btn-primary" id="btn-png">Download PNG</button>
-      <button class="btn-primary" id="btn-jpg">Download JPG</button>
+      <h2>Text Layers</h2>
+      <div class="field"><label>Top text (e.g. nation)</label><input type="text" id="prop-top" value="" placeholder="Nation name..."></div>
+      <div class="field"><label>Big headline</label><input type="text" id="prop-headline" value="" placeholder="HEADLINE"></div>
+      <div class="field"><label>Sub / slogan</label><input type="text" id="prop-sub" value="" placeholder="Slogan or subtitle..."></div>
+      <div class="field"><label>Corner / side text</label><input type="text" id="prop-side" value="" placeholder="Optional side text"></div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Headline color</label>
+          <div class="color-input">
+            <input type="color" id="prop-head-color" value="#c9a227">
+            <input type="text" id="prop-head-color-hex" value="#c9a227">
+          </div>
+        </div>
+        <div class="field">
+          <label>Other text color</label>
+          <div class="color-input">
+            <input type="color" id="prop-text-color" value="#f5e6c8">
+            <input type="text" id="prop-text-color-hex" value="#f5e6c8">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Text style</label>
+        <select id="prop-text-style">
+          <option value="classic">Classic serif</option>
+          <option value="bold">Heavy propaganda</option>
+          <option value="dramatic">Dramatic italic</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Canvas size</label>
+        <select id="prop-size">
+          <option value="portrait">Portrait 800×1100</option>
+          <option value="tall">Tall 700×1000</option>
+          <option value="square">Square 900×900</option>
+        </select>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn-primary" id="btn-prop-png">Download PNG</button>
+        <button class="btn-secondary" id="btn-prop-copy">Copy</button>
+      </div>
+      <div class="hint">Upload a real historical poster or painting as the base, then drop Minecraft heads/skins on top and add propaganda text. This is how the good ones are made.</div>
     </div>
 
-    <h2>My saved documents</h2>
-    <div class="field"><label>Save current as</label><input type="text" id="save-name" placeholder="e.g. Zion & Texas Pact"></div>
-    <div class="export-bar" style="margin-top:0;">
-      <button class="btn-secondary" id="btn-save-new">Save as new</button>
-      <button class="btn-primary" id="btn-update-current" style="display:none;">Update saved copy</button>
-    </div>
-    <div id="saved-list"></div>
-    <div class="hint" id="save-status" style="display:none;padding-top:0;border-top:none;"></div>
+    <!-- ===================== CLAIM MAPS MODE ===================== -->
+    <div class="mode-panel" id="mode-maps">
+      <h2>Base Map</h2>
+      <div class="field">
+        <label>Upload map image</label>
+        <label class="file-btn" style="display:block;text-align:center;padding:12px;">
+          Upload map
+          <input type="file" id="map-upload" accept="image/*">
+        </label>
+        <button class="add-btn" id="map-clear" style="margin-top:6px;">Clear map</button>
+      </div>
 
-    <div class="hint">Click directly on any text in the document to edit it in place. Upload a flag image per party — it'll appear beside their seal.</div>
+      <h2>Nation Labels</h2>
+      <div id="map-labels-list"></div>
+      <button class="add-btn" id="map-add-label">+ Add nation label</button>
+
+      <h2>Label Style</h2>
+      <div class="field">
+        <label>Default text color</label>
+        <div class="color-input">
+          <input type="color" id="map-label-color" value="#ffffff">
+          <input type="text" id="map-label-color-hex" value="#ffffff">
+        </div>
+      </div>
+      <div class="field">
+        <label>Font size</label>
+        <input type="range" id="map-font-size" min="14" max="64" value="28">
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="map-label-shadow" checked>
+        <label for="map-label-shadow">Text shadow (readability)</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="map-label-outline" checked>
+        <label for="map-label-outline">Strong outline (pops on any map)</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="map-legend" checked>
+        <label for="map-legend">Show legend box</label>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn-primary" id="btn-map-png">Download PNG</button>
+        <button class="btn-secondary" id="btn-map-copy">Copy</button>
+      </div>
+      <div class="hint">Upload any claim map or Dynmap screenshot. Add nation name labels and drag them into position. Perfect for the East Asia / China / Japan style claim maps.</div>
+    </div>
+
+    <!-- ===================== DISCORD MODE ===================== -->
+    <div class="mode-panel" id="mode-discord">
+      <h2>Discord Banner</h2>
+      <div class="field">
+        <label>Banner style</label>
+        <select id="discord-banner-style">
+          <option value="gradient">Gradient + Text</option>
+          <option value="flag">Flag-inspired</option>
+          <option value="emblem">Centered Emblem</option>
+          <option value="minimal">Minimal Dark</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Main title</label>
+        <input type="text" id="discord-title" value="HIGH KINGDOM">
+      </div>
+      <div class="field">
+        <label>Subtitle</label>
+        <input type="text" id="discord-sub" value="DiplomaticaMC • Geopolitics">
+      </div>
+      <div class="field">
+        <label>Tagline (optional)</label>
+        <input type="text" id="discord-tag" value="Glory • Honor • Sovereignty">
+      </div>
+
+      <h2>Banner Colors</h2>
+      <div class="field">
+        <label>Color 1</label>
+        <div class="color-input">
+          <input type="color" id="discord-c1" value="#0f1a2e">
+          <input type="text" id="discord-c1-hex" value="#0f1a2e">
+        </div>
+      </div>
+      <div class="field">
+        <label>Color 2</label>
+        <div class="color-input">
+          <input type="color" id="discord-c2" value="#1a3a6e">
+          <input type="text" id="discord-c2-hex" value="#1a3a6e">
+        </div>
+      </div>
+      <div class="field">
+        <label>Accent</label>
+        <div class="color-input">
+          <input type="color" id="discord-accent" value="#c9a227">
+          <input type="text" id="discord-accent-hex" value="#c9a227">
+        </div>
+      </div>
+      <div class="field">
+        <label>Text color</label>
+        <div class="color-input">
+          <input type="color" id="discord-text" value="#f5e6c8">
+          <input type="text" id="discord-text-hex" value="#f5e6c8">
+        </div>
+      </div>
+
+      <h2>Server Icon</h2>
+      <div class="field">
+        <label>Icon initials</label>
+        <input type="text" id="discord-icon-text" value="HK" maxlength="3">
+      </div>
+      <div class="field">
+        <label>Icon background</label>
+        <div class="color-input">
+          <input type="color" id="discord-icon-bg" value="#1a2a4a">
+          <input type="text" id="discord-icon-bg-hex" value="#1a2a4a">
+        </div>
+      </div>
+      <div class="field">
+        <label>Icon text / ring</label>
+        <div class="color-input">
+          <input type="color" id="discord-icon-fg" value="#c9a227">
+          <input type="text" id="discord-icon-fg-hex" value="#c9a227">
+        </div>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn-primary" id="btn-discord-banner">Download Banner</button>
+        <button class="btn-primary" id="btn-discord-icon">Download Icon</button>
+      </div>
+      <div class="hint">Banner is 960×540 (Discord recommended). Icon is 512×512. Use both for your nation Discord.</div>
+    </div>
   </div>
 
   <div class="stage">
-    <div id="document" class="paper-parchment layout-classic">
-      <div class="corner-emblem left" id="corner-emblem-a"></div>
-      <div class="corner-emblem right" id="corner-emblem-b"></div>
-      <div class="stamp" id="stamp-el"><span id="stamp-text">Ratified</span></div>
-      <p class="eyebrow" id="doc-eyebrow" contenteditable="true">Official Diplomatic Record</p>
-      <div class="ornament" id="ornament-slot"></div>
-      <h1 class="doc-title" id="doc-title" contenteditable="true">Treaty of Non-Aggression &amp; Cooperation</h1>
-      <p class="doc-subtitle" id="doc-subtitle" contenteditable="true">Between the High Kingdom of Ireland and the Commonwealth of America</p>
-      <p class="doc-meta" id="doc-meta" contenteditable="true">Ratified August 15, 2026</p>
-      <p class="doc-preamble" id="doc-preamble" contenteditable="true">These nations hereby declare:</p>
-      <ol class="articles" id="doc-articles"></ol>
-      <div class="signatures" id="doc-signatures"></div>
+    <!-- Document stage -->
+    <div id="doc-stage">
+      <div id="document" class="paper-parchment layout-royal border-double">
+        <div class="corner-emblem left" id="corner-emblem-a"></div>
+        <div class="corner-emblem right" id="corner-emblem-b"></div>
+        <div class="stamp" id="stamp-el"><span id="stamp-text">Ratified</span></div>
+        <div class="heraldry-row" id="heraldry-row"></div>
+        <p class="eyebrow" id="doc-eyebrow" contenteditable="true">Official Diplomatic Record</p>
+        <div class="ornament" id="ornament-slot"></div>
+        <p class="doc-meta" id="doc-meta" contenteditable="true">August 15, 2026</p>
+        <h1 class="doc-title" id="doc-title" contenteditable="true">Alliance Treaty</h1>
+        <p class="doc-subtitle" id="doc-subtitle" contenteditable="true">Between [Nation A] and [Nation B]</p>
+        <p class="doc-preamble" id="doc-preamble" contenteditable="true"></p>
+        <ol class="articles" id="doc-articles"></ol>
+        <p class="doc-closing" id="doc-closing" contenteditable="true">In witness whereof, the undersigned, being duly authorized, have signed this instrument.</p>
+        <div class="signatures" id="doc-signatures"></div>
+      </div>
+    </div>
+
+    <!-- Flag stage -->
+    <div id="flag-stage" style="display:none;">
+      <div class="preview-frame">
+        <div class="preview-label">Flag Preview</div>
+        <canvas id="flag-canvas" width="600" height="400"></canvas>
+        <div class="flag-ratio-note" id="flag-ratio-note">3:2 ratio • 600×400 preview</div>
+      </div>
+    </div>
+
+    <!-- Emblem stage -->
+    <div id="emblem-stage" style="display:none;">
+      <div class="preview-frame">
+        <div class="preview-label">Emblem / Seal Preview</div>
+        <canvas id="emblem-canvas" width="512" height="512"></canvas>
+      </div>
+    </div>
+
+    <!-- Propaganda stage -->
+    <div id="poster-stage" style="display:none;">
+      <div class="preview-frame">
+        <div class="preview-label">Propaganda Compositor — drag overlays to position</div>
+        <canvas id="poster-canvas" width="800" height="1100" style="cursor:crosshair;max-width:100%;"></canvas>
+      </div>
+    </div>
+
+    <!-- Claim Maps stage -->
+    <div id="maps-stage" style="display:none;">
+      <div class="preview-frame">
+        <div class="preview-label">Claim Map — drag labels to position</div>
+        <canvas id="map-canvas" width="900" height="700" style="cursor:crosshair;max-width:100%;"></canvas>
+      </div>
+    </div>
+
+    <!-- Discord stage -->
+    <div id="discord-stage" style="display:none;">
+      <div class="preview-frame" style="gap:28px;">
+        <div>
+          <div class="preview-label">Discord Banner (960×540)</div>
+          <canvas id="discord-banner-canvas" width="960" height="540" style="max-width:100%;border-radius:8px;"></canvas>
+        </div>
+        <div>
+          <div class="preview-label">Server Icon (512×512)</div>
+          <canvas id="discord-icon-canvas" width="512" height="512" style="width:180px;height:180px;border-radius:50%;"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
+  // ========== MODE SWITCHING ==========
+  const modes = {
+    docs: { panel: 'mode-docs', stage: 'doc-stage' },
+    flags: { panel: 'mode-flags', stage: 'flag-stage' },
+    emblems: { panel: 'mode-emblems', stage: 'emblem-stage' },
+    posters: { panel: 'mode-posters', stage: 'poster-stage' },
+    maps: { panel: 'mode-maps', stage: 'maps-stage' },
+    discord: { panel: 'mode-discord', stage: 'discord-stage' }
+  };
+  document.querySelectorAll('.mode-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      const key = tab.dataset.mode;
+      const m = modes[key];
+      if(!m) return;
+      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+      Object.values(modes).forEach(mm=>{
+        const st = document.getElementById(mm.stage);
+        if(st) st.style.display = 'none';
+      });
+      tab.classList.add('active');
+      const panel = document.getElementById(m.panel);
+      const stage = document.getElementById(m.stage);
+      if(panel) panel.classList.add('active');
+      if(stage) stage.style.display = 'block';
+      try {
+        if(key === 'flags') renderFlag();
+        if(key === 'emblems') renderEmblem();
+        if(key === 'posters') renderPropaganda();
+        if(key === 'maps') renderMap();
+        if(key === 'discord') { renderDiscordBanner(); renderDiscordIcon(); }
+      } catch(err) { console.error('Mode render error:', err); }
+    });
+  });
+
+  // ========== DOCUMENTS (original logic, cleaned) ==========
   const themes = {
     "Parchment & Gold": { gold:"#a9812f", goldBright:"#c79a3e" },
     "Iron & Crimson":   { gold:"#8a2f2f", goldBright:"#a8433f" },
@@ -460,7 +1208,7 @@
   const presets = {
     treaty: {
       eyebrow:"Official Diplomatic Record",
-      title:"Treaty of Non-Aggression &amp; Cooperation",
+      title:"Treaty of Non-Aggression & Cooperation",
       subtitle:"Between the High Kingdom of Ireland and the Commonwealth of America",
       meta:"Ratified August 15, 2026",
       preamble:"These nations hereby declare:",
@@ -474,15 +1222,17 @@
     },
     alliance: {
       eyebrow:"Alliance Charter",
-      title:"Pact of Mutual Alliance",
+      title:"Alliance Treaty",
       subtitle:"Between [Nation A] and [Nation B]",
-      meta:"Signed this day",
-      preamble:"In the interest of mutual strength, the undersigned agree:",
+      meta:"August 15, 2026",
+      preamble:"",
       articles:[
-        "Both nations shall come to the other's defense if either is attacked by a third party.",
-        "Both nations shall share intelligence, resources, and strategic support as needed.",
-        "Neither nation shall enter a rival alliance without first consulting the other.",
-        "This alliance shall stand until dissolved by mutual written agreement."
+        "Article I – Mutual Recognition The nations mutually recognize and respect each other's sovereignty, territorial claims, governments, and legitimate authorities.",
+        "Article II – Non-Aggression Pact Neither party shall undertake or support any hostile action against the other, directly or indirectly. This includes hunting, scamming, trapping, poaching of residents, and sniping towns.",
+        "Article III – Diplomatic Cooperation The nations commit to maintaining open diplomatic relations and to consulting one another on matters of common interest.",
+        "Article IV – Trade and Prosperity The parties shall encourage trade, investment, and cooperation among their citizens, cities, and institutions.",
+        "Article V – Mutual Support In the event of external aggression or a significant threat, the nations undertake to provide each other with reasonable assistance to the extent of their capabilities.",
+        "Article VI – Duration and Termination This treaty shall remain in force for an indefinite period unless terminated by either party upon seven days' written notice."
       ],
       stamp:"Allied"
     },
@@ -501,50 +1251,50 @@
       stamp:"Peace"
     },
     ceasefire: {
-      eyebrow:"Ceasefire Notice",
-      title:"Temporary Ceasefire Agreement",
+      eyebrow:"Ceasefire Agreement",
+      title:"Temporary Ceasefire",
       subtitle:"Between [Nation A] and [Nation B]",
-      meta:"In effect for 72 hours from signing",
-      preamble:"For the duration of this agreement, both parties agree:",
+      meta:"Effective immediately",
+      preamble:"To halt further bloodshed, the undersigned agree:",
       articles:[
-        "All offensive action between both parties shall halt immediately.",
-        "Neither party shall move troops or assets across the current front line.",
-        "This ceasefire may be extended by mutual agreement before it expires.",
-        "Violation by either party voids this agreement without warning."
+        "All offensive military actions shall cease for a period of fourteen days.",
+        "Defensive positions may be maintained but not advanced.",
+        "Negotiations for a permanent settlement shall begin within three days.",
+        "Violation of this ceasefire voids all terms and restores prior state of war."
       ],
       stamp:"Ceasefire"
     },
     trade: {
-      eyebrow:"Commercial Accord",
-      title:"Agreement of Trade &amp; Commerce",
+      eyebrow:"Trade Agreement",
+      title:"Treaty of Commerce & Exchange",
       subtitle:"Between [Nation A] and [Nation B]",
-      meta:"Effective immediately upon signing",
-      preamble:"For the benefit of both economies, the undersigned agree:",
+      meta:"Effective upon ratification",
+      preamble:"Desiring mutual prosperity, the undersigned agree:",
       articles:[
-        "Both nations shall permit the free movement of goods across their shared border.",
-        "Neither party shall impose tariffs exceeding an agreed threshold on the other.",
-        "Both parties shall establish a shared market or trade route for mutual benefit.",
-        "Disputes over trade shall be settled through direct negotiation."
+        "Both nations shall permit free trade of goods across shared borders.",
+        "Tariffs on specified goods shall not exceed the rates agreed herein.",
+        "Merchants of both nations shall receive equal protection under the law.",
+        "This agreement may be reviewed annually by mutual consent."
       ],
-      stamp:"Approved"
+      stamp:"Commerce"
     },
     defense: {
-      eyebrow:"Defense Charter",
-      title:"Mutual Defense Pact",
+      eyebrow:"Defense Pact",
+      title:"Mutual Defense Treaty",
       subtitle:"Between [Nation A] and [Nation B]",
       meta:"Ratified this day",
-      preamble:"For their mutual security, the undersigned agree:",
+      preamble:"Recognizing common threats, the undersigned agree:",
       articles:[
-        "An attack on either party shall be considered an attack on both.",
-        "Both parties shall maintain open communication regarding military movements.",
-        "Both parties shall render aid, including troops or resources, upon request in the event of invasion.",
+        "An attack on one signatory shall be considered an attack on both.",
+        "Both nations shall coordinate military planning and share strategic information.",
+        "Neither nation shall make separate peace without the consent of the other.",
         "This pact remains active until formally revoked by either signatory."
       ],
-      stamp:"Ratified"
+      stamp:"Defense"
     },
     protectorate: {
       eyebrow:"Protectorate Charter",
-      title:"Agreement of Protection &amp; Vassalage",
+      title:"Agreement of Protection & Vassalage",
       subtitle:"Between [Overlord Nation] and [Vassal Nation]",
       meta:"Effective upon signing",
       preamble:"In exchange for protection and guidance, the undersigned agree:",
@@ -558,7 +1308,7 @@
     },
     territory: {
       eyebrow:"Territorial Accord",
-      title:"Border &amp; Territory Agreement",
+      title:"Border & Territory Agreement",
       subtitle:"Between [Nation A] and [Nation B]",
       meta:"Surveyed and signed this day",
       preamble:"To avoid future dispute, the undersigned agree to the following borders:",
@@ -584,6 +1334,107 @@
       ],
       stamp:"Concluded"
     },
+    declaration: {
+      eyebrow:"Sovereign Declaration",
+      title:"Declaration of Independence",
+      subtitle:"Of the Free Nation of [Nation Name]",
+      meta:"Proclaimed this day",
+      preamble:"We, the people and representatives of this land, hereby declare:",
+      articles:[
+        "That we are and of right ought to be a free and independent nation.",
+        "That all political connection with any former authority is hereby dissolved.",
+        "That we assume full power to levy war, conclude peace, contract alliances, and establish commerce.",
+        "That we pledge our lives, fortunes, and honor to the defense of this declaration."
+      ],
+      stamp:"Proclaimed"
+    },
+    ultimatum: {
+      eyebrow:"Diplomatic Ultimatum",
+      title:"Ultimatum",
+      subtitle:"Issued by [Nation A] to [Nation B]",
+      meta:"Response required within 48 hours",
+      preamble:"The undersigned demands the following without delay:",
+      articles:[
+        "Immediate cessation of all hostile actions against our citizens and territory.",
+        "Withdrawal of forces from the disputed region within the stated timeframe.",
+        "Formal written acceptance of these terms by the deadline.",
+        "Failure to comply will be regarded as an act of war."
+      ],
+      stamp:"Ultimatum"
+    },
+    war: {
+      eyebrow:"Declaration of War",
+      title:"Declaration of a State of War",
+      subtitle:"[Nation A] against [Nation B]",
+      meta:"Proclaimed this day",
+      preamble:"By authority of the sovereign government, it is hereby declared:",
+      articles:[
+        "Article I – Casus Belli Hostilities have been initiated against our people, territory, or allies, leaving no recourse short of arms.",
+        "Article II – State of War A state of war exists between our nation and the named adversary from this hour forward.",
+        "Article III – Conduct of Hostilities Forces are authorized to engage the enemy by all means permitted under the laws of war observed by this realm.",
+        "Article IV – Neutrals Neutral parties are called upon to respect the blockade and rights of this nation for the duration of the conflict.",
+        "Article V – Peace Terms of peace shall be offered only upon the defeat or unconditional surrender of the adversary."
+      ],
+      stamp:"War"
+    },
+    federation: {
+      eyebrow:"Federal Charter",
+      title:"Charter of Federation",
+      subtitle:"Uniting [Member States] under one banner",
+      meta:"Proclaimed this day",
+      preamble:"The undersigned states hereby establish a federation:",
+      articles:[
+        "Member states retain internal autonomy over local governance and culture.",
+        "Foreign policy, defense, and inter-member trade shall be coordinated by the federal authority.",
+        "Each member shall contribute agreed resources to the common defense and treasury.",
+        "Disputes between members shall be resolved by federal arbitration, not force.",
+        "This charter may be amended by unanimous consent of all member states."
+      ],
+      stamp:"Federated"
+    },
+    embargo: {
+      eyebrow:"Economic Sanction",
+      title:"Declaration of Trade Embargo",
+      subtitle:"Issued by [Nation A] against [Nation B]",
+      meta:"Effective immediately",
+      preamble:"In response to violations of international order, the undersigned declares:",
+      articles:[
+        "All trade, commerce, and economic cooperation with the targeted nation is hereby suspended.",
+        "Citizens and merchants are forbidden from conducting business with the embargoed party.",
+        "Goods originating from the embargoed nation shall be seized if found within our territory.",
+        "This embargo shall remain until the targeted nation ceases the offending conduct."
+      ],
+      stamp:"Embargo"
+    },
+    military: {
+      eyebrow:"Military Accord",
+      title:"Military Access & Transit Pact",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Signed this day",
+      preamble:"For purposes of mutual security, the undersigned agree:",
+      articles:[
+        "Armed forces of either party may transit the territory of the other with prior notice.",
+        "Host nation shall provide reasonable logistical support during authorized transit.",
+        "Military access does not constitute occupation or claim of sovereignty.",
+        "Either party may suspend access with forty-eight hours written notice.",
+        "This pact does not obligate either nation to enter the other's wars."
+      ],
+      stamp:"Access"
+    },
+    culture: {
+      eyebrow:"Cultural Accord",
+      title:"Treaty of Cultural Exchange",
+      subtitle:"Between [Nation A] and [Nation B]",
+      meta:"Celebrated this day",
+      preamble:"Desiring friendship beyond politics, the undersigned agree:",
+      articles:[
+        "Citizens of both nations may freely visit, study, and reside in the other for cultural purposes.",
+        "Both parties shall promote arts, language, and historical understanding between their peoples.",
+        "Joint festivals, exhibitions, and competitions shall be encouraged annually.",
+        "Neither nation shall suppress the cultural expression of the other's citizens within its borders."
+      ],
+      stamp:"Exchange"
+    },
     blank: {
       eyebrow:"",
       title:"Untitled Agreement",
@@ -597,265 +1448,261 @@
 
   let state = {
     theme: "Parchment & Gold",
-    paper: "paper-parchment",
-    layout: "layout-classic",
-    showStamp: true,
-    articles: presets.treaty.articles.slice(),
+    layout: "layout-royal",
+    articles: [
+      "Article I – Mutual Recognition The nations mutually recognize and respect each other's sovereignty, territorial claims, governments, and legitimate authorities.",
+      "Article II – Non-Aggression Pact Neither party shall undertake or support any hostile action against the other, directly or indirectly. This includes hunting, scamming, trapping, poaching of residents, and sniping towns.",
+      "Article III – Diplomatic Cooperation The nations commit to maintaining open diplomatic relations and to consulting one another on matters of common interest.",
+      "Article IV – Trade and Prosperity The parties shall encourage trade, investment, and cooperation among their citizens, cities, and institutions.",
+      "Article V – Mutual Support In the event of external aggression or a significant threat, the nations undertake to provide each other with reasonable assistance to the extent of their capabilities.",
+      "Article VI – Duration and Termination This treaty shall remain in force for an indefinite period unless terminated by either party upon seven days' written notice."
+    ],
     parties: [
-      { name:"Sly Prince", role:"High King of Ireland", initials:"HK", color:"#7a2323", flag:null },
-      { name:"HibachiBeamz", role:"President of America", initials:"US", color:"#1f3a52", flag:null }
+      { name: "Mesh", role: "Emperor of Brazil", seal: "BR", color: "#7a2323", flag: null, emblem: null },
+      { name: "Prode", role: "Emperor of Italy", seal: "IT", color: "#1f3a52", flag: null, emblem: null }
     ]
   };
 
-  const root = document.documentElement;
   function applyTheme(name){
-    const t = themes[name];
-    root.style.setProperty('--gold', t.gold);
-    root.style.setProperty('--gold-bright', t.goldBright);
-    renderOrnament();
+    const t = themes[name] || themes["Parchment & Gold"];
+    document.documentElement.style.setProperty('--gold', t.gold);
+    document.documentElement.style.setProperty('--gold-bright', t.goldBright);
+    state.theme = name;
   }
 
   function renderOrnament(){
     document.getElementById('ornament-slot').innerHTML = `
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="var(--gold)" stroke-width="2">
-          <circle cx="32" cy="32" r="4" fill="var(--gold)"/>
-          <path d="M32 8 C 20 8, 20 32, 32 32 C 44 32, 44 8, 32 8 Z"/>
-          <path d="M32 56 C 44 56, 44 32, 32 32 C 20 32, 20 56, 32 56 Z"/>
-          <path d="M8 32 C 8 20, 32 20, 32 32 C 32 44, 8 44, 8 32 Z"/>
-          <path d="M56 32 C 56 44, 32 44, 32 32 C 32 20, 56 20, 56 32 Z"/>
-        </g>
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="18" stroke="var(--gold)" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="10" stroke="var(--gold)" stroke-width="1"/>
+        <path d="M50 20 L53 40 L50 35 L47 40 Z" fill="var(--gold)"/>
+        <path d="M50 80 L53 60 L50 65 L47 60 Z" fill="var(--gold)"/>
+        <path d="M20 50 L40 53 L35 50 L40 47 Z" fill="var(--gold)"/>
+        <path d="M80 50 L60 53 L65 50 L60 47 Z" fill="var(--gold)"/>
       </svg>`;
   }
 
   function buildSwatchRow(container, selected, onPick){
-    container.innerHTML = "";
+    container.innerHTML = '';
     Object.keys(themes).forEach(name=>{
       const t = themes[name];
-      const sw = document.createElement('div');
-      sw.className = 'swatch' + (name===selected ? ' active':'');
-      sw.style.background = `linear-gradient(135deg, ${t.goldBright}, ${t.gold})`;
-      sw.title = name;
-      sw.onclick = ()=>{ onPick(name); buildSwatchRow(container, name, onPick); };
-      container.appendChild(sw);
+      const s = document.createElement('div');
+      s.className = 'swatch' + (name===selected?' active':'');
+      s.style.background = t.goldBright;
+      s.title = name;
+      s.addEventListener('click', ()=>{ onPick(name); buildSwatchRow(container, name, onPick); });
+      container.appendChild(s);
     });
   }
 
-  function buildColorRow(container, selected, onPick){
-    container.innerHTML = "";
-    sealColors.forEach(c=>{
-      const sw = document.createElement('div');
-      sw.className = 'swatch' + (c===selected ? ' active':'');
-      sw.style.background = c;
-      sw.onclick = ()=>{ onPick(c); buildColorRow(container, c, onPick); };
-      container.appendChild(sw);
-    });
-  }
-
-  function shade(hex, percent){
-    const num = parseInt(hex.slice(1),16);
-    let r = (num>>16) + Math.round(255*(percent/100));
-    let g = ((num>>8)&0xff) + Math.round(255*(percent/100));
-    let b = (num&0xff) + Math.round(255*(percent/100));
-    r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
-    return "#" + (r<<16|g<<8|b).toString(16).padStart(6,'0');
-  }
-
-  /* ---------------- ARTICLES ---------------- */
   function renderArticleInputs(){
     const list = document.getElementById('article-list');
-    list.innerHTML = "";
-    state.articles.forEach((text, i)=>{
+    list.innerHTML = '';
+    state.articles.forEach((art,i)=>{
       const row = document.createElement('div');
       row.className = 'article-row';
-      row.innerHTML = `<textarea data-i="${i}"></textarea><button class="icon-btn" data-remove="${i}">&times;</button>`;
-      row.querySelector('textarea').value = text;
-      list.appendChild(row);
-    });
-    list.querySelectorAll('textarea').forEach(ta=>{
+      const ta = document.createElement('textarea');
+      ta.value = art;
       ta.addEventListener('input', e=>{
-        state.articles[+e.target.dataset.i] = e.target.value;
+        state.articles[i] = e.target.value;
         renderArticleDoc();
       });
-    });
-    list.querySelectorAll('[data-remove]').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        state.articles.splice(+e.target.dataset.remove, 1);
+      const btn = document.createElement('button');
+      btn.className = 'icon-btn';
+      btn.innerHTML = '×';
+      btn.addEventListener('click', ()=>{
+        state.articles.splice(i,1);
         renderArticleInputs();
         renderArticleDoc();
       });
+      row.appendChild(ta);
+      row.appendChild(btn);
+      list.appendChild(row);
     });
   }
 
   function toRoman(num){
-    const map = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
-    let n = num, out = '';
-    for(const [val, sym] of map){ while(n >= val){ out += sym; n -= val; } }
-    return out;
+    const romans = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV'];
+    return romans[num-1] || String(num);
   }
 
   function renderArticleDoc(){
     const ol = document.getElementById('doc-articles');
-    ol.innerHTML = "";
-    state.articles.forEach((text, i)=>{
+    ol.innerHTML = '';
+    const isRoyal = state.layout === 'layout-royal';
+    state.articles.forEach((art,i)=>{
       const li = document.createElement('li');
-      li.contentEditable = "true";
-      li.textContent = text;
+      li.contentEditable = true;
       li.dataset.roman = toRoman(i+1);
+      if(isRoyal){
+        const roman = toRoman(i+1);
+        // Already starts with Article X
+        if(/^Article\s+[IVXLCDM0-9]+/i.test(art)){
+          li.innerHTML = art.replace(/^(Article\s+[IVXLCDM0-9]+\s*[—–-]?\s*[^\s—–-]*(?:\s+[^\s—–-]*){0,4})/i, function(m){
+            return '<strong>'+m.trim()+'</strong>';
+          });
+        } else {
+          // "Title — body" or "Title - body"
+          const m = art.match(/^(.{2,50}?)(\s*[—–-]\s*)(.+)$/);
+          if(m){
+            li.innerHTML = '<strong>Article '+roman+' – '+m[1].trim()+'</strong> '+m[3].trim();
+          } else {
+            li.innerHTML = '<strong>Article '+roman+'</strong> '+art;
+          }
+        }
+      } else {
+        li.textContent = art;
+      }
       li.addEventListener('input', ()=>{
-        state.articles[i] = li.textContent;
-        const ta = document.querySelector(`#article-list textarea[data-i="${i}"]`);
-        if(ta) ta.value = li.textContent;
+        state.articles[i] = li.innerText || li.textContent;
+        const inputs = document.querySelectorAll('#article-list textarea');
+        if(inputs[i]) inputs[i].value = state.articles[i];
       });
       ol.appendChild(li);
     });
   }
 
-  /* ---------------- PARTIES ---------------- */
   function renderPartyInputs(){
     const list = document.getElementById('party-list');
-    list.innerHTML = "";
+    list.innerHTML = '';
     state.parties.forEach((p,i)=>{
       const card = document.createElement('div');
       card.className = 'party-card';
       card.innerHTML = `
-        <div class="party-head">
-          <span>Party ${i+1}</span>
-          ${state.parties.length > 2 ? `<button class="icon-btn" data-remove-party="${i}">&times;</button>` : ''}
+        <div class="party-head"><span>Party ${i+1}</span>
+          <button class="tiny-btn remove-party" data-i="${i}">remove</button>
         </div>
-        <div class="field"><label>Signature name</label><input type="text" data-field="name" data-i="${i}" value="${escapeAttr(p.name)}"></div>
-        <div class="field"><label>Title / role</label><input type="text" data-field="role" data-i="${i}" value="${escapeAttr(p.role)}"></div>
+        <div class="field"><label>Signatory name</label><input type="text" class="p-name" value="${p.name||''}"></div>
+        <div class="field"><label>Title / Role</label><input type="text" class="p-role" value="${p.role||''}"></div>
         <div class="row2">
-          <div class="field"><label>Seal initials</label><input type="text" maxlength="3" data-field="initials" data-i="${i}" value="${escapeAttr(p.initials)}"></div>
-          <div class="field"><label>Seal color</label><div class="swatches" data-colors="${i}"></div></div>
-        </div>
-        <div class="field">
-          <label>Flag image</label>
-          <div class="flag-upload">
-            <div class="flag-preview" data-flagprev="${i}">${p.flag ? '' : 'none'}</div>
-            <label class="file-btn">Upload<input type="file" accept="image/*" data-flaginput="${i}"></label>
-            <button class="clear-flag" data-clearflag="${i}" style="${p.flag ? '' : 'display:none;'}">remove</button>
+          <div class="field"><label>Seal letters</label><input type="text" class="p-seal" value="${p.seal||''}" maxlength="3"></div>
+          <div class="field"><label>Seal color</label>
+            <select class="p-color">${sealColors.map(c=>`<option value="${c}" ${c===p.color?'selected':''} style="background:${c}">${c}</option>`).join('')}</select>
           </div>
         </div>
-      `;
+        <div class="flag-upload">
+          <div class="flag-preview ${p.emblem?'':'empty'}" style="${p.emblem?`background-image:url(${p.emblem})`:''}">${p.emblem?'':'arms'}</div>
+          <label class="file-btn">Coat of arms<input type="file" accept="image/*" class="p-emblem"></label>
+          ${p.emblem?'<button class="clear-emblem clear-flag">clear</button>':''}
+        </div>
+        <div class="flag-upload" style="margin-top:6px;">
+          <div class="flag-preview ${p.flag?'':'empty'}" style="${p.flag?`background-image:url(${p.flag})`:''}">${p.flag?'':'flag'}</div>
+          <label class="file-btn">Flag<input type="file" accept="image/*" class="p-flag"></label>
+          ${p.flag?'<button class="clear-flag">clear</button>':''}
+        </div>`;
       list.appendChild(card);
-    });
 
-    list.querySelectorAll('input[data-field]').forEach(inp=>{
-      inp.addEventListener('input', e=>{
-        const i = +e.target.dataset.i, field = e.target.dataset.field;
-        state.parties[i][field] = e.target.value;
-        renderSignatures();
-      });
-    });
-    list.querySelectorAll('[data-colors]').forEach(el=>{
-      const i = +el.dataset.colors;
-      buildColorRow(el, state.parties[i].color, (c)=>{ state.parties[i].color = c; renderSignatures(); });
-    });
-    list.querySelectorAll('[data-flaginput]').forEach(inp=>{
-      inp.addEventListener('change', e=>{
-        const i = +e.target.dataset.flaginput;
+      card.querySelector('.p-name').addEventListener('input', e=>{ p.name = e.target.value; renderSignatures(); });
+      card.querySelector('.p-role').addEventListener('input', e=>{ p.role = e.target.value; renderSignatures(); });
+      card.querySelector('.p-seal').addEventListener('input', e=>{ p.seal = e.target.value; renderSignatures(); renderHeraldry(); });
+      card.querySelector('.p-color').addEventListener('change', e=>{ p.color = e.target.value; renderSignatures(); renderHeraldry(); });
+      card.querySelector('.p-flag').addEventListener('change', e=>{
         const file = e.target.files[0];
         if(!file) return;
         const reader = new FileReader();
-        reader.onload = ()=>{
-          state.parties[i].flag = reader.result;
-          renderPartyInputs();
-          renderSignatures();
-        };
+        reader.onload = ev=>{ p.flag = ev.target.result; renderPartyInputs(); renderSignatures(); renderCornerEmblems(); renderHeraldry(); };
         reader.readAsDataURL(file);
       });
-    });
-    list.querySelectorAll('[data-flagprev]').forEach(el=>{
-      const i = +el.dataset.flagprev;
-      if(state.parties[i].flag){
-        el.style.backgroundImage = `url(${state.parties[i].flag})`;
-        el.textContent = "";
-      }
-    });
-    list.querySelectorAll('[data-clearflag]').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const i = +e.target.dataset.clearflag;
-        state.parties[i].flag = null;
+      card.querySelector('.p-emblem').addEventListener('change', e=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ev=>{ p.emblem = ev.target.result; renderPartyInputs(); renderHeraldry(); };
+        reader.readAsDataURL(file);
+      });
+      const clearBtn = card.querySelectorAll('.clear-flag');
+      clearBtn.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          if(btn.classList.contains('clear-emblem')) p.emblem = null;
+          else p.flag = null;
+          renderPartyInputs(); renderSignatures(); renderCornerEmblems(); renderHeraldry();
+        });
+      });
+      card.querySelector('.remove-party').addEventListener('click', ()=>{
+        state.parties.splice(i,1);
         renderPartyInputs();
         renderSignatures();
+        renderCornerEmblems();
+        renderHeraldry();
       });
     });
-    list.querySelectorAll('[data-remove-party]').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        state.parties.splice(+e.target.dataset.removeParty, 1);
-        renderPartyInputs();
-        renderSignatures();
-      });
-    });
-  }
-
-  function escapeAttr(s){
-    return (s||"").replace(/&/g,'&amp;').replace(/"/g,'&quot;');
   }
 
   function scribbleSVG(color, seed){
-    // A few hand-picked squiggle paths for variety, picked by seed
     const paths = [
-      "M4 40 C 20 10, 35 50, 55 20 S 90 45, 110 15 S 140 35, 146 12",
-      "M4 30 C 15 45, 30 5, 45 35 S 70 8, 90 38 S 120 10, 146 30",
-      "M4 20 C 25 45, 40 8, 60 30 S 85 50, 105 18 S 130 45, 146 20"
+      `M10,40 Q30,10 50,35 T90,30`,
+      `M5,45 Q40,5 70,40 T100,25`,
+      `M15,35 Q35,15 55,40 Q75,20 95,35`
     ];
-    const d = paths[seed % paths.length];
-    return `<svg viewBox="0 0 150 60" xmlns="http://www.w3.org/2000/svg">
-      <path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
-    </svg>`;
+    return `<svg viewBox="0 0 110 60"><path d="${paths[seed%3]}" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
+  }
+
+  function waxVars(hex){
+    // Blend nation color slightly into classic red sealing wax
+    const r = parseInt((hex||'#9b1b1b').slice(1,3),16)||155;
+    const g = parseInt((hex||'#9b1b1b').slice(3,5),16)||27;
+    const b = parseInt((hex||'#9b1b1b').slice(5,7),16)||27;
+    // Push toward red wax
+    const wr = Math.min(255, Math.round(r*0.35 + 180*0.65));
+    const wg = Math.min(255, Math.round(g*0.25 + 30*0.75));
+    const wb = Math.min(255, Math.round(b*0.25 + 30*0.75));
+    const hi = `rgb(${Math.min(255,wr+40)},${Math.min(255,wg+25)},${Math.min(255,wb+20)})`;
+    const mid = `rgb(${wr},${wg},${wb})`;
+    const lo = `rgb(${Math.max(0,wr-50)},${Math.max(0,wg-20)},${Math.max(0,wb-20)})`;
+    const deep = `rgb(${Math.max(0,wr-90)},${Math.max(0,wg-35)},${Math.max(0,wb-35)})`;
+    return `--wax-hi:${hi};--wax-mid:${mid};--wax:${lo};--wax-lo:${deep};--wax-deep:${deep}`;
   }
 
   function renderSignatures(){
     const wrap = document.getElementById('doc-signatures');
-    wrap.innerHTML = "";
+    wrap.innerHTML = '';
     state.parties.forEach((p,i)=>{
       const block = document.createElement('div');
       block.className = 'sig-block';
+      const letters = (p.seal||'XX').toUpperCase().slice(0,3);
       block.innerHTML = `
-        <div class="sig-name" contenteditable="true">${p.name}</div>
-        <div class="sig-role" contenteditable="true">${p.role}</div>
+        <div class="sig-name" contenteditable="true">${p.name||'Name'}</div>
+        <div class="sig-role" contenteditable="true">${p.role||'Title'}</div>
         <div class="seal-flag-row">
-          <div class="seal">${(p.initials||'').toUpperCase()}</div>
-          <div class="flag ${p.flag ? '' : 'empty'}" style="${p.flag ? `background-image:url(${p.flag})` : ''}"></div>
+          <div class="seal" style="${waxVars(p.color)}" contenteditable="true" title="Wax seal">${letters}</div>
+          <div class="flag ${p.flag?'':'empty'}" style="${p.flag?`background-image:url(${p.flag})`:''}"></div>
         </div>
-        <div class="sig-scribble" style="color:${p.color}">
-          ${scribbleSVG(p.color, i)}
-          <div class="sig-stamp" style="color:${p.color}; top:${i%2===0?'14px':'6px'}; left:${i%2===0?'62px':'70px'};">${(p.initials||'').toUpperCase()}</div>
-        </div>
-      `;
-      const seal = block.querySelector('.seal');
-      seal.style.background = `radial-gradient(circle at 35% 30%, ${p.color}, ${shade(p.color,-25)})`;
-
-      const nameEl = block.querySelector('.sig-name');
-      nameEl.addEventListener('input', ()=>{
-        p.name = nameEl.textContent;
-        const inp = document.querySelector(`#party-list input[data-field="name"][data-i="${i}"]`);
-        if(inp) inp.value = p.name;
-      });
-      const roleEl = block.querySelector('.sig-role');
-      roleEl.addEventListener('input', ()=>{
-        p.role = roleEl.textContent;
-        const inp = document.querySelector(`#party-list input[data-field="role"][data-i="${i}"]`);
-        if(inp) inp.value = p.role;
-      });
+        <div class="sig-scribble">${scribbleSVG(p.color||'#7a2323', i)}</div>
+        <div class="sig-stamp" style="color:${p.color||'#7a2323'};right:${10+i*20}px;bottom:10px;">OFFICIAL</div>`;
       wrap.appendChild(block);
+      block.querySelector('.sig-name').addEventListener('input', e=>{ p.name = e.target.textContent; const inp=document.querySelectorAll('.p-name')[i]; if(inp)inp.value=p.name; });
+      block.querySelector('.sig-role').addEventListener('input', e=>{ p.role = e.target.textContent; const inp=document.querySelectorAll('.p-role')[i]; if(inp)inp.value=p.role; });
+      block.querySelector('.seal').addEventListener('input', e=>{ p.seal = e.target.textContent; const inp=document.querySelectorAll('.p-seal')[i]; if(inp)inp.value=p.seal; });
     });
-    renderCornerEmblems();
   }
 
   function renderCornerEmblems(){
     const a = document.getElementById('corner-emblem-a');
     const b = document.getElementById('corner-emblem-b');
-    const pa = state.parties[0], pb = state.parties[1];
-    if(pa && pa.flag){ a.style.backgroundImage = `url(${pa.flag})`; a.classList.add('filled'); }
-    else { a.style.backgroundImage = ''; a.classList.remove('filled'); }
-    if(pb && pb.flag){ b.style.backgroundImage = `url(${pb.flag})`; b.classList.add('filled'); }
-    else { b.style.backgroundImage = ''; b.classList.remove('filled'); }
+    a.className = 'corner-emblem left' + (state.parties[0]?.flag ? ' filled' : '');
+    b.className = 'corner-emblem right' + (state.parties[1]?.flag ? ' filled' : '');
+    a.style.backgroundImage = state.parties[0]?.flag ? `url(${state.parties[0].flag})` : '';
+    b.style.backgroundImage = state.parties[1]?.flag ? `url(${state.parties[1].flag})` : '';
   }
 
-  /* ---------------- TEXT BINDINGS ---------------- */
+  function renderHeraldry(){
+    const row = document.getElementById('heraldry-row');
+    if(!row) return;
+    row.innerHTML = state.parties.slice(0,4).map(p=>{
+      const arms = p.emblem || p.flag;
+      const emblemStyle = arms
+        ? `background-image:url(${arms})`
+        : `background:${p.color||'#7a2323'};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f4e8c8;font-family:Cinzel,serif;font-weight:700;font-size:18px`;
+      const emblemContent = arms ? '' : (p.seal||'XX');
+      const flagClass = p.flag ? 'h-flag' : 'h-flag empty';
+      const flagStyle = p.flag ? `background-image:url(${p.flag})` : '';
+      return `<div class="heraldry-party">
+        <div class="h-emblem" style="${emblemStyle}">${emblemContent}</div>
+        <div class="${flagClass}" style="${flagStyle}"></div>
+      </div>`;
+    }).join('');
+  }
+
   function bindText(inputId, targetId){
     const input = document.getElementById(inputId);
     const target = document.getElementById(targetId);
@@ -863,402 +1710,1237 @@
     target.addEventListener('input', ()=>{ input.value = target.textContent; });
   }
 
-  /* ---------------- SIZE CONTROL ---------------- */
-  const sizePresets = { "Compact":560, "Standard":700, "Large":840, "XL":960 };
   function setDocWidth(px){
-    document.documentElement.style.setProperty('--doc-width', px + 'px');
+    document.getElementById('document').style.setProperty('--doc-width', px+'px');
     document.getElementById('size-slider').value = px;
     document.getElementById('size-readout').textContent = px + 'px';
     document.querySelectorAll('#size-presets button').forEach(b=>{
-      b.classList.toggle('active', +b.dataset.px === px);
+      b.classList.toggle('active', parseInt(b.dataset.w)===px);
     });
   }
-  function buildSizePresets(){
-    const wrap = document.getElementById('size-presets');
-    wrap.innerHTML = "";
-    Object.entries(sizePresets).forEach(([label, px])=>{
-      const btn = document.createElement('button');
-      btn.textContent = label;
-      btn.dataset.px = px;
-      btn.type = 'button';
-      btn.addEventListener('click', ()=> setDocWidth(px));
-      wrap.appendChild(btn);
-    });
-  }
-  buildSizePresets();
-  setDocWidth(700);
-  document.getElementById('size-slider').addEventListener('input', (e)=>{
-    setDocWidth(+e.target.value);
+
+  // Init size presets
+  const sizePresets = [{w:560,l:'Compact'},{w:700,l:'Standard'},{w:840,l:'Large'},{w:980,l:'XL'}];
+  const sizeBox = document.getElementById('size-presets');
+  sizePresets.forEach(s=>{
+    const b = document.createElement('button');
+    b.textContent = s.l;
+    b.dataset.w = s.w;
+    if(s.w===700) b.classList.add('active');
+    b.addEventListener('click', ()=>setDocWidth(s.w));
+    sizeBox.appendChild(b);
+  });
+  document.getElementById('size-slider').addEventListener('input', e=>setDocWidth(+e.target.value));
+
+  // Paper + layout
+  document.getElementById('paper-select').addEventListener('change', e=>{
+    const doc = document.getElementById('document');
+    doc.classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson');
+    doc.classList.add(e.target.value);
+  });
+  document.getElementById('layout-select').addEventListener('change', e=>{
+    const doc = document.getElementById('document');
+    doc.classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial');
+    doc.classList.add(e.target.value);
+    state.layout = e.target.value;
+    renderArticleDoc();
+    renderSignatures();
+    renderHeraldry();
+  });
+  document.getElementById('border-select').addEventListener('change', e=>{
+    const doc = document.getElementById('document');
+    doc.classList.remove('border-double','border-single','border-ornate','border-none');
+    doc.classList.add('border-'+e.target.value);
+  });
+  const langPacks = {
+    en: { closing: 'In witness whereof, the undersigned, being duly authorized, have signed this instrument.' },
+    la: { closing: 'In cuius rei testimonium, infrascripti, rite auctoritate muniti, hoc instrumentum signaverunt.' },
+    es: { closing: 'En fe de lo cual, los infrascritos, debidamente autorizados, firman el presente instrumento.' }
+  };
+  document.getElementById('lang-select').addEventListener('change', e=>{
+    const pack = langPacks[e.target.value] || langPacks.en;
+    const closing = document.getElementById('doc-closing');
+    if(closing) closing.textContent = pack.closing;
   });
 
-  /* ---------------- INIT ---------------- */
-  applyTheme(state.theme);
-  buildSwatchRow(document.getElementById('theme-swatches'), state.theme, (name)=>{ state.theme = name; applyTheme(name); });
+  // Stamp
+  document.getElementById('stamp-toggle').addEventListener('change', e=>{
+    document.getElementById('stamp-el').style.display = e.target.checked ? 'flex' : 'none';
+  });
+  document.getElementById('in-stamp').addEventListener('input', e=>{
+    document.getElementById('stamp-text').textContent = e.target.value;
+  });
 
+  // Presets
+  document.getElementById('preset-select').addEventListener('change', e=>{
+    const p = presets[e.target.value];
+    if(!p) return;
+    document.getElementById('in-eyebrow').value = p.eyebrow;
+    document.getElementById('in-title').value = p.title;
+    document.getElementById('in-subtitle').value = p.subtitle;
+    document.getElementById('in-meta').value = p.meta;
+    document.getElementById('in-preamble').value = p.preamble;
+    document.getElementById('in-stamp').value = p.stamp;
+    document.getElementById('doc-eyebrow').textContent = p.eyebrow;
+    document.getElementById('doc-title').textContent = p.title;
+    document.getElementById('doc-subtitle').textContent = p.subtitle;
+    document.getElementById('doc-meta').textContent = p.meta;
+    document.getElementById('doc-preamble').textContent = p.preamble;
+    document.getElementById('stamp-text').textContent = p.stamp;
+    state.articles = [...p.articles];
+    // Alliance-style treaties look best in Royal layout
+    if(e.target.value === 'alliance' || e.target.value === 'defense' || e.target.value === 'treaty'){
+      const sel = document.getElementById('layout-select');
+      sel.value = 'layout-royal';
+      sel.dispatchEvent(new Event('change'));
+    }
+    renderArticleInputs();
+    renderArticleDoc();
+  });
+
+  // Surprise
+  document.getElementById('btn-surprise').addEventListener('click', ()=>{
+    const keys = Object.keys(presets).filter(k=>k!=='blank');
+    const key = keys[Math.floor(Math.random()*keys.length)];
+    document.getElementById('preset-select').value = key;
+    document.getElementById('preset-select').dispatchEvent(new Event('change'));
+    const themeKeys = Object.keys(themes);
+    applyTheme(themeKeys[Math.floor(Math.random()*themeKeys.length)]);
+    buildSwatchRow(document.getElementById('theme-swatches'), state.theme, applyTheme);
+  });
+
+  // Articles / parties
+  document.getElementById('add-article').addEventListener('click', ()=>{
+    state.articles.push('New article...');
+    renderArticleInputs();
+    renderArticleDoc();
+  });
+  document.getElementById('add-party').addEventListener('click', ()=>{
+    state.parties.push({ name:'New Signatory', role:'Title', seal:'XX', color:sealColors[state.parties.length%sealColors.length], flag:null });
+    renderPartyInputs();
+    renderSignatures();
+  });
+
+  // Bind text fields
   bindText('in-eyebrow','doc-eyebrow');
   bindText('in-title','doc-title');
   bindText('in-subtitle','doc-subtitle');
   bindText('in-meta','doc-meta');
   bindText('in-preamble','doc-preamble');
 
+  // Theme swatches
+  buildSwatchRow(document.getElementById('theme-swatches'), state.theme, applyTheme);
+  applyTheme(state.theme);
+  renderOrnament();
   renderArticleInputs();
   renderArticleDoc();
   renderPartyInputs();
   renderSignatures();
+  renderCornerEmblems();
+  renderHeraldry();
 
-  document.getElementById('add-article').addEventListener('click', ()=>{
-    state.articles.push("Both parties agree to...");
-    renderArticleInputs();
-    renderArticleDoc();
-  });
-
-  document.getElementById('add-party').addEventListener('click', ()=>{
-    if(state.parties.length >= 5) return;
-    const colors = sealColors.filter(c => !state.parties.some(p=>p.color===c));
-    state.parties.push({ name:"New Signatory", role:"Representative", initials:"NS", color:(colors[0]||sealColors[0]), flag:null });
-    renderPartyInputs();
-    renderSignatures();
-  });
-
-  document.getElementById('paper-select').addEventListener('change', (e)=>{
-    const docEl = document.getElementById('document');
-    docEl.classList.remove('paper-parchment','paper-white','paper-dark');
-    docEl.classList.add(e.target.value);
-    state.paper = e.target.value;
-  });
-
-  document.getElementById('layout-select').addEventListener('change', (e)=>{
-    const docEl = document.getElementById('document');
-    docEl.classList.remove('layout-classic','layout-field');
-    docEl.classList.add(e.target.value);
-    state.layout = e.target.value;
-    renderArticleDoc();
-    renderSignatures();
-  });
-
-  const stampToggle = document.getElementById('stamp-toggle');
-  const stampEl = document.getElementById('stamp-el');
-  const stampTextField = document.getElementById('stamp-text-field');
-  const stampTextInput = document.getElementById('in-stamp');
-  const stampTextTarget = document.getElementById('stamp-text');
-  function syncStamp(){
-    stampEl.style.display = stampToggle.checked ? 'flex' : 'none';
-    stampTextField.style.display = stampToggle.checked ? 'block' : 'none';
-  }
-  stampToggle.addEventListener('change', syncStamp);
-  stampTextInput.addEventListener('input', ()=>{ stampTextTarget.textContent = stampTextInput.value; });
-  syncStamp();
-
-  function applyPreset(key){
-    const p = presets[key];
-    if(!p) return;
-    document.getElementById('preset-select').value = key;
-    document.getElementById('in-eyebrow').value = p.eyebrow;
-    document.getElementById('doc-eyebrow').innerHTML = p.eyebrow;
-    document.getElementById('in-title').value = p.title.replace(/&amp;/g,'&');
-    document.getElementById('doc-title').innerHTML = p.title;
-    document.getElementById('in-subtitle').value = p.subtitle;
-    document.getElementById('doc-subtitle').textContent = p.subtitle;
-    document.getElementById('in-meta').value = p.meta;
-    document.getElementById('doc-meta').textContent = p.meta;
-    document.getElementById('in-preamble').value = p.preamble;
-    document.getElementById('doc-preamble').textContent = p.preamble;
-    document.getElementById('in-stamp').value = p.stamp;
-    document.getElementById('stamp-text').textContent = p.stamp;
-    state.articles = p.articles.slice();
-    renderArticleInputs();
-    renderArticleDoc();
-  }
-
-  document.getElementById('preset-select').addEventListener('change', (e)=>{
-    applyPreset(e.target.value);
-  });
-
-  /* ---------------- SURPRISE ME ---------------- */
-  document.getElementById('btn-surprise').addEventListener('click', ()=>{
-    const presetKeys = Object.keys(presets).filter(k=>k!=='blank');
-    const key = presetKeys[Math.floor(Math.random()*presetKeys.length)];
-    applyPreset(key);
-
-    const themeNames = Object.keys(themes);
-    const theme = themeNames[Math.floor(Math.random()*themeNames.length)];
-    state.theme = theme;
-    applyTheme(theme);
-    buildSwatchRow(document.getElementById('theme-swatches'), theme, (name)=>{ state.theme = name; applyTheme(name); });
-
-    const papers = ['paper-parchment','paper-white','paper-dark'];
-    const paper = papers[Math.floor(Math.random()*papers.length)];
-    document.getElementById('paper-select').value = paper;
-    const docEl = document.getElementById('document');
-    docEl.classList.remove('paper-parchment','paper-white','paper-dark');
-    docEl.classList.add(paper);
-    state.paper = paper;
-
-    const layouts = ['layout-classic','layout-field'];
-    const layout = layouts[Math.floor(Math.random()*layouts.length)];
-    document.getElementById('layout-select').value = layout;
-    docEl.classList.remove('layout-classic','layout-field');
-    docEl.classList.add(layout);
-    state.layout = layout;
-
-    const nameBank = [
-      ["The Kingdom of Astoria","Regent"], ["The Republic of Vantor","Chancellor"],
-      ["The Free City of Halden","Mayor"], ["The Empire of Norrath","Emperor"],
-      ["The Union of Kestrel","Speaker"], ["The Sultanate of Zareen","Sultan"],
-      ["The Confederacy of Ashfall","Commander"], ["The Isles of Thornwick","Governor"]
-    ];
-    const shuffled = nameBank.sort(()=>Math.random()-0.5);
-    state.parties = state.parties.map((p,i)=>{
-      const pick = shuffled[i % shuffled.length];
-      const nation = pick[0];
-      return {
-        name: pick[1] + " " + ["Aldric","Vesna","Thorne","Marisol","Corvin","Ysolde"][Math.floor(Math.random()*6)],
-        role: pick[1] + " of " + nation.replace(/^The /,''),
-        initials: nation.replace(/^The (Kingdom|Republic|Free City|Empire|Union|Sultanate|Confederacy|Isles) of /,'').slice(0,2).toUpperCase(),
-        color: sealColors[Math.floor(Math.random()*sealColors.length)],
-        flag: null
-      };
-    });
-    document.getElementById('doc-subtitle').textContent =
-      "Between " + shuffled[0][0] + " and " + shuffled[1][0];
-    document.getElementById('in-subtitle').value = document.getElementById('doc-subtitle').textContent;
-    renderPartyInputs();
-    renderSignatures();
-  });
-
-  /* ---------------- EXPORT ---------------- */
-  function captureCanvas(bg){
+  // Export helpers
+  async function captureDoc(type){
     const el = document.getElementById('document');
-    return html2canvas(el, {scale:3, backgroundColor:bg, useCORS:true});
-  }
-
-  document.getElementById('btn-png').addEventListener('click', ()=>{
-    captureCanvas(null).then(canvas=>{
-      const link = document.createElement('a');
-      link.download = 'agreement.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
-  });
-
-  document.getElementById('btn-jpg').addEventListener('click', ()=>{
-    captureCanvas('#ffffff').then(canvas=>{
-      const link = document.createElement('a');
-      link.download = 'agreement.jpg';
-      link.href = canvas.toDataURL('image/jpeg', 0.92);
-      link.click();
-    });
-  });
-
-  document.getElementById('btn-copy').addEventListener('click', ()=>{
-    const btn = document.getElementById('btn-copy');
-    captureCanvas('#ffffff').then(canvas=>{
-      canvas.toBlob(blob=>{
-        if(!blob) return;
-        if(navigator.clipboard && window.ClipboardItem){
-          navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
-            .then(()=>{ const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent=orig, 1500); })
-            .catch(()=>{ btn.textContent = 'Copy failed'; setTimeout(()=>btn.textContent='Copy image', 1500); });
-        } else {
-          btn.textContent = 'Not supported';
-          setTimeout(()=>btn.textContent='Copy image', 1500);
-        }
+    const scale = parseInt(document.getElementById('export-scale')?.value)||2;
+    const canvas = await html2canvas(el, { scale, backgroundColor:null, useCORS:true });
+    if(type==='copy'){
+      canvas.toBlob(async blob=>{
+        try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Copied to clipboard'); }
+        catch(e){ alert('Copy failed — try Download instead'); }
       });
-    });
-  });
-
-  document.getElementById('btn-pdf').addEventListener('click', ()=>{
-    window.print();
-  });
-
-  /* ---------------- SAVED DOCUMENTS LIBRARY ---------------- */
-  let currentDocId = null;
-  const saveStatus = document.getElementById('save-status');
-
-  function showStatus(msg, isError){
-    saveStatus.style.display = 'block';
-    saveStatus.textContent = msg;
-    saveStatus.style.color = isError ? '#c94b4b' : 'var(--panel-muted)';
-    setTimeout(()=>{ saveStatus.style.display = 'none'; }, 2500);
+      return;
+    }
+    const link = document.createElement('a');
+    link.download = 'diplomatic-document.' + (type==='jpg'?'jpg':'png');
+    link.href = canvas.toDataURL(type==='jpg'?'image/jpeg': 'image/png', 0.95);
+    link.click();
   }
+  document.getElementById('btn-png').addEventListener('click', ()=>captureDoc('png'));
+  document.getElementById('btn-jpg').addEventListener('click', ()=>captureDoc('jpg'));
+  document.getElementById('btn-copy').addEventListener('click', ()=>captureDoc('copy'));
+  document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
 
-  function snapshotState(){
+  // Local save (simple localStorage)
+  const STORAGE_KEY = 'dmc-graphic-docs';
+  function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{return [];} }
+  function setSaved(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+  function snapshot(){
     return {
       eyebrow: document.getElementById('in-eyebrow').value,
       title: document.getElementById('in-title').value,
       subtitle: document.getElementById('in-subtitle').value,
       meta: document.getElementById('in-meta').value,
       preamble: document.getElementById('in-preamble').value,
-      paper: state.paper,
+      stamp: document.getElementById('in-stamp').value,
+      articles: [...state.articles],
+      parties: state.parties.map(p=>({...p})),
       theme: state.theme,
       layout: state.layout,
-      docWidth: parseInt(getComputedStyle(document.documentElement).getPropertyValue('--doc-width')) || 700,
-      showStamp: document.getElementById('stamp-toggle').checked,
-      stampText: document.getElementById('in-stamp').value,
-      articles: state.articles.slice(),
-      parties: state.parties.map(p=>({...p}))
+      paper: document.getElementById('paper-select').value
     };
   }
-
-  function restoreState(snap){
-    document.getElementById('in-eyebrow').value = snap.eyebrow || '';
-    document.getElementById('doc-eyebrow').textContent = snap.eyebrow || '';
-    document.getElementById('in-title').value = snap.title || '';
-    document.getElementById('doc-title').textContent = snap.title || '';
-    document.getElementById('in-subtitle').value = snap.subtitle || '';
-    document.getElementById('doc-subtitle').textContent = snap.subtitle || '';
-    document.getElementById('in-meta').value = snap.meta || '';
-    document.getElementById('doc-meta').textContent = snap.meta || '';
-    document.getElementById('in-preamble').value = snap.preamble || '';
-    document.getElementById('doc-preamble').textContent = snap.preamble || '';
-
-    const docEl = document.getElementById('document');
-    docEl.classList.remove('paper-parchment','paper-white','paper-dark');
-    docEl.classList.add(snap.paper || 'paper-parchment');
-    document.getElementById('paper-select').value = snap.paper || 'paper-parchment';
-    state.paper = snap.paper || 'paper-parchment';
-
-    docEl.classList.remove('layout-classic','layout-field');
-    docEl.classList.add(snap.layout || 'layout-classic');
-    document.getElementById('layout-select').value = snap.layout || 'layout-classic';
-    state.layout = snap.layout || 'layout-classic';
-
-    state.theme = snap.theme || 'Parchment & Gold';
+  function loadSnapshot(s){
+    document.getElementById('in-eyebrow').value = s.eyebrow||'';
+    document.getElementById('in-title').value = s.title||'';
+    document.getElementById('in-subtitle').value = s.subtitle||'';
+    document.getElementById('in-meta').value = s.meta||'';
+    document.getElementById('in-preamble').value = s.preamble||'';
+    document.getElementById('in-stamp').value = s.stamp||'';
+    document.getElementById('doc-eyebrow').textContent = s.eyebrow||'';
+    document.getElementById('doc-title').textContent = s.title||'';
+    document.getElementById('doc-subtitle').textContent = s.subtitle||'';
+    document.getElementById('doc-meta').textContent = s.meta||'';
+    document.getElementById('doc-preamble').textContent = s.preamble||'';
+    document.getElementById('stamp-text').textContent = s.stamp||'';
+    state.articles = s.articles||[];
+    state.parties = s.parties||[];
+    state.theme = s.theme||'Parchment & Gold';
+    state.layout = s.layout||'layout-classic';
     applyTheme(state.theme);
-    buildSwatchRow(document.getElementById('theme-swatches'), state.theme, (name)=>{ state.theme = name; applyTheme(name); });
-
-    setDocWidth(snap.docWidth || 700);
-
-    document.getElementById('stamp-toggle').checked = snap.showStamp !== false;
-    syncStamp();
-    document.getElementById('in-stamp').value = snap.stampText || '';
-    document.getElementById('stamp-text').textContent = snap.stampText || '';
-
-    state.articles = (snap.articles || []).slice();
-    renderArticleInputs();
-    renderArticleDoc();
-
-    state.parties = (snap.parties || []).map(p=>({...p}));
-    renderPartyInputs();
-    renderSignatures();
-  }
-
-  async function getIndex(){
-    try{
-      const res = await window.storage.get('doc-index', false);
-      return res ? JSON.parse(res.value) : [];
-    } catch(e){ return []; }
-  }
-
-  async function setIndex(list){
-    try{ await window.storage.set('doc-index', JSON.stringify(list), false); }
-    catch(e){ console.error('index save failed', e); }
-  }
-
-  function fmtDate(ts){
-    const d = new Date(ts);
-    return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
-  }
-
-  async function renderSavedList(){
-    const wrap = document.getElementById('saved-list');
-    wrap.innerHTML = '<div class="saved-empty">Loading…</div>';
-    const index = await getIndex();
-    index.sort((a,b)=> b.updatedAt - a.updatedAt);
-    wrap.innerHTML = '';
-    if(index.length === 0){
-      wrap.innerHTML = '<div class="saved-empty">No saved documents yet.</div>';
-      return;
+    buildSwatchRow(document.getElementById('theme-swatches'), state.theme, applyTheme);
+    document.getElementById('layout-select').value = state.layout;
+    document.getElementById('document').classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial');
+    document.getElementById('document').classList.add(state.layout);
+    if(s.paper){
+      document.getElementById('paper-select').value = s.paper;
+      document.getElementById('document').classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson');
+      document.getElementById('document').classList.add(s.paper);
     }
-    index.forEach(entry=>{
-      const row = document.createElement('div');
-      row.className = 'saved-item';
-      row.innerHTML = `
+    renderArticleInputs(); renderArticleDoc(); renderPartyInputs(); renderSignatures(); renderCornerEmblems(); renderHeraldry();
+  }
+  function renderSavedList(){
+    const list = document.getElementById('saved-list');
+    const items = getSaved();
+    if(!items.length){ list.innerHTML = '<div class="saved-empty">No saved documents yet</div>'; return; }
+    list.innerHTML = items.map((it,i)=>`
+      <div class="saved-item">
         <div class="saved-item-main">
-          <div class="saved-item-name">${escapeAttr(entry.name)}</div>
-          <div class="saved-item-date">${fmtDate(entry.updatedAt)}</div>
+          <div class="saved-item-name">${it.name}</div>
+          <div class="saved-item-date">${new Date(it.updated).toLocaleDateString()}</div>
         </div>
         <div class="saved-item-actions">
-          <button data-act="load">Load</button>
-          <button data-act="dup">Copy</button>
-          <button data-act="del" class="danger">&times;</button>
+          <button data-load="${i}">Load</button>
+          <button class="danger" data-del="${i}">Del</button>
         </div>
-      `;
-      row.querySelector('[data-act="load"]').addEventListener('click', async ()=>{
-        try{
-          const res = await window.storage.get('doc:' + entry.id, false);
-          if(res){
-            restoreState(JSON.parse(res.value));
-            currentDocId = entry.id;
-            document.getElementById('save-name').value = entry.name;
-            document.getElementById('btn-update-current').style.display = 'block';
-            showStatus('Loaded "' + entry.name + '"');
-          }
-        } catch(e){ showStatus('Could not load that document', true); }
-      });
-      row.querySelector('[data-act="dup"]').addEventListener('click', async ()=>{
-        try{
-          const res = await window.storage.get('doc:' + entry.id, false);
-          if(!res) return;
-          const newId = 'd' + Date.now() + Math.floor(Math.random()*1000);
-          const newName = entry.name + ' (copy)';
-          await window.storage.set('doc:' + newId, res.value, false);
-          const idx = await getIndex();
-          idx.push({id:newId, name:newName, updatedAt: Date.now()});
-          await setIndex(idx);
-          showStatus('Duplicated "' + entry.name + '"');
-          renderSavedList();
-        } catch(e){ showStatus('Could not duplicate', true); }
-      });
-      row.querySelector('[data-act="del"]').addEventListener('click', async ()=>{
-        try{
-          await window.storage.delete('doc:' + entry.id, false);
-          const idx = (await getIndex()).filter(x=>x.id !== entry.id);
-          await setIndex(idx);
-          if(currentDocId === entry.id){
-            currentDocId = null;
-            document.getElementById('btn-update-current').style.display = 'none';
-          }
-          showStatus('Deleted "' + entry.name + '"');
-          renderSavedList();
-        } catch(e){ showStatus('Could not delete', true); }
-      });
-      wrap.appendChild(row);
+      </div>`).join('');
+    list.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
+      loadSnapshot(items[+b.dataset.load].data);
+      document.getElementById('save-name').value = items[+b.dataset.load].name;
+    }));
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+      items.splice(+b.dataset.del,1);
+      setSaved(items);
+      renderSavedList();
+    }));
+  }
+  document.getElementById('btn-save-new').addEventListener('click',()=>{
+    const name = document.getElementById('save-name').value.trim() || 'Untitled';
+    const items = getSaved();
+    items.unshift({ name, updated: Date.now(), data: snapshot() });
+    setSaved(items);
+    renderSavedList();
+    document.getElementById('save-status').style.display='block';
+    document.getElementById('save-status').textContent = 'Saved "'+name+'"';
+  });
+  renderSavedList();
+
+  // ========== FLAG GENERATOR ==========
+  function syncColor(colorId, hexId){
+    const c = document.getElementById(colorId);
+    const h = document.getElementById(hexId);
+    c.addEventListener('input', ()=>{ h.value = c.value; renderFlag(); });
+    h.addEventListener('input', ()=>{
+      if(/^#[0-9a-fA-F]{6}$/.test(h.value)){ c.value = h.value; renderFlag(); }
     });
   }
+  ['flag-c1','flag-c2','flag-c3','flag-c4','flag-sym-color'].forEach((id,i)=>{
+    const hex = id + '-hex';
+    if(document.getElementById(hex)) syncColor(id, hex);
+  });
+  document.getElementById('flag-layout').addEventListener('change', renderFlag);
+  document.getElementById('flag-ratio').addEventListener('change', renderFlag);
+  document.getElementById('flag-symbol').addEventListener('change', e=>{
+    document.getElementById('flag-text-field').style.display = e.target.value==='text' ? 'block' : 'none';
+    renderFlag();
+  });
+  document.getElementById('flag-text').addEventListener('input', renderFlag);
+  const flagSymPos = document.getElementById('flag-sym-pos');
+  if(flagSymPos) flagSymPos.addEventListener('change', renderFlag);
 
-  document.getElementById('btn-save-new').addEventListener('click', async ()=>{
-    const nameInput = document.getElementById('save-name');
-    const name = nameInput.value.trim() || document.getElementById('in-title').value.trim() || 'Untitled document';
-    try{
-      const id = 'd' + Date.now() + Math.floor(Math.random()*1000);
-      await window.storage.set('doc:' + id, JSON.stringify(snapshotState()), false);
-      const idx = await getIndex();
-      idx.push({id, name, updatedAt: Date.now()});
-      await setIndex(idx);
-      currentDocId = id;
-      document.getElementById('btn-update-current').style.display = 'block';
-      showStatus('Saved "' + name + '"');
-      renderSavedList();
-    } catch(e){ showStatus('Save failed — try a smaller flag image', true); }
+  function getFlagSize(){
+    const ratio = document.getElementById('flag-ratio').value;
+    const base = 600;
+    if(ratio==='3:2') return [base, Math.round(base*2/3)];
+    if(ratio==='5:3') return [base, Math.round(base*3/5)];
+    if(ratio==='2:1') return [base, Math.round(base/2)];
+    return [base, base];
+  }
+
+  function drawSymbol(ctx, type, cx, cy, size, color, text){
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(2, size*0.04);
+    if(type==='circle'){
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.35,0,Math.PI*2); ctx.fill();
+    } else if(type==='star' || type==='star6'){
+      const spikes = type==='star6' ? 6 : 5;
+      const outer=size*0.4, inner=outer*(type==='star6'?0.45:0.4);
+      ctx.beginPath();
+      for(let i=0;i<spikes*2;i++){
+        const r = i%2===0?outer:inner;
+        const a = (i*Math.PI/spikes) - Math.PI/2;
+        ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+      }
+      ctx.closePath(); ctx.fill();
+    } else if(type==='cross'){
+      const t = size*0.12;
+      ctx.fillRect(cx-t, cy-size*0.4, t*2, size*0.8);
+      ctx.fillRect(cx-size*0.35, cy-t, size*0.7, t*2);
+    } else if(type==='diamond'){
+      ctx.beginPath();
+      ctx.moveTo(cx, cy-size*0.4);
+      ctx.lineTo(cx+size*0.35, cy);
+      ctx.lineTo(cx, cy+size*0.4);
+      ctx.lineTo(cx-size*0.35, cy);
+      ctx.closePath(); ctx.fill();
+    } else if(type==='crescent'){
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.38,0,Math.PI*2); ctx.fill();
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath(); ctx.arc(cx+size*0.14,cy-size*0.04,size*0.3,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = color;
+    } else if(type==='sun'){
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.2,0,Math.PI*2); ctx.fill();
+      for(let i=0;i<12;i++){
+        const a = i*Math.PI/6;
+        ctx.beginPath();
+        ctx.moveTo(cx+Math.cos(a)*size*0.26, cy+Math.sin(a)*size*0.26);
+        ctx.lineTo(cx+Math.cos(a)*size*0.42, cy+Math.sin(a)*size*0.42);
+        ctx.lineWidth = size*0.05;
+        ctx.stroke();
+      }
+    } else if(type==='crown'){
+      const s = size*0.4;
+      ctx.beginPath();
+      ctx.moveTo(cx-s, cy+s*0.35);
+      ctx.lineTo(cx-s, cy-s*0.1);
+      ctx.lineTo(cx-s*0.5, cy+s*0.15);
+      ctx.lineTo(cx, cy-s*0.45);
+      ctx.lineTo(cx+s*0.5, cy+s*0.15);
+      ctx.lineTo(cx+s, cy-s*0.1);
+      ctx.lineTo(cx+s, cy+s*0.35);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx-s, cy-s*0.1, s*0.1, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy-s*0.45, s*0.1, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+s, cy-s*0.1, s*0.1, 0, Math.PI*2); ctx.fill();
+    } else if(type==='eagle'){
+      // Simple spread-eagle silhouette
+      ctx.beginPath();
+      ctx.moveTo(cx, cy-size*0.15);
+      ctx.quadraticCurveTo(cx-size*0.45, cy-size*0.05, cx-size*0.4, cy+size*0.15);
+      ctx.quadraticCurveTo(cx-size*0.15, cy+size*0.05, cx, cy+size*0.1);
+      ctx.quadraticCurveTo(cx+size*0.15, cy+size*0.05, cx+size*0.4, cy+size*0.15);
+      ctx.quadraticCurveTo(cx+size*0.45, cy-size*0.05, cx, cy-size*0.15);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx-size*0.08, cy-size*0.15);
+      ctx.lineTo(cx, cy-size*0.38);
+      ctx.lineTo(cx+size*0.08, cy-size*0.15);
+      ctx.fill();
+    } else if(type==='text' && text){
+      ctx.font = `bold ${Math.round(size*0.35)}px Cinzel, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text.toUpperCase(), cx, cy);
+    }
+  }
+
+  function renderFlag(){
+    const canvas = document.getElementById('flag-canvas');
+    const [w,h] = getFlagSize();
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    const layout = document.getElementById('flag-layout').value;
+    const c1 = document.getElementById('flag-c1').value;
+    const c2 = document.getElementById('flag-c2').value;
+    const c3 = document.getElementById('flag-c3').value;
+    const c4 = document.getElementById('flag-c4').value;
+    const sym = document.getElementById('flag-symbol').value;
+    const symColor = document.getElementById('flag-sym-color').value;
+    const text = document.getElementById('flag-text').value;
+
+    // Background layouts
+    if(layout==='h2'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h/2);
+      ctx.fillStyle=c2; ctx.fillRect(0,h/2,w,h/2);
+    } else if(layout==='h3'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h/3);
+      ctx.fillStyle=c2; ctx.fillRect(0,h/3,w,h/3);
+      ctx.fillStyle=c3; ctx.fillRect(0,2*h/3,w,h/3);
+    } else if(layout==='h4'){
+      const sh=h/4;
+      [c1,c2,c3,c4].forEach((c,i)=>{ ctx.fillStyle=c; ctx.fillRect(0,i*sh,w,sh); });
+    } else if(layout==='h5'){
+      const sh=h/5;
+      const cols=[c1,c2,c3,c4,c1];
+      cols.forEach((c,i)=>{ ctx.fillStyle=c; ctx.fillRect(0,i*sh,w,sh); });
+    } else if(layout==='v2'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w/2,h);
+      ctx.fillStyle=c2; ctx.fillRect(w/2,0,w/2,h);
+    } else if(layout==='v3'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w/3,h);
+      ctx.fillStyle=c2; ctx.fillRect(w/3,0,w/3,h);
+      ctx.fillStyle=c3; ctx.fillRect(2*w/3,0,w/3,h);
+    } else if(layout==='nordic'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+      const bar = Math.round(h*0.18);
+      const crossX = Math.round(w*0.35);
+      ctx.fillStyle=c2;
+      ctx.fillRect(0, (h-bar)/2, w, bar);
+      ctx.fillRect(crossX-bar/2, 0, bar, h);
+      // optional outer
+      if(c3 && c3!==c1){
+        const outer = Math.round(bar*0.35);
+        ctx.fillStyle=c3;
+        ctx.fillRect(0, (h-bar)/2 - outer, w, outer);
+        ctx.fillRect(0, (h+bar)/2, w, outer);
+        ctx.fillRect(crossX-bar/2-outer, 0, outer, h);
+        ctx.fillRect(crossX+bar/2, 0, outer, h);
+      }
+    } else if(layout==='cross'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+      const bar = Math.round(Math.min(w,h)*0.18);
+      ctx.fillStyle=c2;
+      ctx.fillRect(0, (h-bar)/2, w, bar);
+      ctx.fillRect((w-bar)/2, 0, bar, h);
+    } else if(layout==='canton'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle=c2; ctx.fillRect(0,0,w*0.4,h*0.45);
+      if(sym!=='none'){
+        drawSymbol(ctx, sym, w*0.2, h*0.225, Math.min(w,h)*0.35, symColor, text);
+      }
+    } else if(layout==='diagonal'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+      ctx.beginPath();
+      ctx.moveTo(0,0); ctx.lineTo(w,0); ctx.lineTo(0,h); ctx.closePath();
+      ctx.fillStyle=c2; ctx.fill();
+    } else if(layout==='saltire'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle=c2; ctx.lineWidth=Math.round(Math.min(w,h)*0.18);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(w,h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w,0); ctx.lineTo(0,h); ctx.stroke();
+      if(c3 && c3!==c1){
+        ctx.strokeStyle=c3; ctx.lineWidth=Math.round(Math.min(w,h)*0.07);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(w,h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w,0); ctx.lineTo(0,h); ctx.stroke();
+      }
+    } else if(layout==='tricolor-diag'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(w,0); ctx.lineTo(0,h); ctx.closePath();
+      ctx.fillStyle=c2; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(w,h); ctx.lineTo(0,h); ctx.lineTo(w,0); ctx.closePath();
+      ctx.fillStyle=c3; ctx.fill();
+    } else if(layout==='quartered'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w/2,h/2);
+      ctx.fillStyle=c2; ctx.fillRect(w/2,0,w/2,h/2);
+      ctx.fillStyle=c3; ctx.fillRect(0,h/2,w/2,h/2);
+      ctx.fillStyle=c4; ctx.fillRect(w/2,h/2,w/2,h/2);
+    } else if(layout==='border'){
+      ctx.fillStyle=c2; ctx.fillRect(0,0,w,h);
+      const b = Math.round(Math.min(w,h)*0.12);
+      ctx.fillStyle=c1; ctx.fillRect(b,b,w-2*b,h-2*b);
+    } else if(layout==='solid'){
+      ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+    }
+
+    // Symbol placement
+    if(sym!=='none'){
+      const pos = (document.getElementById('flag-sym-pos')||{}).value || 'center';
+      let sx=w/2, sy=h/2, ss=Math.min(w,h)*0.5;
+      if(layout==='canton' || pos==='canton'){
+        sx=w*0.2; sy=h*0.22; ss=Math.min(w,h)*0.32;
+      } else if(pos==='hoist'){
+        sx=w*0.28; sy=h/2; ss=Math.min(w,h)*0.42;
+      }
+      if(layout==='canton' && pos==='center'){ sx=w*0.2; sy=h*0.22; ss=Math.min(w,h)*0.32; }
+      drawSymbol(ctx, sym, sx, sy, ss, symColor, text);
+    }
+
+    document.getElementById('flag-ratio-note').textContent =
+      document.getElementById('flag-ratio').value + ' ratio • ' + w + '×' + h + ' preview';
+  }
+
+  document.getElementById('btn-flag-png').addEventListener('click', ()=>{
+    const canvas = document.getElementById('flag-canvas');
+    // render at higher res
+    const [rw,rh] = getFlagSize();
+    const scale = 3;
+    const hi = document.createElement('canvas');
+    hi.width = rw*scale; hi.height = rh*scale;
+    const hctx = hi.getContext('2d');
+    hctx.scale(scale,scale);
+    // re-draw by temporarily using the same logic would be ideal; for simplicity upscale
+    hctx.drawImage(canvas,0,0);
+    const link = document.createElement('a');
+    link.download = 'nation-flag.png';
+    link.href = hi.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('btn-flag-copy').addEventListener('click', async ()=>{
+    const canvas = document.getElementById('flag-canvas');
+    canvas.toBlob(async blob=>{
+      try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Flag copied'); }
+      catch(e){ alert('Copy failed'); }
+    });
   });
 
-  document.getElementById('btn-update-current').addEventListener('click', async ()=>{
-    if(!currentDocId) return;
-    const nameInput = document.getElementById('save-name');
-    const name = nameInput.value.trim() || 'Untitled document';
-    try{
-      await window.storage.set('doc:' + currentDocId, JSON.stringify(snapshotState()), false);
-      const idx = await getIndex();
-      const entry = idx.find(x=>x.id === currentDocId);
-      if(entry){ entry.name = name; entry.updatedAt = Date.now(); }
-      await setIndex(idx);
-      showStatus('Updated "' + name + '"');
-      renderSavedList();
-    } catch(e){ showStatus('Update failed', true); }
+  // ========== EMBLEM GENERATOR ==========
+  ['emb-bg','emb-border','emb-text','emb-center'].forEach(id=>{
+    const hex = id + '-hex';
+    if(document.getElementById(hex)){
+      document.getElementById(id).addEventListener('input', ()=>{
+        document.getElementById(hex).value = document.getElementById(id).value;
+        renderEmblem();
+      });
+      document.getElementById(hex).addEventListener('input', e=>{
+        if(/^#[0-9a-fA-F]{6}$/.test(e.target.value)){
+          document.getElementById(id).value = e.target.value;
+          renderEmblem();
+        }
+      });
+    }
+  });
+  ['emblem-style','emblem-title','emblem-sub','emblem-center','emblem-size'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', renderEmblem);
+    document.getElementById(id).addEventListener('change', renderEmblem);
   });
 
-  renderSavedList();
+  function renderEmblem(){
+    const size = parseInt(document.getElementById('emblem-size').value) || 512;
+    const canvas = document.getElementById('emblem-canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const style = document.getElementById('emblem-style').value;
+    const title = document.getElementById('emblem-title').value.toUpperCase();
+    const sub = document.getElementById('emblem-sub').value.toUpperCase();
+    const center = document.getElementById('emblem-center').value.toUpperCase();
+    const bg = document.getElementById('emb-bg').value;
+    const border = document.getElementById('emb-border').value;
+    const textCol = document.getElementById('emb-text').value;
+    const centerCol = document.getElementById('emb-center').value;
+
+    ctx.clearRect(0,0,size,size);
+    const cx = size/2, cy = size/2, r = size*0.46;
+
+    if(style==='circle' || style==='rounded'){
+      // outer ring
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+      ctx.lineWidth = size*0.035;
+      ctx.strokeStyle = border;
+      ctx.stroke();
+
+      // inner ring
+      ctx.beginPath();
+      ctx.arc(cx,cy,r*0.78,0,Math.PI*2);
+      ctx.lineWidth = size*0.012;
+      ctx.strokeStyle = border;
+      ctx.stroke();
+
+      // center disc
+      ctx.beginPath();
+      ctx.arc(cx,cy,r*0.38,0,Math.PI*2);
+      ctx.fillStyle = centerCol;
+      ctx.fill();
+      ctx.lineWidth = size*0.01;
+      ctx.strokeStyle = border;
+      ctx.stroke();
+    } else if(style==='shield'){
+      // simple heater shield
+      ctx.beginPath();
+      const top = size*0.08;
+      const bot = size*0.92;
+      const left = size*0.18;
+      const right = size*0.82;
+      ctx.moveTo(left, top);
+      ctx.lineTo(right, top);
+      ctx.quadraticCurveTo(right+size*0.05, size*0.45, cx, bot);
+      ctx.quadraticCurveTo(left-size*0.05, size*0.45, left, top);
+      ctx.closePath();
+      ctx.fillStyle = bg;
+      ctx.fill();
+      ctx.lineWidth = size*0.03;
+      ctx.strokeStyle = border;
+      ctx.stroke();
+
+      // inner shield
+      ctx.beginPath();
+      const pad = size*0.08;
+      ctx.moveTo(left+pad, top+pad);
+      ctx.lineTo(right-pad, top+pad);
+      ctx.quadraticCurveTo(right-pad+size*0.03, size*0.45, cx, bot-pad);
+      ctx.quadraticCurveTo(left+pad-size*0.03, size*0.45, left+pad, top+pad);
+      ctx.closePath();
+      ctx.fillStyle = centerCol;
+      ctx.fill();
+    }
+
+    // Center text
+    ctx.fillStyle = textCol;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${Math.round(size*0.14)}px Cinzel, serif`;
+    ctx.fillText(center, cx, cy);
+
+    // Curved text for circle styles
+    if(style==='circle' || style==='rounded'){
+      // Top arc text
+      if(title){
+        ctx.save();
+        ctx.font = `bold ${Math.round(size*0.055)}px Cinzel, serif`;
+        ctx.fillStyle = textCol;
+        const radius = r * 0.88;
+        const chars = title.split('');
+        const angleStep = (Math.PI * 0.9) / Math.max(chars.length-1,1);
+        let startAngle = -Math.PI/2 - (Math.PI*0.45);
+        chars.forEach((ch,i)=>{
+          const a = startAngle + i*angleStep;
+          ctx.save();
+          ctx.translate(cx + Math.cos(a)*radius, cy + Math.sin(a)*radius);
+          ctx.rotate(a + Math.PI/2);
+          ctx.fillText(ch, 0, 0);
+          ctx.restore();
+        });
+        ctx.restore();
+      }
+      // Bottom arc text
+      if(sub){
+        ctx.save();
+        ctx.font = `bold ${Math.round(size*0.05)}px Cinzel, serif`;
+        ctx.fillStyle = textCol;
+        const radius = r * 0.88;
+        const chars = sub.split('');
+        const angleStep = (Math.PI * 0.75) / Math.max(chars.length-1,1);
+        let startAngle = Math.PI/2 + (Math.PI*0.375);
+        chars.forEach((ch,i)=>{
+          const a = startAngle - i*angleStep;
+          ctx.save();
+          ctx.translate(cx + Math.cos(a)*radius, cy + Math.sin(a)*radius);
+          ctx.rotate(a - Math.PI/2);
+          ctx.fillText(ch, 0, 0);
+          ctx.restore();
+        });
+        ctx.restore();
+      }
+    } else {
+      // Shield text below center
+      ctx.font = `bold ${Math.round(size*0.05)}px Cinzel, serif`;
+      ctx.fillStyle = textCol;
+      if(title) ctx.fillText(title, cx, size*0.78);
+      if(sub) {
+        ctx.font = `${Math.round(size*0.04)}px Cinzel, serif`;
+        ctx.fillText(sub, cx, size*0.85);
+      }
+    }
+  }
+
+  document.getElementById('btn-emblem-png').addEventListener('click', ()=>{
+    const canvas = document.getElementById('emblem-canvas');
+    const link = document.createElement('a');
+    link.download = 'nation-emblem.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('btn-emblem-copy').addEventListener('click', async ()=>{
+    const canvas = document.getElementById('emblem-canvas');
+    canvas.toBlob(async blob=>{
+      try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Emblem copied'); }
+      catch(e){ alert('Copy failed'); }
+    });
+  });
+
+  // ========== PROPAGANDA COMPOSITOR ==========
+  let propBgImage = null;
+  let propOverlays = []; // {img, x, y, scale, id}
+  let propSelected = null;
+  let propDragging = false;
+  let propDragOffset = {x:0,y:0};
+
+  function propSize(){
+    const v = document.getElementById('prop-size').value;
+    if(v==='square') return [900,900];
+    if(v==='tall') return [700,1000];
+    return [800,1100];
+  }
+
+  function renderPropaganda(){
+    const [w,h] = propSize();
+    const canvas = document.getElementById('poster-canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    if(propBgImage){
+      // cover fit
+      const scale = Math.max(w/propBgImage.width, h/propBgImage.height);
+      const sw = propBgImage.width*scale, sh = propBgImage.height*scale;
+      ctx.drawImage(propBgImage, (w-sw)/2, (h-sh)/2, sw, sh);
+    } else {
+      ctx.fillStyle = document.getElementById('prop-bg-color').value;
+      ctx.fillRect(0,0,w,h);
+    }
+
+    // Overlays
+    propOverlays.forEach(o=>{
+      const iw = o.img.width * o.scale;
+      const ih = o.img.height * o.scale;
+      ctx.drawImage(o.img, o.x - iw/2, o.y - ih/2, iw, ih);
+      if(propSelected === o.id){
+        ctx.strokeStyle = '#c9a227';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6,4]);
+        ctx.strokeRect(o.x - iw/2 - 4, o.y - ih/2 - 4, iw + 8, ih + 8);
+        ctx.setLineDash([]);
+      }
+    });
+
+    // Text
+    const top = document.getElementById('prop-top').value;
+    const headline = document.getElementById('prop-headline').value;
+    const sub = document.getElementById('prop-sub').value;
+    const side = document.getElementById('prop-side').value;
+    const headCol = document.getElementById('prop-head-color').value;
+    const textCol = document.getElementById('prop-text-color').value;
+    const tstyle = document.getElementById('prop-text-style').value;
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if(side){
+      ctx.save();
+      ctx.fillStyle = textCol;
+      ctx.font = `italic ${Math.round(w*0.07)}px 'Playfair Display', serif`;
+      ctx.translate(w*0.82, h*0.12);
+      ctx.rotate(0.15);
+      ctx.fillText(side, 0, 0);
+      ctx.restore();
+    }
+    if(top){
+      ctx.fillStyle = textCol;
+      ctx.font = `italic ${Math.round(w*0.045)}px 'Playfair Display', serif`;
+      ctx.fillText(top, w*0.28, h*0.12);
+    }
+    if(headline){
+      ctx.fillStyle = headCol;
+      const fs = tstyle==='bold' ? w*0.09 : w*0.075;
+      ctx.font = `bold ${Math.round(fs)}px Cinzel, serif`;
+      // simple word wrap
+      const words = headline.toUpperCase().split(' ');
+      let line = '', lines = [], maxW = w*0.9;
+      words.forEach(wd=>{
+        const test = line ? line+' '+wd : wd;
+        if(ctx.measureText(test).width > maxW && line){ lines.push(line); line=wd; }
+        else line=test;
+      });
+      if(line) lines.push(line);
+      let hy = h*0.78;
+      lines.forEach(l=>{ ctx.fillText(l, w/2, hy); hy += fs*1.15; });
+    }
+    if(sub){
+      ctx.fillStyle = '#111';
+      ctx.font = `bold ${Math.round(w*0.038)}px EB Garamond, serif`;
+      // underline effect for key words roughly
+      ctx.fillText(sub, w/2, h*0.92);
+    }
+  }
+
+  function renderPropOverlaysList(){
+    const list = document.getElementById('prop-overlays-list');
+    list.innerHTML = propOverlays.map((o,i)=>`
+      <div class="saved-item" style="cursor:pointer;${propSelected===o.id?'border-color:var(--gold);':''}" data-id="${o.id}">
+        <div class="saved-item-main">
+          <div class="saved-item-name">Overlay ${i+1}</div>
+          <div class="saved-item-date">scale ${o.scale.toFixed(2)}</div>
+        </div>
+        <div class="saved-item-actions">
+          <button data-scaleup="${o.id}">+</button>
+          <button data-scaledown="${o.id}">−</button>
+          <button class="danger" data-del="${o.id}">Del</button>
+        </div>
+      </div>`).join('') || '<div class="saved-empty">No overlays yet</div>';
+    list.querySelectorAll('[data-id]').forEach(el=>{
+      el.addEventListener('click', e=>{
+        if(e.target.tagName==='BUTTON') return;
+        propSelected = el.dataset.id;
+        renderPropOverlaysList();
+        renderPropaganda();
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+      propOverlays = propOverlays.filter(o=>o.id!==b.dataset.del);
+      if(propSelected===b.dataset.del) propSelected=null;
+      renderPropOverlaysList(); renderPropaganda();
+    }));
+    list.querySelectorAll('[data-scaleup]').forEach(b=>b.addEventListener('click',()=>{
+      const o = propOverlays.find(x=>x.id===b.dataset.scaleup);
+      if(o){ o.scale = Math.min(3, o.scale+0.1); renderPropOverlaysList(); renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-scaledown]').forEach(b=>b.addEventListener('click',()=>{
+      const o = propOverlays.find(x=>x.id===b.dataset.scaledown);
+      if(o){ o.scale = Math.max(0.1, o.scale-0.1); renderPropOverlaysList(); renderPropaganda(); }
+    }));
+  }
+
+  // Propaganda uploads + interactions
+  document.getElementById('prop-bg-upload').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = ()=>{ propBgImage = img; renderPropaganda(); };
+    img.src = URL.createObjectURL(f);
+  });
+  document.getElementById('prop-bg-clear').addEventListener('click', ()=>{ propBgImage=null; renderPropaganda(); });
+  document.getElementById('prop-overlay-upload').addEventListener('change', e=>{
+    Array.from(e.target.files||[]).forEach(f=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const [w,h] = propSize();
+        propOverlays.push({
+          id: 'o'+Date.now()+Math.random().toString(36).slice(2,6),
+          img, x: w/2, y: h/2, scale: Math.min(0.6, 200/img.width)
+        });
+        renderPropOverlaysList();
+        renderPropaganda();
+      };
+      img.src = URL.createObjectURL(f);
+    });
+    e.target.value = '';
+  });
+
+  // Canvas drag for overlays
+  (function(){
+    const canvas = document.getElementById('poster-canvas');
+    function toCanvas(e){
+      const r = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / r.width;
+      const scaleY = canvas.height / r.height;
+      return { x: (e.clientX - r.left)*scaleX, y: (e.clientY - r.top)*scaleY };
+    }
+    canvas.addEventListener('mousedown', e=>{
+      const p = toCanvas(e);
+      // hit test overlays top-first
+      for(let i=propOverlays.length-1;i>=0;i--){
+        const o = propOverlays[i];
+        const iw = o.img.width*o.scale, ih = o.img.height*o.scale;
+        if(p.x > o.x-iw/2 && p.x < o.x+iw/2 && p.y > o.y-ih/2 && p.y < o.y+ih/2){
+          propSelected = o.id;
+          propDragging = true;
+          propDragOffset = {x: p.x - o.x, y: p.y - o.y};
+          renderPropOverlaysList();
+          renderPropaganda();
+          return;
+        }
+      }
+    });
+    window.addEventListener('mousemove', e=>{
+      if(!propDragging || !propSelected) return;
+      const o = propOverlays.find(x=>x.id===propSelected);
+      if(!o) return;
+      const p = toCanvas(e);
+      o.x = p.x - propDragOffset.x;
+      o.y = p.y - propDragOffset.y;
+      renderPropaganda();
+    });
+    window.addEventListener('mouseup', ()=>{ propDragging=false; });
+  })();
+
+  ['prop-top','prop-headline','prop-sub','prop-side','prop-head-color','prop-text-color','prop-text-style','prop-size','prop-bg-color'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', renderPropaganda);
+    el.addEventListener('change', renderPropaganda);
+  });
+  // color hex sync
+  ['prop-bg-color','prop-head-color','prop-text-color'].forEach(id=>{
+    const hex = id+'-hex';
+    const c = document.getElementById(id), h = document.getElementById(hex);
+    if(c&&h){
+      c.addEventListener('input',()=>{h.value=c.value;renderPropaganda();});
+      h.addEventListener('input',()=>{if(/^#[0-9a-fA-F]{6}$/.test(h.value)){c.value=h.value;renderPropaganda();}});
+    }
+  });
+
+  document.getElementById('btn-prop-png').addEventListener('click', ()=>{
+    const canvas = document.getElementById('poster-canvas');
+    const link = document.createElement('a');
+    link.download = 'propaganda.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('btn-prop-copy').addEventListener('click', async ()=>{
+    const canvas = document.getElementById('poster-canvas');
+    canvas.toBlob(async blob=>{
+      try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Copied'); }
+      catch(e){ alert('Copy failed'); }
+    });
+  });
+
+  // ========== CLAIM MAPS ==========
+  let mapImage = null;
+  let mapLabels = []; // {id, text, x, y, color, size}
+  let mapSelected = null;
+  let mapDragging = false;
+  let mapDragOffset = {x:0,y:0};
+
+  function renderMap(){
+    const canvas = document.getElementById('map-canvas');
+    const ctx = canvas.getContext('2d');
+    if(mapImage){
+      // fit image
+      const maxW = 1000, maxH = 800;
+      let w = mapImage.width, h = mapImage.height;
+      const scale = Math.min(maxW/w, maxH/h, 1.5);
+      w = Math.round(w*scale); h = Math.round(h*scale);
+      canvas.width = w; canvas.height = h;
+      ctx.drawImage(mapImage, 0, 0, w, h);
+    } else {
+      canvas.width = 900; canvas.height = 600;
+      ctx.fillStyle = '#1a2332';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#5a6a7a';
+      ctx.font = '20px EB Garamond, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Upload a map image to begin', canvas.width/2, canvas.height/2);
+    }
+
+    const defaultColor = document.getElementById('map-label-color').value;
+    const defaultSize = parseInt(document.getElementById('map-font-size').value)||28;
+    const shadow = document.getElementById('map-label-shadow').checked;
+    const outline = document.getElementById('map-label-outline')?.checked;
+    const showLegend = document.getElementById('map-legend')?.checked;
+
+    mapLabels.forEach(l=>{
+      const size = l.size || defaultSize;
+      const color = l.color || defaultColor;
+      ctx.font = `bold ${size}px 'Playfair Display', Cinzel, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if(outline){
+        ctx.lineWidth = Math.max(3, size*0.12);
+        ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+        ctx.lineJoin = 'round';
+        ctx.strokeText(l.text, l.x, l.y);
+      }
+      if(shadow){
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillText(l.text, l.x+2, l.y+2);
+      }
+      ctx.fillStyle = color;
+      ctx.fillText(l.text, l.x, l.y);
+      if(mapSelected === l.id){
+        const tw = ctx.measureText(l.text).width;
+        ctx.strokeStyle = '#c9a227';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5,3]);
+        ctx.strokeRect(l.x - tw/2 - 8, l.y - size/2 - 6, tw + 16, size + 12);
+        ctx.setLineDash([]);
+      }
+    });
+
+    // Legend box
+    if(showLegend && mapLabels.length){
+      const pad = 10, rowH = 18, boxW = 160;
+      const boxH = pad*2 + mapLabels.length * rowH;
+      const bx = canvas.width - boxW - 12, by = 12;
+      ctx.fillStyle = 'rgba(10,12,16,0.78)';
+      ctx.fillRect(bx, by, boxW, boxH);
+      ctx.strokeStyle = 'rgba(201,162,39,0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, by, boxW, boxH);
+      ctx.font = '12px Cinzel, serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      mapLabels.forEach((l,i)=>{
+        const cy = by + pad + i*rowH + rowH/2;
+        ctx.fillStyle = l.color || defaultColor;
+        ctx.fillRect(bx+10, cy-5, 10, 10);
+        ctx.fillStyle = '#f0e6d0';
+        ctx.fillText(l.text.slice(0,18), bx+28, cy);
+      });
+    }
+  }
+
+  function renderMapLabelsList(){
+    const list = document.getElementById('map-labels-list');
+    list.innerHTML = mapLabels.map((l,i)=>`
+      <div class="party-card" style="padding:10px;${mapSelected===l.id?'border-color:var(--gold);':''}">
+        <div class="field" style="margin-bottom:6px;">
+          <input type="text" value="${l.text}" data-text="${l.id}" placeholder="Nation name">
+        </div>
+        <div class="row2">
+          <div class="color-input">
+            <input type="color" value="${l.color||'#ffffff'}" data-color="${l.id}">
+          </div>
+          <button class="icon-btn danger" data-del="${l.id}" style="width:auto;padding:0 10px;">×</button>
+        </div>
+      </div>`).join('') || '<div class="saved-empty">No labels yet — add some</div>';
+
+    list.querySelectorAll('[data-text]').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const l = mapLabels.find(x=>x.id===inp.dataset.text);
+        if(l){ l.text = inp.value; renderMap(); }
+      });
+      inp.addEventListener('focus', ()=>{ mapSelected = inp.dataset.text; renderMap(); renderMapLabelsList(); });
+    });
+    list.querySelectorAll('[data-color]').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const l = mapLabels.find(x=>x.id===inp.dataset.color);
+        if(l){ l.color = inp.value; renderMap(); }
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+      mapLabels = mapLabels.filter(x=>x.id!==b.dataset.del);
+      if(mapSelected===b.dataset.del) mapSelected=null;
+      renderMapLabelsList(); renderMap();
+    }));
+  }
+
+  document.getElementById('map-upload').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = ()=>{ mapImage = img; renderMap(); };
+    img.src = URL.createObjectURL(f);
+  });
+  document.getElementById('map-clear').addEventListener('click', ()=>{ mapImage=null; renderMap(); });
+  document.getElementById('map-add-label').addEventListener('click', ()=>{
+    const canvas = document.getElementById('map-canvas');
+    mapLabels.push({
+      id: 'l'+Date.now(),
+      text: 'Nation',
+      x: canvas.width/2,
+      y: canvas.height/2,
+      color: document.getElementById('map-label-color').value,
+      size: parseInt(document.getElementById('map-font-size').value)||28
+    });
+    renderMapLabelsList();
+    renderMap();
+  });
+  document.getElementById('map-font-size').addEventListener('input', renderMap);
+  document.getElementById('map-label-shadow').addEventListener('change', renderMap);
+  const mapOutline = document.getElementById('map-label-outline');
+  if(mapOutline) mapOutline.addEventListener('change', renderMap);
+  const mapLegend = document.getElementById('map-legend');
+  if(mapLegend) mapLegend.addEventListener('change', renderMap);
+  document.getElementById('map-label-color').addEventListener('input', e=>{
+    document.getElementById('map-label-color-hex').value = e.target.value;
+  });
+
+  // Map label dragging
+  (function(){
+    const canvas = document.getElementById('map-canvas');
+    function toCanvas(e){
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - r.left) * (canvas.width / r.width),
+        y: (e.clientY - r.top) * (canvas.height / r.height)
+      };
+    }
+    canvas.addEventListener('mousedown', e=>{
+      const p = toCanvas(e);
+      const ctx = canvas.getContext('2d');
+      for(let i=mapLabels.length-1;i>=0;i--){
+        const l = mapLabels[i];
+        ctx.font = `bold ${l.size||28}px serif`;
+        const tw = ctx.measureText(l.text).width;
+        const th = l.size||28;
+        if(p.x > l.x-tw/2-10 && p.x < l.x+tw/2+10 && p.y > l.y-th/2-8 && p.y < l.y+th/2+8){
+          mapSelected = l.id;
+          mapDragging = true;
+          mapDragOffset = {x: p.x-l.x, y: p.y-l.y};
+          renderMapLabelsList();
+          renderMap();
+          return;
+        }
+      }
+    });
+    window.addEventListener('mousemove', e=>{
+      if(!mapDragging || !mapSelected) return;
+      const l = mapLabels.find(x=>x.id===mapSelected);
+      if(!l) return;
+      const p = toCanvas(e);
+      l.x = p.x - mapDragOffset.x;
+      l.y = p.y - mapDragOffset.y;
+      renderMap();
+    });
+    window.addEventListener('mouseup', ()=>{ mapDragging=false; });
+  })();
+
+  document.getElementById('btn-map-png').addEventListener('click', ()=>{
+    const canvas = document.getElementById('map-canvas');
+    const link = document.createElement('a');
+    link.download = 'claim-map.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('btn-map-copy').addEventListener('click', async ()=>{
+    const canvas = document.getElementById('map-canvas');
+    canvas.toBlob(async blob=>{
+      try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Copied'); }
+      catch(e){ alert('Copy failed'); }
+    });
+  });
+
+  // ========== DISCORD BANNER + ICON ==========
+  function syncDiscordColors(){
+    ['discord-c1','discord-c2','discord-accent','discord-text','discord-icon-bg','discord-icon-fg'].forEach(id=>{
+      const hex = id + '-hex';
+      const c = document.getElementById(id);
+      const h = document.getElementById(hex);
+      if(!c || !h) return;
+      c.addEventListener('input', ()=>{ h.value = c.value; renderDiscordBanner(); renderDiscordIcon(); });
+      h.addEventListener('input', ()=>{
+        if(/^#[0-9a-fA-F]{6}$/.test(h.value)){ c.value = h.value; renderDiscordBanner(); renderDiscordIcon(); }
+      });
+    });
+  }
+  syncDiscordColors();
+  ['discord-banner-style','discord-title','discord-sub','discord-tag','discord-icon-text'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+      el.addEventListener('input', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
+      el.addEventListener('change', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
+    }
+  });
+
+  function renderDiscordBanner(){
+    const canvas = document.getElementById('discord-banner-canvas');
+    const w=960, h=540;
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    const style = document.getElementById('discord-banner-style').value;
+    const title = document.getElementById('discord-title').value;
+    const sub = document.getElementById('discord-sub').value;
+    const tag = document.getElementById('discord-tag').value;
+    const c1 = document.getElementById('discord-c1').value;
+    const c2 = document.getElementById('discord-c2').value;
+    const accent = document.getElementById('discord-accent').value;
+    const textCol = document.getElementById('discord-text').value;
+
+    // Background
+    if(style==='gradient' || style==='emblem' || style==='minimal'){
+      const g = ctx.createLinearGradient(0,0,w,h);
+      g.addColorStop(0, c1);
+      g.addColorStop(1, c2);
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,w,h);
+    } else if(style==='flag'){
+      ctx.fillStyle = c1;
+      ctx.fillRect(0,0,w,h/3);
+      ctx.fillStyle = c2;
+      ctx.fillRect(0,h/3,w,h/3);
+      ctx.fillStyle = accent;
+      ctx.fillRect(0,2*h/3,w,h/3);
+    }
+
+    // Decorative bars
+    if(style==='gradient' || style==='emblem'){
+      ctx.fillStyle = accent;
+      ctx.fillRect(0, h*0.42, w, 4);
+      ctx.fillRect(0, h*0.58, w, 2);
+    }
+    if(style==='minimal'){
+      ctx.fillStyle = accent;
+      ctx.fillRect(w*0.1, h*0.7, w*0.15, 3);
+    }
+
+    // Title
+    ctx.fillStyle = textCol;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${style==='minimal' ? 42 : 56}px Cinzel, serif`;
+    ctx.fillText(title.toUpperCase(), w/2, style==='minimal' ? h*0.4 : h*0.32);
+
+    // Subtitle
+    if(sub){
+      ctx.fillStyle = accent;
+      ctx.font = `500 22px EB Garamond, serif`;
+      ctx.fillText(sub, w/2, style==='minimal' ? h*0.52 : h*0.48);
+    }
+
+    // Tagline
+    if(tag && style!=='minimal'){
+      ctx.fillStyle = textCol;
+      ctx.globalAlpha = 0.75;
+      ctx.font = `400 18px EB Garamond, serif`;
+      ctx.fillText(tag, w/2, h*0.68);
+      ctx.globalAlpha = 1;
+    }
+
+    // Subtle vignette
+    const vg = ctx.createRadialGradient(w/2,h/2,h*0.3,w/2,h/2,h*0.8);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,0.35)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0,0,w,h);
+  }
+
+  function renderDiscordIcon(){
+    const canvas = document.getElementById('discord-icon-canvas');
+    const size = 512;
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const text = document.getElementById('discord-icon-text').value || 'XX';
+    const bg = document.getElementById('discord-icon-bg').value;
+    const fg = document.getElementById('discord-icon-fg').value;
+
+    // Circle background
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+    ctx.fillStyle = bg;
+    ctx.fill();
+
+    // Ring
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size*0.42, 0, Math.PI*2);
+    ctx.lineWidth = size*0.04;
+    ctx.strokeStyle = fg;
+    ctx.stroke();
+
+    // Initials
+    ctx.fillStyle = fg;
+    ctx.font = `bold ${Math.round(size*0.28)}px Cinzel, serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text.toUpperCase(), size/2, size/2 + size*0.02);
+  }
+
+  document.getElementById('btn-discord-banner').addEventListener('click', ()=>{
+    const canvas = document.getElementById('discord-banner-canvas');
+    const link = document.createElement('a');
+    link.download = 'discord-banner.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('btn-discord-icon').addEventListener('click', ()=>{
+    const canvas = document.getElementById('discord-icon-canvas');
+    const link = document.createElement('a');
+    link.download = 'discord-icon.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  // Initial renders
+  try { renderFlag(); } catch(e){ console.error(e); }
+  try { renderEmblem(); } catch(e){ console.error(e); }
+  try { renderPropaganda(); } catch(e){ console.error(e); }
+  try { renderMap(); } catch(e){ console.error(e); }
+  try { renderDiscordBanner(); } catch(e){ console.error(e); }
+  try { renderDiscordIcon(); } catch(e){ console.error(e); }
 })();
 </script>
 
@@ -1268,3 +2950,5 @@
   #document{ position:absolute; left:0; top:0; box-shadow:none !important; width:100% !important; }
   .stage, .panel, .app{ background:transparent !important; }
 </style>
+</body>
+</html>
