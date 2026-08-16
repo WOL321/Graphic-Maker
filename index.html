@@ -43,6 +43,9 @@
     padding:4px;
     border-radius:8px;
     border:1px solid var(--panel-line);
+    position:sticky;
+    top:0;
+    z-index:5;
   }
   .mode-tab{
     flex:1 1 30%;
@@ -218,6 +221,53 @@
   .saved-item-actions button.danger:hover{color:#c94b4b; border-color:#c94b4b;}
   .saved-empty{font-size:12px; color:var(--panel-muted); font-style:italic; padding:6px 2px 2px;}
 
+  /* ---- NEW: palette preset strips (flags / emblems / discord) ---- */
+  .palette-row{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;}
+  .palette-btn{
+    height:30px; border-radius:6px; border:1px solid var(--panel-line); cursor:pointer;
+    display:flex; overflow:hidden; padding:0; position:relative;
+  }
+  .palette-btn:hover{border-color:var(--gold); transform:translateY(-1px);}
+  .palette-btn span{flex:1 1 0;}
+  .palette-btn .pname{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'EB Garamond',serif; font-size:10.5px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.9);
+    opacity:0; transition:opacity .12s; background:rgba(0,0,0,.35);
+  }
+  .palette-btn:hover .pname{opacity:1;}
+
+  /* ---- NEW: layer list (propaganda / map labels) ---- */
+  .layer-item{
+    border:1px solid var(--panel-line); border-radius:8px; padding:10px; margin-bottom:8px; background:#181510;
+    cursor:pointer;
+  }
+  .layer-item.selected{border-color:var(--gold-bright); box-shadow:0 0 0 1px var(--gold-bright) inset;}
+  .layer-head{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px;}
+  .layer-head .layer-label{font-size:12px; color:var(--panel-muted); text-transform:uppercase; letter-spacing:.05em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:150px;}
+  .layer-head .layer-btns{display:flex; gap:3px; flex-shrink:0;}
+  .layer-head .layer-btns button{
+    width:22px;height:22px;font-size:11px;border-radius:4px;border:1px solid var(--panel-line);
+    background:#100e0a;color:var(--panel-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .layer-head .layer-btns button:hover{color:#fff;border-color:var(--gold);}
+  .layer-head .layer-btns button.danger:hover{color:#c94b4b;border-color:#c94b4b;}
+  .mini-row{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:6px; margin-bottom:5px;}
+  .mini-row label{font-size:10px; color:var(--panel-muted); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;}
+  .mini-row .mini-val{font-size:10px; color:var(--panel-muted); width:34px; text-align:right;}
+  .mini-row input[type=range]{margin-top:0;}
+  .layer-item input[type=text]{
+    width:100%; background:#100e0a; border:1px solid var(--panel-line); color:var(--panel-text);
+    font-family:'EB Garamond',serif; font-size:13px; padding:6px 8px; border-radius:5px; margin-bottom:6px;
+  }
+
+  .filter-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
+  .filter-btn{
+    padding:6px 10px; font-size:11px; font-family:'EB Garamond',serif; border-radius:6px;
+    background:#100e0a; border:1px solid var(--panel-line); color:var(--panel-muted); cursor:pointer;
+  }
+  .filter-btn:hover{color:#fff;border-color:var(--gold);}
+  .filter-btn.active{color:#241c12;background:linear-gradient(180deg,var(--gold-bright),var(--gold));border-color:var(--gold);}
+
   /* STAGE */
   .stage{
     background:radial-gradient(ellipse at 50% 0%, #232019 0%, #15130f 60%);
@@ -273,9 +323,6 @@
     font-size:14px; color:var(--gold); opacity:.7; pointer-events:none;
   }
   #document.border-none::before{ display:none; }
-  #document.paper-parchment, #document.paper-cream, #document.paper-dark, #document.paper-navy, #document.paper-crimson{
-    /* border handled by border-* classes */
-  }
 
   .eyebrow{
     text-align:center; font-family:'Cinzel',serif; font-size:11px; letter-spacing:.22em; text-transform:uppercase;
@@ -328,10 +375,8 @@
     background:
       radial-gradient(circle at 32% 28%, var(--wax-hi) 0%, var(--wax-mid) 28%, var(--wax) 55%, var(--wax-lo) 78%, var(--wax-deep) 100%);
     box-shadow:
-      /* outer drop */
       0 4px 10px rgba(0,0,0,.4),
       0 1px 2px rgba(0,0,0,.3),
-      /* raised rim highlight */
       inset 0 3px 5px rgba(255,180,160,.35),
       inset 0 -4px 8px rgba(0,0,0,.45),
       inset 2px 2px 4px rgba(255,200,180,.2),
@@ -358,13 +403,7 @@
     pointer-events:none;
     z-index:0;
   }
-  .seal{
-    z-index:1;
-  }
-  /* slight organic edge — soft irregularity via layered shadow */
-  .seal{
-    border: 1px solid rgba(80,10,10,.4);
-  }
+  .seal{ z-index:1; border: 1px solid rgba(80,10,10,.4); }
   .flag{
     width:44px;height:29px;background:center/cover no-repeat #ccc;
     border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.25);
@@ -431,7 +470,7 @@
     transform:rotate(-14deg);
   }
 
-  /* ROYAL ALLIANCE LAYOUT — matches real diplomatic treaty examples */
+  /* ROYAL ALLIANCE LAYOUT */
   .heraldry-row{display:none; justify-content:center; align-items:center; gap:22px; margin:0 0 14px; flex-wrap:wrap;}
   .layout-royal .heraldry-row{display:flex;}
   .layout-royal .ornament{display:none;}
@@ -536,7 +575,7 @@
   }
   .layout-imperial .sig-name{font-family:'Cinzel',serif; font-size:16px; letter-spacing:.05em;}
 
-  /* FLAG + EMBLEM PREVIEW */
+  /* PREVIEW FRAMES */
   .preview-frame{
     background:#0d0c0a;
     border:1px solid var(--panel-line);
@@ -575,7 +614,7 @@
       <button class="mode-tab" data-mode="discord">Discord</button>
     </div>
 
-    <!-- ===================== DOCUMENTS MODE ===================== -->
+    <!-- ===================== DOCUMENTS MODE (unchanged) ===================== -->
     <div class="mode-panel active" id="mode-docs">
       <button class="add-btn" id="btn-surprise" style="border-style:solid;border-color:var(--gold);color:var(--gold-bright);margin-bottom:14px;">🎲 Surprise me</button>
 
@@ -703,6 +742,8 @@
 
     <!-- ===================== FLAGS MODE ===================== -->
     <div class="mode-panel" id="mode-flags">
+      <button class="add-btn" id="btn-flag-surprise" style="border-style:solid;border-color:var(--gold);color:var(--gold-bright);margin-bottom:14px;">🎲 Surprise flag</button>
+
       <h2>Flag Design</h2>
       <div class="field">
         <label>Layout</label>
@@ -735,7 +776,16 @@
         </select>
       </div>
 
+      <div class="checkbox-row">
+        <input type="checkbox" id="flag-sheen" checked>
+        <label for="flag-sheen">Fabric sheen (subtle light/shadow gradient)</label>
+      </div>
+
       <h2>Colors</h2>
+      <div class="field">
+        <label>Quick palettes</label>
+        <div class="palette-row" id="flag-palettes"></div>
+      </div>
       <div class="field">
         <label>Color 1 (main / top / left)</label>
         <div class="color-input">
@@ -802,15 +852,25 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>Export resolution</label>
+        <select id="flag-export-scale">
+          <option value="2">2× (standard)</option>
+          <option value="4" selected>4× (crisp, print / Discord)</option>
+          <option value="6">6× (max quality)</option>
+        </select>
+      </div>
       <div class="export-bar">
         <button class="btn-primary" id="btn-flag-png">Download PNG</button>
         <button class="btn-secondary" id="btn-flag-copy">Copy</button>
       </div>
-      <div class="hint">Common nation flag layouts. Adjust colors and add a simple emblem. Download at high resolution.</div>
+      <div class="hint">Every export is redrawn crisp at your chosen resolution — no more blurry upscaling. Pick a quick palette to get a good-looking flag in one click, then fine-tune.</div>
     </div>
 
     <!-- ===================== EMBLEMS MODE ===================== -->
     <div class="mode-panel" id="mode-emblems">
+      <button class="add-btn" id="btn-emblem-surprise" style="border-style:solid;border-color:var(--gold);color:var(--gold-bright);margin-bottom:14px;">🎲 Surprise emblem</button>
+
       <h2>Seal / Emblem</h2>
       <div class="field">
         <label>Style</label>
@@ -834,6 +894,10 @@
       </div>
 
       <h2>Colors</h2>
+      <div class="field">
+        <label>Quick palettes</label>
+        <div class="palette-row" id="emblem-palettes"></div>
+      </div>
       <div class="field">
         <label>Background</label>
         <div class="color-input">
@@ -863,6 +927,11 @@
         </div>
       </div>
 
+      <div class="checkbox-row">
+        <input type="checkbox" id="emblem-shadow" checked>
+        <label for="emblem-shadow">Raised / drop-shadow finish</label>
+      </div>
+
       <div class="field">
         <label>Size</label>
         <select id="emblem-size">
@@ -877,10 +946,10 @@
         <button class="btn-primary" id="btn-emblem-png">Download PNG</button>
         <button class="btn-secondary" id="btn-emblem-copy">Copy</button>
       </div>
-      <div class="hint">Great for seals on documents, Discord icons, and nation branding.</div>
+      <div class="hint">This emblem also powers the "Centered Emblem" Discord banner style and the corner emblem slots on documents.</div>
     </div>
 
-    <!-- ===================== PROPAGANDA MODE (compositor) ===================== -->
+    <!-- ===================== PROPAGANDA MODE (layer compositor) ===================== -->
     <div class="mode-panel" id="mode-posters">
       <h2>Base Image</h2>
       <div class="field">
@@ -898,51 +967,37 @@
           <input type="text" id="prop-bg-color-hex" value="#1a1208">
         </div>
       </div>
-
-      <h2>Minecraft Overlays</h2>
       <div class="field">
-        <label>Add heads / skins / images</label>
-        <label class="file-btn" style="display:block;text-align:center;padding:10px;">
-          + Add overlay image
-          <input type="file" id="prop-overlay-upload" accept="image/*" multiple>
-        </label>
+        <label>Poster filter</label>
+        <div class="filter-row" id="prop-filter-row">
+          <button class="filter-btn active" data-filter="none">None</button>
+          <button class="filter-btn" data-filter="sepia">Sepia</button>
+          <button class="filter-btn" data-filter="noir">Noir</button>
+          <button class="filter-btn" data-filter="vintage">Vintage</button>
+          <button class="filter-btn" data-filter="duotone">Duotone Gold</button>
+        </div>
       </div>
-      <div id="prop-overlays-list" style="margin-bottom:12px;"></div>
-      <div class="hint" style="margin-top:0;border:none;padding-top:0;">Upload Minecraft heads or skin renders. Click an overlay in the list to select it, then drag on the canvas to position.</div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="prop-grain" checked>
+        <label for="prop-grain">Paper grain texture</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="prop-vignette" checked>
+        <label for="prop-vignette">Dark vignette edges</label>
+      </div>
 
-      <h2>Text Layers</h2>
-      <div class="field"><label>Top text (e.g. nation)</label><input type="text" id="prop-top" value="" placeholder="Nation name..."></div>
-      <div class="field"><label>Big headline</label><input type="text" id="prop-headline" value="" placeholder="HEADLINE"></div>
-      <div class="field"><label>Sub / slogan</label><input type="text" id="prop-sub" value="" placeholder="Slogan or subtitle..."></div>
-      <div class="field"><label>Corner / side text</label><input type="text" id="prop-side" value="" placeholder="Optional side text"></div>
-
+      <h2>Layers</h2>
       <div class="row2">
-        <div class="field">
-          <label>Headline color</label>
-          <div class="color-input">
-            <input type="color" id="prop-head-color" value="#c9a227">
-            <input type="text" id="prop-head-color-hex" value="#c9a227">
-          </div>
-        </div>
-        <div class="field">
-          <label>Other text color</label>
-          <div class="color-input">
-            <input type="color" id="prop-text-color" value="#f5e6c8">
-            <input type="text" id="prop-text-color-hex" value="#f5e6c8">
-          </div>
-        </div>
+        <label class="file-btn" style="text-align:center;padding:10px;">
+          + Image layer
+          <input type="file" id="prop-add-image" accept="image/*" multiple>
+        </label>
+        <button class="add-btn" id="prop-add-text" style="margin-top:0;">+ Text layer</button>
       </div>
+      <div id="prop-layers-list" style="margin-top:12px;"></div>
+      <div class="hint" style="margin-top:0;border:none;padding-top:0;">Click a layer (in the list or on the canvas) to select it, then drag on the canvas to move it. Use the sliders to scale/rotate/fade. Delete key removes the selected layer.</div>
 
-      <div class="field">
-        <label>Text style</label>
-        <select id="prop-text-style">
-          <option value="classic">Classic serif</option>
-          <option value="bold">Heavy propaganda</option>
-          <option value="dramatic">Dramatic italic</option>
-        </select>
-      </div>
-
-      <div class="field">
+      <div class="field" style="margin-top:14px;">
         <label>Canvas size</label>
         <select id="prop-size">
           <option value="portrait">Portrait 800×1100</option>
@@ -955,7 +1010,6 @@
         <button class="btn-primary" id="btn-prop-png">Download PNG</button>
         <button class="btn-secondary" id="btn-prop-copy">Copy</button>
       </div>
-      <div class="hint">Upload a real historical poster or painting as the base, then drop Minecraft heads/skins on top and add propaganda text. This is how the good ones are made.</div>
     </div>
 
     <!-- ===================== CLAIM MAPS MODE ===================== -->
@@ -969,21 +1023,118 @@
         </label>
         <button class="add-btn" id="map-clear" style="margin-top:6px;">Clear map</button>
       </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="map-desaturate" checked>
+        <label for="map-desaturate">Desaturate base map (atlas look — makes claims pop)</label>
+      </div>
 
-      <h2>Nation Labels</h2>
-      <div id="map-labels-list"></div>
-      <button class="add-btn" id="map-add-label">+ Add nation label</button>
+      <h2>Map Finish</h2>
+      <div class="checkbox-row">
+        <input type="checkbox" id="map-smooth-edges" checked>
+        <label for="map-smooth-edges">Organic smoothed claim edges (not jagged polygon lines)</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="map-finish-grain" checked>
+        <label for="map-finish-grain">Paper grain + vignette (finished poster look)</label>
+      </div>
+
+      <h2>Map Tools</h2>
+      <div class="filter-row" id="map-mode-row">
+        <button class="filter-btn active" data-mapmode="label">🏷️ Labels</button>
+        <button class="filter-btn" data-mapmode="territory">🗺️ Territory</button>
+        <button class="filter-btn" data-mapmode="connect">🔗 Connect</button>
+      </div>
+      <div class="hint" id="map-mode-hint" style="margin:8px 0 0;border:none;padding-top:0;"></div>
+
+      <div id="map-labels-section">
+        <h2>Nation Labels <button class="tiny-btn" id="map-add-label">+ add</button></h2>
+        <div id="map-labels-list"></div>
+      </div>
+
+      <div id="map-territory-section" style="display:none;">
+        <h2>Territories</h2>
+        <div id="territory-draw-controls" style="display:none;">
+          <div class="hint" id="territory-draw-info" style="margin:0 0 8px;border:none;padding-top:0;">Click to add points…</div>
+          <div class="export-bar" style="margin-top:0;">
+            <button class="btn-primary" id="territory-finish">Finish shape</button>
+            <button class="btn-secondary" id="territory-cancel">Cancel</button>
+          </div>
+        </div>
+        <div id="territory-list"></div>
+      </div>
+
+      <div id="map-connector-section" style="display:none;">
+        <h2>Connectors</h2>
+        <div id="connector-status" class="hint" style="margin:0 0 8px;border:none;padding-top:0;">Click a nation label or territory, then click another to link them. Use "Corridor" style for a real filled claim-strip like a supply route, or "Line" for a simple alliance line.</div>
+        <div id="connector-list"></div>
+      </div>
+
+      <h2>Title Overlay</h2>
+      <div class="checkbox-row">
+        <input type="checkbox" id="title-enabled">
+        <label for="title-enabled">Show poster-style title</label>
+      </div>
+      <div class="field"><label>Highlight tag (small line above)</label><input type="text" id="title-tag" value="QUE VIVA"></div>
+      <div class="field"><label>Big title</label><input type="text" id="title-main" value="COLOMBIA"></div>
+      <div class="row2">
+        <div class="field">
+          <label>Anchor</label>
+          <select id="title-anchor">
+            <option value="bottom-left" selected>Bottom left</option>
+            <option value="bottom-right">Bottom right</option>
+            <option value="top-left">Top left</option>
+            <option value="top-right">Top right</option>
+            <option value="center">Center</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tag highlight color</label>
+          <div class="color-input">
+            <input type="color" id="title-tag-color" value="#f0c419">
+            <input type="text" id="title-tag-color-hex" value="#f0c419">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Title color</label>
+        <div class="color-input">
+          <input type="color" id="title-color" value="#141414">
+          <input type="text" id="title-color-hex" value="#141414">
+        </div>
+      </div>
+
+      <h2>Flag Inset</h2>
+      <div class="row2">
+        <label class="file-btn" style="text-align:center;padding:10px;">
+          Flag 1
+          <input type="file" id="map-flag1-upload" accept="image/*">
+        </label>
+        <label class="file-btn" style="text-align:center;padding:10px;">
+          Flag 2 (optional)
+          <input type="file" id="map-flag2-upload" accept="image/*">
+        </label>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>Position</label>
+        <select id="map-flag-anchor">
+          <option value="bottom-left" selected>Bottom left</option>
+          <option value="bottom-right">Bottom right</option>
+          <option value="top-left">Top left</option>
+          <option value="top-right">Top right</option>
+        </select>
+      </div>
+      <button class="add-btn" id="map-flags-clear">Clear flags</button>
 
       <h2>Label Style</h2>
       <div class="field">
-        <label>Default text color</label>
+        <label>Default text color (for new labels)</label>
         <div class="color-input">
           <input type="color" id="map-label-color" value="#ffffff">
           <input type="text" id="map-label-color-hex" value="#ffffff">
         </div>
       </div>
       <div class="field">
-        <label>Font size</label>
+        <label>Default font size</label>
         <input type="range" id="map-font-size" min="14" max="64" value="28">
       </div>
       <div class="checkbox-row">
@@ -1003,11 +1154,13 @@
         <button class="btn-primary" id="btn-map-png">Download PNG</button>
         <button class="btn-secondary" id="btn-map-copy">Copy</button>
       </div>
-      <div class="hint">Upload any claim map or Dynmap screenshot. Add nation name labels and drag them into position. Perfect for the East Asia / China / Japan style claim maps.</div>
+      <div class="hint">Upload any claim map or Dynmap screenshot. Switch modes above: Labels drops nation names, Territory draws real filled borders, Connect links nations with alliance/trade lines. Delete key removes whatever's selected, Escape cancels an in-progress shape.</div>
     </div>
 
     <!-- ===================== DISCORD MODE ===================== -->
     <div class="mode-panel" id="mode-discord">
+      <button class="add-btn" id="btn-discord-surprise" style="border-style:solid;border-color:var(--gold);color:var(--gold-bright);margin-bottom:14px;">🎲 Surprise style</button>
+
       <h2>Discord Banner</h2>
       <div class="field">
         <label>Banner style</label>
@@ -1017,6 +1170,10 @@
           <option value="emblem">Centered Emblem</option>
           <option value="minimal">Minimal Dark</option>
         </select>
+      </div>
+      <div class="checkbox-row" id="discord-emblem-toggle-row">
+        <input type="checkbox" id="discord-use-emblem" checked>
+        <label for="discord-use-emblem">Use my Emblem design (from Emblems tab)</label>
       </div>
       <div class="field">
         <label>Main title</label>
@@ -1030,8 +1187,16 @@
         <label>Tagline (optional)</label>
         <input type="text" id="discord-tag" value="Glory • Honor • Sovereignty">
       </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="discord-grain" checked>
+        <label for="discord-grain">Subtle texture + vignette</label>
+      </div>
 
       <h2>Banner Colors</h2>
+      <div class="field">
+        <label>Quick palettes</label>
+        <div class="palette-row" id="discord-palettes"></div>
+      </div>
       <div class="field">
         <label>Color 1</label>
         <div class="color-input">
@@ -1062,8 +1227,12 @@
       </div>
 
       <h2>Server Icon</h2>
+      <div class="checkbox-row">
+        <input type="checkbox" id="discord-icon-use-emblem" checked>
+        <label for="discord-icon-use-emblem">Use my Emblem design</label>
+      </div>
       <div class="field">
-        <label>Icon initials</label>
+        <label>Icon initials (used if no emblem)</label>
         <input type="text" id="discord-icon-text" value="HK" maxlength="3">
       </div>
       <div class="field">
@@ -1081,11 +1250,18 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>Banner export</label>
+        <select id="discord-banner-scale">
+          <option value="1">Standard 960×540</option>
+          <option value="2" selected>Retina 1920×1080</option>
+        </select>
+      </div>
       <div class="export-bar">
         <button class="btn-primary" id="btn-discord-banner">Download Banner</button>
         <button class="btn-primary" id="btn-discord-icon">Download Icon</button>
       </div>
-      <div class="hint">Banner is 960×540 (Discord recommended). Icon is 512×512. Use both for your nation Discord.</div>
+      <div class="hint">Banner is 960×540 (Discord recommended). Icon is 512×512. Turn on "Use my Emblem design" to pull straight from the Emblems tab for a matching set.</div>
     </div>
   </div>
 
@@ -1129,15 +1305,15 @@
     <!-- Propaganda stage -->
     <div id="poster-stage" style="display:none;">
       <div class="preview-frame">
-        <div class="preview-label">Propaganda Compositor — drag overlays to position</div>
-        <canvas id="poster-canvas" width="800" height="1100" style="cursor:crosshair;max-width:100%;"></canvas>
+        <div class="preview-label">Propaganda Compositor — drag layers to position</div>
+        <canvas id="poster-canvas" width="800" height="1100" style="cursor:grab;max-width:100%;"></canvas>
       </div>
     </div>
 
     <!-- Claim Maps stage -->
     <div id="maps-stage" style="display:none;">
       <div class="preview-frame">
-        <div class="preview-label">Claim Map — drag labels to position</div>
+        <div class="preview-label">Claim Map — click to drop a label, drag to position</div>
         <canvas id="map-canvas" width="900" height="700" style="cursor:crosshair;max-width:100%;"></canvas>
       </div>
     </div>
@@ -1160,6 +1336,75 @@
 
 <script>
 (function(){
+  // ========== SHARED HELPERS (grain / vignette used by Propaganda + Discord) ==========
+  let __grainTile = null;
+  function getGrainTile(){
+    if(__grainTile) return __grainTile;
+    const s = 120;
+    const c = document.createElement('canvas'); c.width=s; c.height=s;
+    const cx = c.getContext('2d');
+    const id = cx.createImageData(s,s);
+    for(let i=0;i<id.data.length;i+=4){
+      const v = 190 + Math.random()*65;
+      id.data[i]=v; id.data[i+1]=v; id.data[i+2]=v; id.data[i+3]= Math.random()*45;
+    }
+    cx.putImageData(id,0,0);
+    __grainTile = c;
+    return c;
+  }
+  function drawGrain(ctx,w,h,alpha){
+    const tile = getGrainTile();
+    const pat = ctx.createPattern(tile,'repeat');
+    ctx.save();
+    ctx.globalAlpha = alpha!=null?alpha:0.16;
+    try{ ctx.globalCompositeOperation='overlay'; }catch(e){}
+    ctx.fillStyle = pat;
+    ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  }
+  function drawVignette(ctx,w,h,strength){
+    const vg = ctx.createRadialGradient(w/2,h/2, Math.min(w,h)*0.32, w/2,h/2, Math.max(w,h)*0.72);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,'+(strength!=null?strength:0.4)+')');
+    ctx.save();
+    ctx.fillStyle = vg;
+    ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  }
+  function applyPixelFilter(ctx,w,h,filter){
+    if(filter==='none' || !filter) return;
+    const imgData = ctx.getImageData(0,0,w,h);
+    const d = imgData.data;
+    for(let i=0;i<d.length;i+=4){
+      const r=d[i], g=d[i+1], b=d[i+2];
+      if(filter==='sepia'){
+        d[i]   = Math.min(255, r*0.393+g*0.769+b*0.189);
+        d[i+1] = Math.min(255, r*0.349+g*0.686+b*0.168);
+        d[i+2] = Math.min(255, r*0.272+g*0.534+b*0.131);
+      } else if(filter==='noir'){
+        const avg=(r+g+b)/3;
+        const c=(avg-128)*1.3+128;
+        d[i]=d[i+1]=d[i+2]=Math.max(0,Math.min(255,c));
+      } else if(filter==='vintage'){
+        const avg=(r+g+b)/3;
+        d[i]   = Math.min(255, avg*0.92+38);
+        d[i+1] = Math.min(255, avg*0.80+26);
+        d[i+2] = Math.min(255, avg*0.62+12);
+      } else if(filter==='duotone'){
+        const avg=(r+g+b)/3;
+        const t = avg/255;
+        d[i]   = 22  + (201-22)*t;
+        d[i+1] = 16  + (162-16)*t;
+        d[i+2] = 10  + (39-10)*t;
+      } else if(filter==='grayscale'){
+        const avg = r*0.3 + g*0.59 + b*0.11;
+        const lifted = avg*0.82 + 30; // slightly washed-out atlas look
+        d[i]=d[i+1]=d[i+2]=Math.max(0,Math.min(255,lifted));
+      }
+    }
+    ctx.putImageData(imgData,0,0);
+  }
+
   // ========== MODE SWITCHING ==========
   const modes = {
     docs: { panel: 'mode-docs', stage: 'doc-stage' },
@@ -1169,11 +1414,13 @@
     maps: { panel: 'mode-maps', stage: 'maps-stage' },
     discord: { panel: 'mode-discord', stage: 'discord-stage' }
   };
+  let currentMode = 'docs';
   document.querySelectorAll('.mode-tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
       const key = tab.dataset.mode;
       const m = modes[key];
       if(!m) return;
+      currentMode = key;
       document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
       document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
       Object.values(modes).forEach(mm=>{
@@ -1195,7 +1442,7 @@
     });
   });
 
-  // ========== DOCUMENTS (original logic, cleaned) ==========
+  // ========== DOCUMENTS (unchanged from original) ==========
   const themes = {
     "Parchment & Gold": { gold:"#a9812f", goldBright:"#c79a3e" },
     "Iron & Crimson":   { gold:"#8a2f2f", goldBright:"#a8433f" },
@@ -1536,13 +1783,11 @@
       li.dataset.roman = toRoman(i+1);
       if(isRoyal){
         const roman = toRoman(i+1);
-        // Already starts with Article X
         if(/^Article\s+[IVXLCDM0-9]+/i.test(art)){
           li.innerHTML = art.replace(/^(Article\s+[IVXLCDM0-9]+\s*[—–-]?\s*[^\s—–-]*(?:\s+[^\s—–-]*){0,4})/i, function(m){
             return '<strong>'+m.trim()+'</strong>';
           });
         } else {
-          // "Title — body" or "Title - body"
           const m = art.match(/^(.{2,50}?)(\s*[—–-]\s*)(.+)$/);
           if(m){
             li.innerHTML = '<strong>Article '+roman+' – '+m[1].trim()+'</strong> '+m[3].trim();
@@ -1638,11 +1883,9 @@
   }
 
   function waxVars(hex){
-    // Blend nation color slightly into classic red sealing wax
     const r = parseInt((hex||'#9b1b1b').slice(1,3),16)||155;
     const g = parseInt((hex||'#9b1b1b').slice(3,5),16)||27;
     const b = parseInt((hex||'#9b1b1b').slice(5,7),16)||27;
-    // Push toward red wax
     const wr = Math.min(255, Math.round(r*0.35 + 180*0.65));
     const wg = Math.min(255, Math.round(g*0.25 + 30*0.75));
     const wb = Math.min(255, Math.round(b*0.25 + 30*0.75));
@@ -1719,7 +1962,6 @@
     });
   }
 
-  // Init size presets
   const sizePresets = [{w:560,l:'Compact'},{w:700,l:'Standard'},{w:840,l:'Large'},{w:980,l:'XL'}];
   const sizeBox = document.getElementById('size-presets');
   sizePresets.forEach(s=>{
@@ -1732,7 +1974,6 @@
   });
   document.getElementById('size-slider').addEventListener('input', e=>setDocWidth(+e.target.value));
 
-  // Paper + layout
   document.getElementById('paper-select').addEventListener('change', e=>{
     const doc = document.getElementById('document');
     doc.classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson');
@@ -1763,7 +2004,6 @@
     if(closing) closing.textContent = pack.closing;
   });
 
-  // Stamp
   document.getElementById('stamp-toggle').addEventListener('change', e=>{
     document.getElementById('stamp-el').style.display = e.target.checked ? 'flex' : 'none';
   });
@@ -1771,7 +2011,6 @@
     document.getElementById('stamp-text').textContent = e.target.value;
   });
 
-  // Presets
   document.getElementById('preset-select').addEventListener('change', e=>{
     const p = presets[e.target.value];
     if(!p) return;
@@ -1788,7 +2027,6 @@
     document.getElementById('doc-preamble').textContent = p.preamble;
     document.getElementById('stamp-text').textContent = p.stamp;
     state.articles = [...p.articles];
-    // Alliance-style treaties look best in Royal layout
     if(e.target.value === 'alliance' || e.target.value === 'defense' || e.target.value === 'treaty'){
       const sel = document.getElementById('layout-select');
       sel.value = 'layout-royal';
@@ -1798,7 +2036,6 @@
     renderArticleDoc();
   });
 
-  // Surprise
   document.getElementById('btn-surprise').addEventListener('click', ()=>{
     const keys = Object.keys(presets).filter(k=>k!=='blank');
     const key = keys[Math.floor(Math.random()*keys.length)];
@@ -1809,7 +2046,6 @@
     buildSwatchRow(document.getElementById('theme-swatches'), state.theme, applyTheme);
   });
 
-  // Articles / parties
   document.getElementById('add-article').addEventListener('click', ()=>{
     state.articles.push('New article...');
     renderArticleInputs();
@@ -1821,14 +2057,12 @@
     renderSignatures();
   });
 
-  // Bind text fields
   bindText('in-eyebrow','doc-eyebrow');
   bindText('in-title','doc-title');
   bindText('in-subtitle','doc-subtitle');
   bindText('in-meta','doc-meta');
   bindText('in-preamble','doc-preamble');
 
-  // Theme swatches
   buildSwatchRow(document.getElementById('theme-swatches'), state.theme, applyTheme);
   applyTheme(state.theme);
   renderOrnament();
@@ -1839,7 +2073,6 @@
   renderCornerEmblems();
   renderHeraldry();
 
-  // Export helpers
   async function captureDoc(type){
     const el = document.getElementById('document');
     const scale = parseInt(document.getElementById('export-scale')?.value)||2;
@@ -1861,7 +2094,6 @@
   document.getElementById('btn-copy').addEventListener('click', ()=>captureDoc('copy'));
   document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
 
-  // Local save (simple localStorage)
   const STORAGE_KEY = 'dmc-graphic-docs';
   function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{return [];} }
   function setSaved(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
@@ -1946,27 +2178,62 @@
   renderSavedList();
 
   // ========== FLAG GENERATOR ==========
-  function syncColor(colorId, hexId){
-    const c = document.getElementById(colorId);
-    const h = document.getElementById(hexId);
-    c.addEventListener('input', ()=>{ h.value = c.value; renderFlag(); });
-    h.addEventListener('input', ()=>{
-      if(/^#[0-9a-fA-F]{6}$/.test(h.value)){ c.value = h.value; renderFlag(); }
+  const flagPalettes = [
+    { name:'Imperial Gold', c1:'#7a1f1f', c2:'#f2e2b8', c3:'#c9a227', c4:'#3a0f0f', sym:'#f2e2b8' },
+    { name:'Naval Blue', c1:'#0d2440', c2:'#ffffff', c3:'#c41e3a', c4:'#0a1a30', sym:'#ffd700' },
+    { name:'Verdant Realm', c1:'#1f4d2e', c2:'#f5f0dc', c3:'#8a6d1a', c4:'#0f2a18', sym:'#f5f0dc' },
+    { name:'Iron & Ash', c1:'#232323', c2:'#c9c9c9', c3:'#8a2f2f', c4:'#111111', sym:'#c9a227' },
+    { name:'Royal Violet', c1:'#3a2154', c2:'#e9dcc8', c3:'#a8433f', c4:'#1f1130', sym:'#e9dcc8' },
+    { name:'Desert Sun', c1:'#b5651d', c2:'#f4e4c1', c3:'#4a2e1a', c4:'#7a3a10', sym:'#f4e4c1' },
+    { name:'Arctic White', c1:'#e8ecf0', c2:'#1a3a6e', c3:'#c9a227', c4:'#0f2038', sym:'#1a3a6e' },
+    { name:'Crimson Order', c1:'#8a1010', c2:'#1a1a1a', c3:'#c9a227', c4:'#520808', sym:'#c9a227' }
+  ];
+  function buildPaletteRow(containerId, palettes, applyFn){
+    const box = document.getElementById(containerId);
+    if(!box) return;
+    box.innerHTML = '';
+    palettes.forEach(p=>{
+      const btn = document.createElement('button');
+      btn.className = 'palette-btn';
+      btn.type = 'button';
+      const cols = [p.c1, p.c2, p.c3, p.c4].filter(Boolean);
+      btn.innerHTML = cols.map(c=>`<span style="background:${c}"></span>`).join('') + `<span class="pname">${p.name}</span>`;
+      btn.addEventListener('click', ()=>applyFn(p));
+      box.appendChild(btn);
     });
   }
-  ['flag-c1','flag-c2','flag-c3','flag-c4','flag-sym-color'].forEach((id,i)=>{
-    const hex = id + '-hex';
-    if(document.getElementById(hex)) syncColor(id, hex);
+
+  function syncColor(colorId, hexId, cb){
+    const c = document.getElementById(colorId);
+    const h = document.getElementById(hexId);
+    if(!c||!h) return;
+    c.addEventListener('input', ()=>{ h.value = c.value; if(cb) cb(); });
+    h.addEventListener('input', ()=>{
+      if(/^#[0-9a-fA-F]{6}$/.test(h.value)){ c.value = h.value; if(cb) cb(); }
+    });
+  }
+  ['flag-c1','flag-c2','flag-c3','flag-c4','flag-sym-color'].forEach((id)=>{
+    syncColor(id, id+'-hex', renderFlag);
   });
   document.getElementById('flag-layout').addEventListener('change', renderFlag);
   document.getElementById('flag-ratio').addEventListener('change', renderFlag);
+  document.getElementById('flag-sheen').addEventListener('change', renderFlag);
   document.getElementById('flag-symbol').addEventListener('change', e=>{
     document.getElementById('flag-text-field').style.display = e.target.value==='text' ? 'block' : 'none';
     renderFlag();
   });
   document.getElementById('flag-text').addEventListener('input', renderFlag);
-  const flagSymPos = document.getElementById('flag-sym-pos');
-  if(flagSymPos) flagSymPos.addEventListener('change', renderFlag);
+  document.getElementById('flag-sym-pos').addEventListener('change', renderFlag);
+
+  function setFlagColors(p){
+    document.getElementById('flag-c1').value = p.c1; document.getElementById('flag-c1-hex').value = p.c1;
+    document.getElementById('flag-c2').value = p.c2; document.getElementById('flag-c2-hex').value = p.c2;
+    document.getElementById('flag-c3').value = p.c3; document.getElementById('flag-c3-hex').value = p.c3;
+    document.getElementById('flag-c4').value = p.c4; document.getElementById('flag-c4-hex').value = p.c4;
+    document.getElementById('flag-sym-color').value = p.sym; document.getElementById('flag-sym-hex').value = p.sym;
+    renderFlag();
+  }
+  buildPaletteRow('flag-palettes', flagPalettes, setFlagColors);
 
   function getFlagSize(){
     const ratio = document.getElementById('flag-ratio').value;
@@ -2036,7 +2303,6 @@
       ctx.beginPath(); ctx.arc(cx, cy-s*0.45, s*0.1, 0, Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.arc(cx+s, cy-s*0.1, s*0.1, 0, Math.PI*2); ctx.fill();
     } else if(type==='eagle'){
-      // Simple spread-eagle silhouette
       ctx.beginPath();
       ctx.moveTo(cx, cy-size*0.15);
       ctx.quadraticCurveTo(cx-size*0.45, cy-size*0.05, cx-size*0.4, cy+size*0.15);
@@ -2057,12 +2323,7 @@
     }
   }
 
-  function renderFlag(){
-    const canvas = document.getElementById('flag-canvas');
-    const [w,h] = getFlagSize();
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
+  function drawFlagArt(ctx, w, h){
     const layout = document.getElementById('flag-layout').value;
     const c1 = document.getElementById('flag-c1').value;
     const c2 = document.getElementById('flag-c2').value;
@@ -2072,7 +2333,8 @@
     const symColor = document.getElementById('flag-sym-color').value;
     const text = document.getElementById('flag-text').value;
 
-    // Background layouts
+    ctx.clearRect(0,0,w,h);
+
     if(layout==='h2'){
       ctx.fillStyle=c1; ctx.fillRect(0,0,w,h/2);
       ctx.fillStyle=c2; ctx.fillRect(0,h/2,w,h/2);
@@ -2101,7 +2363,6 @@
       ctx.fillStyle=c2;
       ctx.fillRect(0, (h-bar)/2, w, bar);
       ctx.fillRect(crossX-bar/2, 0, bar, h);
-      // optional outer
       if(c3 && c3!==c1){
         const outer = Math.round(bar*0.35);
         ctx.fillStyle=c3;
@@ -2156,7 +2417,6 @@
       ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
     }
 
-    // Symbol placement
     if(sym!=='none'){
       const pos = (document.getElementById('flag-sym-pos')||{}).value || 'center';
       let sx=w/2, sy=h/2, ss=Math.min(w,h)*0.5;
@@ -2169,21 +2429,42 @@
       drawSymbol(ctx, sym, sx, sy, ss, symColor, text);
     }
 
+    if(document.getElementById('flag-sheen') && document.getElementById('flag-sheen').checked){
+      const g = ctx.createLinearGradient(0,0,w,h);
+      g.addColorStop(0,'rgba(255,255,255,0.16)');
+      g.addColorStop(0.5,'rgba(255,255,255,0)');
+      g.addColorStop(1,'rgba(0,0,0,0.14)');
+      ctx.fillStyle=g;
+      ctx.fillRect(0,0,w,h);
+    }
+  }
+
+  function renderFlag(){
+    const canvas = document.getElementById('flag-canvas');
+    const [w,h] = getFlagSize();
+    canvas.width = w;
+    canvas.height = h;
+    drawFlagArt(canvas.getContext('2d'), w, h);
     document.getElementById('flag-ratio-note').textContent =
       document.getElementById('flag-ratio').value + ' ratio • ' + w + '×' + h + ' preview';
   }
 
+  document.getElementById('btn-flag-surprise').addEventListener('click', ()=>{
+    const layouts = ['h3','h2','h4','h5','v2','v3','nordic','cross','saltire','canton','diagonal','tricolor-diag','quartered','border','solid'];
+    const symbols = ['none','circle','star','star6','cross','diamond','crescent','sun','crown','eagle'];
+    document.getElementById('flag-layout').value = layouts[Math.floor(Math.random()*layouts.length)];
+    document.getElementById('flag-symbol').value = symbols[Math.floor(Math.random()*symbols.length)];
+    document.getElementById('flag-text-field').style.display = document.getElementById('flag-symbol').value==='text' ? 'block' : 'none';
+    const p = flagPalettes[Math.floor(Math.random()*flagPalettes.length)];
+    setFlagColors(p);
+  });
+
   document.getElementById('btn-flag-png').addEventListener('click', ()=>{
-    const canvas = document.getElementById('flag-canvas');
-    // render at higher res
-    const [rw,rh] = getFlagSize();
-    const scale = 3;
+    const [w,h] = getFlagSize();
+    const scale = parseInt(document.getElementById('flag-export-scale').value)||4;
     const hi = document.createElement('canvas');
-    hi.width = rw*scale; hi.height = rh*scale;
-    const hctx = hi.getContext('2d');
-    hctx.scale(scale,scale);
-    // re-draw by temporarily using the same logic would be ideal; for simplicity upscale
-    hctx.drawImage(canvas,0,0);
+    hi.width = w*scale; hi.height = h*scale;
+    drawFlagArt(hi.getContext('2d'), w*scale, h*scale);
     const link = document.createElement('a');
     link.download = 'nation-flag.png';
     link.href = hi.toDataURL('image/png');
@@ -2198,32 +2479,33 @@
   });
 
   // ========== EMBLEM GENERATOR ==========
+  const emblemPalettes = [
+    { name:'Gold & Crimson', bg:'#1a2a4a', border:'#c9a227', text:'#f5e6c8', center:'#8b1a1a' },
+    { name:'Silver & Navy', bg:'#0f1e33', border:'#c8d0dc', text:'#eef2f7', center:'#1c3a5e' },
+    { name:'Bronze & Forest', bg:'#1c2b1c', border:'#a97845', text:'#f0e6cf', center:'#2e4a2e' },
+    { name:'Obsidian & Gold', bg:'#111111', border:'#d4af37', text:'#f4e9c8', center:'#2a2a2a' },
+    { name:'Ivory & Violet', bg:'#f2ead8', border:'#5a3a7a', text:'#2a1e3a', center:'#7a5296' },
+    { name:'Blood & Iron', bg:'#2a0f0f', border:'#8a2f2f', text:'#f0d8c8', center:'#4a1414' }
+  ];
+  function setEmblemColors(p){
+    document.getElementById('emb-bg').value=p.bg; document.getElementById('emb-bg-hex').value=p.bg;
+    document.getElementById('emb-border').value=p.border; document.getElementById('emb-border-hex').value=p.border;
+    document.getElementById('emb-text').value=p.text; document.getElementById('emb-text-hex').value=p.text;
+    document.getElementById('emb-center').value=p.center; document.getElementById('emb-center-hex').value=p.center;
+    renderEmblem();
+  }
+  buildPaletteRow('emblem-palettes', emblemPalettes, setEmblemColors);
+
   ['emb-bg','emb-border','emb-text','emb-center'].forEach(id=>{
-    const hex = id + '-hex';
-    if(document.getElementById(hex)){
-      document.getElementById(id).addEventListener('input', ()=>{
-        document.getElementById(hex).value = document.getElementById(id).value;
-        renderEmblem();
-      });
-      document.getElementById(hex).addEventListener('input', e=>{
-        if(/^#[0-9a-fA-F]{6}$/.test(e.target.value)){
-          document.getElementById(id).value = e.target.value;
-          renderEmblem();
-        }
-      });
-    }
+    syncColor(id, id+'-hex', renderEmblem);
   });
-  ['emblem-style','emblem-title','emblem-sub','emblem-center','emblem-size'].forEach(id=>{
-    document.getElementById(id).addEventListener('input', renderEmblem);
-    document.getElementById(id).addEventListener('change', renderEmblem);
+  ['emblem-style','emblem-title','emblem-sub','emblem-center','emblem-size','emblem-shadow'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', renderEmblem);
+    el.addEventListener('change', ()=>{ renderEmblem(); if(document.getElementById('discord-use-emblem')?.checked) renderDiscordBanner(); if(document.getElementById('discord-icon-use-emblem')?.checked) renderDiscordIcon(); });
   });
 
-  function renderEmblem(){
-    const size = parseInt(document.getElementById('emblem-size').value) || 512;
-    const canvas = document.getElementById('emblem-canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
+  function drawEmblemArt(ctx, size){
     const style = document.getElementById('emblem-style').value;
     const title = document.getElementById('emblem-title').value.toUpperCase();
     const sub = document.getElementById('emblem-sub').value.toUpperCase();
@@ -2232,28 +2514,34 @@
     const border = document.getElementById('emb-border').value;
     const textCol = document.getElementById('emb-text').value;
     const centerCol = document.getElementById('emb-center').value;
+    const useShadow = document.getElementById('emblem-shadow').checked;
 
     ctx.clearRect(0,0,size,size);
     const cx = size/2, cy = size/2, r = size*0.46;
 
     if(style==='circle' || style==='rounded'){
-      // outer ring
+      ctx.save();
+      if(useShadow){ ctx.shadowColor='rgba(0,0,0,0.55)'; ctx.shadowBlur=size*0.05; ctx.shadowOffsetY=size*0.015; }
       ctx.beginPath();
       ctx.arc(cx,cy,r,0,Math.PI*2);
       ctx.fillStyle = bg;
       ctx.fill();
-      ctx.lineWidth = size*0.035;
-      ctx.strokeStyle = border;
-      ctx.stroke();
+      ctx.restore();
 
-      // inner ring
+      // bevel ring: dark under-stroke then bright top stroke
+      ctx.lineWidth = size*0.038;
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath(); ctx.arc(cx,cy+size*0.004,r,0,Math.PI*2); ctx.stroke();
+      ctx.lineWidth = size*0.03;
+      ctx.strokeStyle = border;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+
       ctx.beginPath();
       ctx.arc(cx,cy,r*0.78,0,Math.PI*2);
       ctx.lineWidth = size*0.012;
       ctx.strokeStyle = border;
       ctx.stroke();
 
-      // center disc
       ctx.beginPath();
       ctx.arc(cx,cy,r*0.38,0,Math.PI*2);
       ctx.fillStyle = centerCol;
@@ -2261,29 +2549,32 @@
       ctx.lineWidth = size*0.01;
       ctx.strokeStyle = border;
       ctx.stroke();
+
+      // soft top-left highlight for a raised metal look
+      const hi = ctx.createRadialGradient(cx-r*0.35, cy-r*0.4, r*0.05, cx, cy, r*1.1);
+      hi.addColorStop(0,'rgba(255,255,255,0.16)');
+      hi.addColorStop(0.5,'rgba(255,255,255,0.02)');
+      hi.addColorStop(1,'rgba(0,0,0,0.12)');
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=hi; ctx.fill();
     } else if(style==='shield'){
-      // simple heater shield
+      const top = size*0.08, bot = size*0.92, left = size*0.18, right = size*0.82;
+      ctx.save();
+      if(useShadow){ ctx.shadowColor='rgba(0,0,0,0.55)'; ctx.shadowBlur=size*0.05; ctx.shadowOffsetY=size*0.015; }
       ctx.beginPath();
-      const top = size*0.08;
-      const bot = size*0.92;
-      const left = size*0.18;
-      const right = size*0.82;
-      ctx.moveTo(left, top);
-      ctx.lineTo(right, top);
+      ctx.moveTo(left, top); ctx.lineTo(right, top);
       ctx.quadraticCurveTo(right+size*0.05, size*0.45, cx, bot);
       ctx.quadraticCurveTo(left-size*0.05, size*0.45, left, top);
       ctx.closePath();
       ctx.fillStyle = bg;
       ctx.fill();
+      ctx.restore();
       ctx.lineWidth = size*0.03;
       ctx.strokeStyle = border;
       ctx.stroke();
 
-      // inner shield
-      ctx.beginPath();
       const pad = size*0.08;
-      ctx.moveTo(left+pad, top+pad);
-      ctx.lineTo(right-pad, top+pad);
+      ctx.beginPath();
+      ctx.moveTo(left+pad, top+pad); ctx.lineTo(right-pad, top+pad);
       ctx.quadraticCurveTo(right-pad+size*0.03, size*0.45, cx, bot-pad);
       ctx.quadraticCurveTo(left+pad-size*0.03, size*0.45, left+pad, top+pad);
       ctx.closePath();
@@ -2291,16 +2582,13 @@
       ctx.fill();
     }
 
-    // Center text
     ctx.fillStyle = textCol;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = `bold ${Math.round(size*0.14)}px Cinzel, serif`;
     ctx.fillText(center, cx, cy);
 
-    // Curved text for circle styles
     if(style==='circle' || style==='rounded'){
-      // Top arc text
       if(title){
         ctx.save();
         ctx.font = `bold ${Math.round(size*0.055)}px Cinzel, serif`;
@@ -2319,7 +2607,6 @@
         });
         ctx.restore();
       }
-      // Bottom arc text
       if(sub){
         ctx.save();
         ctx.font = `bold ${Math.round(size*0.05)}px Cinzel, serif`;
@@ -2339,7 +2626,6 @@
         ctx.restore();
       }
     } else {
-      // Shield text below center
       ctx.font = `bold ${Math.round(size*0.05)}px Cinzel, serif`;
       ctx.fillStyle = textCol;
       if(title) ctx.fillText(title, cx, size*0.78);
@@ -2349,6 +2635,21 @@
       }
     }
   }
+
+  function renderEmblem(){
+    const size = parseInt(document.getElementById('emblem-size').value) || 512;
+    const canvas = document.getElementById('emblem-canvas');
+    canvas.width = size;
+    canvas.height = size;
+    drawEmblemArt(canvas.getContext('2d'), size);
+  }
+
+  document.getElementById('btn-emblem-surprise').addEventListener('click', ()=>{
+    const styles=['circle','shield','rounded'];
+    document.getElementById('emblem-style').value = styles[Math.floor(Math.random()*styles.length)];
+    const p = emblemPalettes[Math.floor(Math.random()*emblemPalettes.length)];
+    setEmblemColors(p);
+  });
 
   document.getElementById('btn-emblem-png').addEventListener('click', ()=>{
     const canvas = document.getElementById('emblem-canvas');
@@ -2365,12 +2666,14 @@
     });
   });
 
-  // ========== PROPAGANDA COMPOSITOR ==========
+  // ========== PROPAGANDA COMPOSITOR (layer-based) ==========
   let propBgImage = null;
-  let propOverlays = []; // {img, x, y, scale, id}
+  let propBgFilteredCanvas = null;
+  let propLayers = []; // ordered bottom -> top
   let propSelected = null;
   let propDragging = false;
   let propDragOffset = {x:0,y:0};
+  let propActiveFilter = 'none';
 
   function propSize(){
     const v = document.getElementById('prop-size').value;
@@ -2379,199 +2682,294 @@
     return [800,1100];
   }
 
+  function rebuildPropBg(){
+    const [w,h] = propSize();
+    const off = document.createElement('canvas'); off.width=w; off.height=h;
+    const octx = off.getContext('2d');
+    if(propBgImage){
+      const scale = Math.max(w/propBgImage.width, h/propBgImage.height);
+      const sw = propBgImage.width*scale, sh = propBgImage.height*scale;
+      octx.drawImage(propBgImage, (w-sw)/2, (h-sh)/2, sw, sh);
+    } else {
+      octx.fillStyle = document.getElementById('prop-bg-color').value;
+      octx.fillRect(0,0,w,h);
+    }
+    applyPixelFilter(octx, w, h, propActiveFilter);
+    propBgFilteredCanvas = off;
+  }
+
+  function hitTestLayer(l, px, py){
+    const rad = -(l.rotation||0)*Math.PI/180;
+    const dx = px-l.x, dy = py-l.y;
+    const lx = dx*Math.cos(rad) - dy*Math.sin(rad);
+    const ly = dx*Math.sin(rad) + dy*Math.cos(rad);
+    if(l.type==='image'){
+      const iw = l.img.width*l.scale, ih = l.img.height*l.scale;
+      return Math.abs(lx) <= iw/2 && Math.abs(ly) <= ih/2;
+    } else {
+      const approxW = Math.max(80, (l.text||'').length * l.size*0.52);
+      const approxH = l.size*1.5;
+      return Math.abs(lx) <= approxW/2 && Math.abs(ly) <= approxH/2;
+    }
+  }
+
   function renderPropaganda(){
     const [w,h] = propSize();
     const canvas = document.getElementById('poster-canvas');
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
+    if(!propBgFilteredCanvas || propBgFilteredCanvas.width!==w || propBgFilteredCanvas.height!==h) rebuildPropBg();
+    ctx.drawImage(propBgFilteredCanvas, 0, 0);
 
-    // Background
-    if(propBgImage){
-      // cover fit
-      const scale = Math.max(w/propBgImage.width, h/propBgImage.height);
-      const sw = propBgImage.width*scale, sh = propBgImage.height*scale;
-      ctx.drawImage(propBgImage, (w-sw)/2, (h-sh)/2, sw, sh);
-    } else {
-      ctx.fillStyle = document.getElementById('prop-bg-color').value;
-      ctx.fillRect(0,0,w,h);
-    }
+    const fontMap = { classic:"'Playfair Display', serif", bold:"'Cinzel', serif", dramatic:"'EB Garamond', serif" };
 
-    // Overlays
-    propOverlays.forEach(o=>{
-      const iw = o.img.width * o.scale;
-      const ih = o.img.height * o.scale;
-      ctx.drawImage(o.img, o.x - iw/2, o.y - ih/2, iw, ih);
-      if(propSelected === o.id){
-        ctx.strokeStyle = '#c9a227';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6,4]);
-        ctx.strokeRect(o.x - iw/2 - 4, o.y - ih/2 - 4, iw + 8, ih + 8);
-        ctx.setLineDash([]);
-      }
-    });
-
-    // Text
-    const top = document.getElementById('prop-top').value;
-    const headline = document.getElementById('prop-headline').value;
-    const sub = document.getElementById('prop-sub').value;
-    const side = document.getElementById('prop-side').value;
-    const headCol = document.getElementById('prop-head-color').value;
-    const textCol = document.getElementById('prop-text-color').value;
-    const tstyle = document.getElementById('prop-text-style').value;
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    if(side){
+    propLayers.forEach(l=>{
       ctx.save();
-      ctx.fillStyle = textCol;
-      ctx.font = `italic ${Math.round(w*0.07)}px 'Playfair Display', serif`;
-      ctx.translate(w*0.82, h*0.12);
-      ctx.rotate(0.15);
-      ctx.fillText(side, 0, 0);
+      ctx.globalAlpha = l.opacity!=null ? l.opacity : 1;
+      ctx.translate(l.x, l.y);
+      ctx.rotate((l.rotation||0)*Math.PI/180);
+      if(l.type==='image'){
+        const iw = l.img.width*l.scale, ih = l.img.height*l.scale;
+        ctx.drawImage(l.img, -iw/2, -ih/2, iw, ih);
+        if(propSelected===l.id){
+          ctx.globalAlpha=1;
+          ctx.strokeStyle='#c9a227'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+          ctx.strokeRect(-iw/2-4,-ih/2-4,iw+8,ih+8);
+          ctx.setLineDash([]);
+        }
+      } else if(l.type==='text'){
+        const weight = l.font==='bold' ? '900' : (l.font==='dramatic' ? 'italic 700' : '700');
+        ctx.font = `${weight} ${l.size}px ${fontMap[l.font]||fontMap.classic}`;
+        ctx.fillStyle = l.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const maxW = w*0.85;
+        const words = (l.text||'').toUpperCase().split(' ');
+        let line='', lines=[];
+        words.forEach(wd=>{
+          const t = line ? line+' '+wd : wd;
+          if(ctx.measureText(t).width > maxW && line){ lines.push(line); line=wd; } else line=t;
+        });
+        if(line) lines.push(line);
+        const lh = l.size*1.15;
+        const startY = -((lines.length-1)*lh)/2;
+        lines.forEach((ln,i)=> ctx.fillText(ln, 0, startY+i*lh));
+        if(propSelected===l.id){
+          ctx.globalAlpha=1;
+          const totalH = lines.length*lh;
+          const maxLineW = Math.max(...lines.map(ln=>ctx.measureText(ln).width), 40);
+          ctx.strokeStyle='#c9a227'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+          ctx.strokeRect(-maxLineW/2-8, startY-lh/2-4, maxLineW+16, totalH+8);
+          ctx.setLineDash([]);
+        }
+      }
       ctx.restore();
-    }
-    if(top){
-      ctx.fillStyle = textCol;
-      ctx.font = `italic ${Math.round(w*0.045)}px 'Playfair Display', serif`;
-      ctx.fillText(top, w*0.28, h*0.12);
-    }
-    if(headline){
-      ctx.fillStyle = headCol;
-      const fs = tstyle==='bold' ? w*0.09 : w*0.075;
-      ctx.font = `bold ${Math.round(fs)}px Cinzel, serif`;
-      // simple word wrap
-      const words = headline.toUpperCase().split(' ');
-      let line = '', lines = [], maxW = w*0.9;
-      words.forEach(wd=>{
-        const test = line ? line+' '+wd : wd;
-        if(ctx.measureText(test).width > maxW && line){ lines.push(line); line=wd; }
-        else line=test;
-      });
-      if(line) lines.push(line);
-      let hy = h*0.78;
-      lines.forEach(l=>{ ctx.fillText(l, w/2, hy); hy += fs*1.15; });
-    }
-    if(sub){
-      ctx.fillStyle = '#111';
-      ctx.font = `bold ${Math.round(w*0.038)}px EB Garamond, serif`;
-      // underline effect for key words roughly
-      ctx.fillText(sub, w/2, h*0.92);
-    }
-  }
-
-  function renderPropOverlaysList(){
-    const list = document.getElementById('prop-overlays-list');
-    list.innerHTML = propOverlays.map((o,i)=>`
-      <div class="saved-item" style="cursor:pointer;${propSelected===o.id?'border-color:var(--gold);':''}" data-id="${o.id}">
-        <div class="saved-item-main">
-          <div class="saved-item-name">Overlay ${i+1}</div>
-          <div class="saved-item-date">scale ${o.scale.toFixed(2)}</div>
-        </div>
-        <div class="saved-item-actions">
-          <button data-scaleup="${o.id}">+</button>
-          <button data-scaledown="${o.id}">−</button>
-          <button class="danger" data-del="${o.id}">Del</button>
-        </div>
-      </div>`).join('') || '<div class="saved-empty">No overlays yet</div>';
-    list.querySelectorAll('[data-id]').forEach(el=>{
-      el.addEventListener('click', e=>{
-        if(e.target.tagName==='BUTTON') return;
-        propSelected = el.dataset.id;
-        renderPropOverlaysList();
-        renderPropaganda();
-      });
     });
+
+    if(document.getElementById('prop-grain').checked) drawGrain(ctx,w,h,0.14);
+    if(document.getElementById('prop-vignette').checked) drawVignette(ctx,w,h,0.38);
+  }
+
+  function layerLabel(l){
+    if(l.type==='image') return 'Image layer';
+    return (l.text||'Text').slice(0,22) || 'Text layer';
+  }
+
+  function renderPropLayersList(){
+    const list = document.getElementById('prop-layers-list');
+    if(!propLayers.length){ list.innerHTML = '<div class="saved-empty">No layers yet — add an image or text layer above</div>'; return; }
+    list.innerHTML = '';
+    // show topmost first in the list for intuitiveness
+    for(let idx = propLayers.length-1; idx>=0; idx--){
+      const l = propLayers[idx];
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (propSelected===l.id?' selected':'');
+      item.dataset.id = l.id;
+
+      let inner = `<div class="layer-head">
+        <span class="layer-label">${l.type==='image'?'🖼 ':'🔤 '}${layerLabel(l)}</span>
+        <div class="layer-btns">
+          <button data-up="${l.id}" title="Bring forward">↑</button>
+          <button data-down="${l.id}" title="Send back">↓</button>
+          <button class="danger" data-del="${l.id}" title="Delete">×</button>
+        </div>
+      </div>`;
+
+      if(l.type==='text'){
+        inner += `<input type="text" data-textinput="${l.id}" value="${(l.text||'').replace(/"/g,'&quot;')}" placeholder="Enter text...">
+        <div class="row2" style="margin-bottom:6px;">
+          <select data-fontselect="${l.id}">
+            <option value="classic" ${l.font==='classic'?'selected':''}>Classic serif</option>
+            <option value="bold" ${l.font==='bold'?'selected':''}>Heavy propaganda</option>
+            <option value="dramatic" ${l.font==='dramatic'?'selected':''}>Dramatic italic</option>
+          </select>
+          <input type="color" data-colorinput="${l.id}" value="${l.color}" style="width:100%;height:34px;border-radius:6px;border:1px solid var(--panel-line);background:#100e0a;">
+        </div>
+        <div class="mini-row"><label>Size</label><input type="range" min="16" max="160" value="${l.size}" data-sizerange="${l.id}"><span class="mini-val">${l.size}</span></div>`;
+      } else {
+        inner += `<div class="mini-row"><label>Scale</label><input type="range" min="0.05" max="3" step="0.02" value="${l.scale}" data-scalerange="${l.id}"><span class="mini-val">${l.scale.toFixed(2)}</span></div>`;
+      }
+      inner += `<div class="mini-row"><label>Rotate</label><input type="range" min="-180" max="180" value="${l.rotation||0}" data-rotrange="${l.id}"><span class="mini-val">${l.rotation||0}°</span></div>`;
+      inner += `<div class="mini-row"><label>Opacity</label><input type="range" min="0" max="1" step="0.05" value="${l.opacity!=null?l.opacity:1}" data-oprange="${l.id}"><span class="mini-val">${Math.round((l.opacity!=null?l.opacity:1)*100)}%</span></div>`;
+
+      item.innerHTML = inner;
+      list.appendChild(item);
+
+      item.addEventListener('click', (e)=>{
+        if(['INPUT','SELECT','BUTTON'].includes(e.target.tagName)) return;
+        propSelected = l.id; renderPropLayersList(); renderPropaganda();
+      });
+    }
+
+    list.querySelectorAll('[data-up]').forEach(b=>b.addEventListener('click',()=>{
+      const i = propLayers.findIndex(x=>x.id===b.dataset.up);
+      if(i>-1 && i<propLayers.length-1){ [propLayers[i],propLayers[i+1]]=[propLayers[i+1],propLayers[i]]; renderPropLayersList(); renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-down]').forEach(b=>b.addEventListener('click',()=>{
+      const i = propLayers.findIndex(x=>x.id===b.dataset.down);
+      if(i>0){ [propLayers[i],propLayers[i-1]]=[propLayers[i-1],propLayers[i]]; renderPropLayersList(); renderPropaganda(); }
+    }));
     list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
-      propOverlays = propOverlays.filter(o=>o.id!==b.dataset.del);
+      propLayers = propLayers.filter(x=>x.id!==b.dataset.del);
       if(propSelected===b.dataset.del) propSelected=null;
-      renderPropOverlaysList(); renderPropaganda();
+      renderPropLayersList(); renderPropaganda();
     }));
-    list.querySelectorAll('[data-scaleup]').forEach(b=>b.addEventListener('click',()=>{
-      const o = propOverlays.find(x=>x.id===b.dataset.scaleup);
-      if(o){ o.scale = Math.min(3, o.scale+0.1); renderPropOverlaysList(); renderPropaganda(); }
+    list.querySelectorAll('[data-textinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const l = propLayers.find(x=>x.id===inp.dataset.textinput);
+      if(l){ l.text = inp.value; renderPropaganda(); }
     }));
-    list.querySelectorAll('[data-scaledown]').forEach(b=>b.addEventListener('click',()=>{
-      const o = propOverlays.find(x=>x.id===b.dataset.scaledown);
-      if(o){ o.scale = Math.max(0.1, o.scale-0.1); renderPropOverlaysList(); renderPropaganda(); }
+    list.querySelectorAll('[data-fontselect]').forEach(sel=>sel.addEventListener('change',()=>{
+      const l = propLayers.find(x=>x.id===sel.dataset.fontselect);
+      if(l){ l.font = sel.value; renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-colorinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const l = propLayers.find(x=>x.id===inp.dataset.colorinput);
+      if(l){ l.color = inp.value; renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-sizerange]').forEach(r=>r.addEventListener('input',()=>{
+      const l = propLayers.find(x=>x.id===r.dataset.sizerange);
+      if(l){ l.size = parseInt(r.value); r.nextElementSibling.textContent = l.size; renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-scalerange]').forEach(r=>r.addEventListener('input',()=>{
+      const l = propLayers.find(x=>x.id===r.dataset.scalerange);
+      if(l){ l.scale = parseFloat(r.value); r.nextElementSibling.textContent = l.scale.toFixed(2); renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-rotrange]').forEach(r=>r.addEventListener('input',()=>{
+      const l = propLayers.find(x=>x.id===r.dataset.rotrange);
+      if(l){ l.rotation = parseInt(r.value); r.nextElementSibling.textContent = l.rotation+'°'; renderPropaganda(); }
+    }));
+    list.querySelectorAll('[data-oprange]').forEach(r=>r.addEventListener('input',()=>{
+      const l = propLayers.find(x=>x.id===r.dataset.oprange);
+      if(l){ l.opacity = parseFloat(r.value); r.nextElementSibling.textContent = Math.round(l.opacity*100)+'%'; renderPropaganda(); }
     }));
   }
 
-  // Propaganda uploads + interactions
   document.getElementById('prop-bg-upload').addEventListener('change', e=>{
     const f = e.target.files[0]; if(!f) return;
     const img = new Image();
-    img.onload = ()=>{ propBgImage = img; renderPropaganda(); };
+    img.onload = ()=>{ propBgImage = img; rebuildPropBg(); renderPropaganda(); };
     img.src = URL.createObjectURL(f);
   });
-  document.getElementById('prop-bg-clear').addEventListener('click', ()=>{ propBgImage=null; renderPropaganda(); });
-  document.getElementById('prop-overlay-upload').addEventListener('change', e=>{
-    Array.from(e.target.files||[]).forEach(f=>{
+  document.getElementById('prop-bg-clear').addEventListener('click', ()=>{ propBgImage=null; rebuildPropBg(); renderPropaganda(); });
+  document.getElementById('prop-bg-color').addEventListener('input', ()=>{ rebuildPropBg(); renderPropaganda(); });
+
+  document.getElementById('prop-filter-row').addEventListener('click', e=>{
+    const btn = e.target.closest('.filter-btn');
+    if(!btn) return;
+    document.querySelectorAll('#prop-filter-row .filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    propActiveFilter = btn.dataset.filter;
+    rebuildPropBg();
+    renderPropaganda();
+  });
+  document.getElementById('prop-grain').addEventListener('change', renderPropaganda);
+  document.getElementById('prop-vignette').addEventListener('change', renderPropaganda);
+  document.getElementById('prop-size').addEventListener('change', ()=>{ rebuildPropBg(); renderPropaganda(); });
+
+  document.getElementById('prop-add-image').addEventListener('change', e=>{
+    const [w,h] = propSize();
+    Array.from(e.target.files||[]).forEach((f,idx)=>{
       const img = new Image();
       img.onload = ()=>{
-        const [w,h] = propSize();
-        propOverlays.push({
-          id: 'o'+Date.now()+Math.random().toString(36).slice(2,6),
-          img, x: w/2, y: h/2, scale: Math.min(0.6, 200/img.width)
+        const id = 'l'+Date.now()+Math.random().toString(36).slice(2,6);
+        propLayers.push({
+          id, type:'image', img,
+          x: w/2 + idx*14, y: h/2 + idx*14,
+          scale: Math.min(0.6, 220/img.width),
+          rotation: 0, opacity: 1
         });
-        renderPropOverlaysList();
+        propSelected = id;
+        renderPropLayersList();
         renderPropaganda();
       };
       img.src = URL.createObjectURL(f);
     });
     e.target.value = '';
   });
+  document.getElementById('prop-add-text').addEventListener('click', ()=>{
+    const [w,h] = propSize();
+    const id = 'l'+Date.now()+Math.random().toString(36).slice(2,6);
+    propLayers.push({ id, type:'text', text:'NEW TEXT', color:'#f5e6c8', size:48, font:'classic', x:w/2, y:h/2, rotation:0, opacity:1 });
+    propSelected = id;
+    renderPropLayersList();
+    renderPropaganda();
+  });
 
-  // Canvas drag for overlays
   (function(){
     const canvas = document.getElementById('poster-canvas');
     function toCanvas(e){
       const r = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / r.width;
-      const scaleY = canvas.height / r.height;
-      return { x: (e.clientX - r.left)*scaleX, y: (e.clientY - r.top)*scaleY };
+      return { x:(e.clientX-r.left)*(canvas.width/r.width), y:(e.clientY-r.top)*(canvas.height/r.height) };
     }
     canvas.addEventListener('mousedown', e=>{
       const p = toCanvas(e);
-      // hit test overlays top-first
-      for(let i=propOverlays.length-1;i>=0;i--){
-        const o = propOverlays[i];
-        const iw = o.img.width*o.scale, ih = o.img.height*o.scale;
-        if(p.x > o.x-iw/2 && p.x < o.x+iw/2 && p.y > o.y-ih/2 && p.y < o.y+ih/2){
-          propSelected = o.id;
+      for(let i=propLayers.length-1;i>=0;i--){
+        const l = propLayers[i];
+        if(hitTestLayer(l, p.x, p.y)){
+          propSelected = l.id;
           propDragging = true;
-          propDragOffset = {x: p.x - o.x, y: p.y - o.y};
-          renderPropOverlaysList();
+          propDragOffset = { x:p.x-l.x, y:p.y-l.y };
+          canvas.style.cursor = 'grabbing';
+          renderPropLayersList();
           renderPropaganda();
           return;
         }
       }
+      propSelected = null;
+      renderPropLayersList();
+      renderPropaganda();
     });
     window.addEventListener('mousemove', e=>{
       if(!propDragging || !propSelected) return;
-      const o = propOverlays.find(x=>x.id===propSelected);
-      if(!o) return;
+      const l = propLayers.find(x=>x.id===propSelected);
+      if(!l) return;
       const p = toCanvas(e);
-      o.x = p.x - propDragOffset.x;
-      o.y = p.y - propDragOffset.y;
+      l.x = p.x - propDragOffset.x;
+      l.y = p.y - propDragOffset.y;
       renderPropaganda();
     });
-    window.addEventListener('mouseup', ()=>{ propDragging=false; });
+    window.addEventListener('mouseup', ()=>{ propDragging=false; canvas.style.cursor='grab'; });
+    canvas.addEventListener('wheel', e=>{
+      if(!propSelected) return;
+      const l = propLayers.find(x=>x.id===propSelected);
+      if(!l) return;
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -1 : 1;
+      if(l.type==='image'){ l.scale = Math.max(0.05, Math.min(4, l.scale + delta*0.04)); }
+      else { l.size = Math.max(12, Math.min(200, l.size + delta*3)); }
+      renderPropLayersList();
+      renderPropaganda();
+    }, { passive:false });
   })();
 
-  ['prop-top','prop-headline','prop-sub','prop-side','prop-head-color','prop-text-color','prop-text-style','prop-size','prop-bg-color'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.addEventListener('input', renderPropaganda);
-    el.addEventListener('change', renderPropaganda);
-  });
-  // color hex sync
-  ['prop-bg-color','prop-head-color','prop-text-color'].forEach(id=>{
-    const hex = id+'-hex';
-    const c = document.getElementById(id), h = document.getElementById(hex);
-    if(c&&h){
-      c.addEventListener('input',()=>{h.value=c.value;renderPropaganda();});
-      h.addEventListener('input',()=>{if(/^#[0-9a-fA-F]{6}$/.test(h.value)){c.value=h.value;renderPropaganda();}});
+  document.addEventListener('keydown', e=>{
+    if(currentMode !== 'posters') return;
+    if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+    if((e.key==='Delete' || e.key==='Backspace') && propSelected){
+      propLayers = propLayers.filter(x=>x.id!==propSelected);
+      propSelected = null;
+      renderPropLayersList();
+      renderPropaganda();
     }
   });
 
@@ -2592,22 +2990,223 @@
 
   // ========== CLAIM MAPS ==========
   let mapImage = null;
-  let mapLabels = []; // {id, text, x, y, color, size}
+  let mapBgFiltered = null; // cached, possibly desaturated background canvas
+  let mapLabels = [];
   let mapSelected = null;
   let mapDragging = false;
   let mapDragOffset = {x:0,y:0};
+
+  let mapUiMode = 'label'; // 'label' | 'territory' | 'connect'
+  let mapTerritories = []; // {id,name,color,opacity,style,feather,points:[{x,y}]}
+  let territorySelected = null;
+  let drawingTerritory = null; // {points:[{x,y}]}
+  let territoryDragging = null; // {type:'vertex'|'shape', id, vIndex?, start?, orig?}
+  let territoryDrawPreviewPoint = null;
+  const territoryColors = ['#e0a52c','#7a2323','#1f3a52','#3f5b3a','#5a3a1f','#4a2e5c','#8a6d1a','#1c3a5e'];
+
+  let mapConnectors = []; // {id, a, b, color, style('line'|'dashed'|'corridor'), width, feather, label}
+  let connectorSelected = null;
+  let connectorPending = null;
+
+  let mapFlagImages = []; // up to 2 Image objects
+
+  let titleBlock = { enabled:false, tag:'', title:'', anchor:'bottom-left', tagColor:'#f0c419', titleColor:'#141414' };
+
+  function pointInPolygon(p, pts){
+    let inside = false;
+    for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+      const xi=pts[i].x, yi=pts[i].y, xj=pts[j].x, yj=pts[j].y;
+      const intersect = ((yi>p.y)!==(yj>p.y)) && (p.x < (xj-xi)*(p.y-yi)/(yj-yi)+xi);
+      if(intersect) inside = !inside;
+    }
+    return inside;
+  }
+  function hexToRgba(hex, alpha){
+    const r=parseInt(hex.slice(1,3),16)||0, g=parseInt(hex.slice(3,5),16)||0, b=parseInt(hex.slice(5,7),16)||0;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  // Builds an organic, rounded outline through a set of vertices using midpoint quadratic smoothing —
+  // turns a clicked polygon into a soft painted "claim blob" instead of sharp jagged corners.
+  function buildSmoothPath(points){
+    const path = new Path2D();
+    const n = points.length;
+    if(n<3) return path;
+    const mid = (a,b)=>({x:(a.x+b.x)/2, y:(a.y+b.y)/2});
+    const first = mid(points[n-1], points[0]);
+    path.moveTo(first.x, first.y);
+    for(let i=0;i<n;i++){
+      const cur = points[i];
+      const next = points[(i+1)%n];
+      const m = mid(cur, next);
+      path.quadraticCurveTo(cur.x, cur.y, m.x, m.y);
+    }
+    path.closePath();
+    return path;
+  }
+  function buildStraightPath(points){
+    const path = new Path2D();
+    if(!points.length) return path;
+    path.moveTo(points[0].x, points[0].y);
+    points.slice(1).forEach(pt=>path.lineTo(pt.x, pt.y));
+    path.closePath();
+    return path;
+  }
+  function territoryCentroid(t){
+    const cx = t.points.reduce((s,p)=>s+p.x,0)/t.points.length;
+    const cy = t.points.reduce((s,p)=>s+p.y,0)/t.points.length;
+    return {x:cx, y:cy};
+  }
+  function resolveEndpoint(e){
+    if(!e) return null;
+    if(e.type==='label'){ const l=mapLabels.find(x=>x.id===e.id); return l?{x:l.x,y:l.y}:null; }
+    if(e.type==='territory'){ const t=mapTerritories.find(x=>x.id===e.id); return t?territoryCentroid(t):null; }
+    return e.point || null;
+  }
+  function describeEndpoint(e){
+    if(!e) return '?';
+    if(e.type==='label'){ const l=mapLabels.find(x=>x.id===e.id); return l?l.text:'(removed label)'; }
+    if(e.type==='territory'){ const t=mapTerritories.find(x=>x.id===e.id); return t?t.name:'(removed territory)'; }
+    return 'Point';
+  }
+  function pickEndpointAt(canvas, p){
+    const ctx = canvas.getContext('2d');
+    for(let i=mapLabels.length-1;i>=0;i--){
+      const l = mapLabels[i];
+      const m = labelMetrics(ctx, l);
+      if(p.x>=m.x0 && p.x<=m.x0+m.w && p.y>=m.y0 && p.y<=m.y0+m.h) return {type:'label', id:l.id};
+    }
+    for(let i=mapTerritories.length-1;i>=0;i--){
+      if(mapTerritories[i].points.length>=3 && pointInPolygon(p, mapTerritories[i].points)) return {type:'territory', id:mapTerritories[i].id};
+    }
+    return {type:'point', point:p};
+  }
+
+  // Measures a label's on-canvas box regardless of kind (nation = big centered text, city = dot + small left-aligned text)
+  function labelMetrics(ctx, l){
+    const defaultSize = parseInt(document.getElementById('map-font-size')?.value)||28;
+    const size = l.size || defaultSize;
+    if(l.kind==='city'){
+      const s = Math.max(11, Math.round(size*0.42));
+      ctx.font = `600 ${s}px 'EB Garamond', serif`;
+      const tw = ctx.measureText((l.text||'').toUpperCase()).width;
+      return { size:s, x0:l.x-6, y0:l.y-s/2-4, w:tw+22, h:s+8, kind:'city' };
+    }
+    ctx.font = `bold ${size}px 'Playfair Display', Cinzel, serif`;
+    const tw = ctx.measureText(l.text||'').width;
+    return { size, x0:l.x-tw/2-8, y0:l.y-size/2-6, w:tw+16, h:size+12, kind:'nation' };
+  }
+
+  function rebuildMapBg(){
+    if(!mapImage){ mapBgFiltered = null; return; }
+    const maxW = 1000, maxH = 800;
+    let w = mapImage.width, h = mapImage.height;
+    const scale = Math.min(maxW/w, maxH/h, 1.5);
+    w = Math.round(w*scale); h = Math.round(h*scale);
+    const off = document.createElement('canvas'); off.width=w; off.height=h;
+    const octx = off.getContext('2d');
+    octx.drawImage(mapImage, 0, 0, w, h);
+    if(document.getElementById('map-desaturate')?.checked){
+      applyPixelFilter(octx, w, h, 'grayscale');
+      octx.fillStyle = 'rgba(0,0,0,0.06)';
+      octx.fillRect(0,0,w,h);
+    }
+    mapBgFiltered = off;
+  }
+
+  function drawCorridor(ctx, a, b, color, width, opacity, feather){
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len=Math.hypot(dx,dy)||1;
+    const nx=-dy/len, ny=dx/len;
+    const hw=width/2;
+    const path = new Path2D();
+    path.moveTo(a.x+nx*hw, a.y+ny*hw);
+    path.lineTo(b.x+nx*hw, b.y+ny*hw);
+    path.lineTo(b.x-nx*hw, b.y-ny*hw);
+    path.lineTo(a.x-nx*hw, a.y-ny*hw);
+    path.closePath();
+    ctx.save();
+    try{ ctx.filter = `blur(${feather}px)`; }catch(e){}
+    ctx.fillStyle = hexToRgba(color, opacity);
+    ctx.fill(path);
+    ctx.restore();
+  }
+
+  function renderTitleBlock(ctx, w, h){
+    if(!titleBlock.enabled || (!titleBlock.tag && !titleBlock.title)) return;
+    const pos = titleBlock.anchor || 'bottom-left';
+    let x = 30, y = h-70;
+    if(pos==='bottom-right'){ x = w-30; y = h-70; }
+    else if(pos==='top-left'){ x = 30; y = 60; }
+    else if(pos==='top-right'){ x = w-30; y = 60; }
+    else if(pos==='center'){ x = w/2; y = h/2; }
+    const alignRight = pos==='bottom-right' || pos==='top-right';
+    const alignCenter = pos==='center';
+    ctx.save();
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = alignCenter ? 'center' : (alignRight ? 'right' : 'left');
+
+    if(titleBlock.tag){
+      const tagSize = Math.max(11, Math.round(h*0.032));
+      ctx.font = `700 ${tagSize}px Cinzel, serif`;
+      const tagText = titleBlock.tag.toUpperCase();
+      const tw = ctx.measureText(tagText).width;
+      const tagX = alignCenter ? x-tw/2 : (alignRight ? x-tw : x);
+      ctx.save();
+      ctx.translate(tagX+tw/2, y-tagSize*0.32);
+      ctx.rotate(-0.02);
+      ctx.fillStyle = hexToRgba(titleBlock.tagColor||'#f0c419', 0.88);
+      ctx.fillRect(-tw/2-6, -tagSize*0.62, tw+12, tagSize*1.2);
+      ctx.restore();
+      ctx.fillStyle = '#141414';
+      ctx.fillText(tagText, tagX, y);
+    }
+    if(titleBlock.title){
+      const titleSize = Math.max(20, Math.round(h*0.09));
+      const titleY = y + titleSize*0.85;
+      ctx.font = `900 ${titleSize}px 'Playfair Display', serif`;
+      const titleText = titleBlock.title.toUpperCase();
+      const tw2 = ctx.measureText(titleText).width;
+      const titleX = alignCenter ? x-tw2/2 : (alignRight ? x-tw2 : x);
+      ctx.lineWidth = Math.max(3, titleSize*0.08);
+      ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+      ctx.lineJoin = 'round';
+      ctx.strokeText(titleText, titleX, titleY);
+      ctx.fillStyle = titleBlock.titleColor || '#141414';
+      ctx.fillText(titleText, titleX, titleY);
+    }
+    ctx.restore();
+  }
+
+  function renderFlagInset(ctx, w, h){
+    if(!mapFlagImages.length) return;
+    const boxH = Math.round(h*0.16);
+    const singleW = Math.round(boxH*1.5);
+    const totalW = singleW * mapFlagImages.length;
+    const anchor = document.getElementById('map-flag-anchor')?.value || 'bottom-left';
+    let x = 20, y = h-boxH-20;
+    if(anchor==='bottom-right'){ x = w-totalW-20; y = h-boxH-20; }
+    else if(anchor==='top-left'){ x = 20; y = 20; }
+    else if(anchor==='top-right'){ x = w-totalW-20; y = 20; }
+    ctx.save();
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(x-4, y-4, totalW+8, boxH+8);
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.strokeRect(x-4, y-4, totalW+8, boxH+8);
+    mapFlagImages.forEach((img,i)=>{ ctx.drawImage(img, x+i*singleW, y, singleW, boxH); });
+    if(mapFlagImages.length===2){
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x+singleW,y); ctx.lineTo(x+singleW,y+boxH); ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   function renderMap(){
     const canvas = document.getElementById('map-canvas');
     const ctx = canvas.getContext('2d');
     if(mapImage){
-      // fit image
-      const maxW = 1000, maxH = 800;
-      let w = mapImage.width, h = mapImage.height;
-      const scale = Math.min(maxW/w, maxH/h, 1.5);
-      w = Math.round(w*scale); h = Math.round(h*scale);
-      canvas.width = w; canvas.height = h;
-      ctx.drawImage(mapImage, 0, 0, w, h);
+      if(!mapBgFiltered) rebuildMapBg();
+      canvas.width = mapBgFiltered.width; canvas.height = mapBgFiltered.height;
+      ctx.drawImage(mapBgFiltered, 0, 0);
     } else {
       canvas.width = 900; canvas.height = 600;
       ctx.fillStyle = '#1a2332';
@@ -2615,47 +3214,174 @@
       ctx.fillStyle = '#5a6a7a';
       ctx.font = '20px EB Garamond, serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Upload a map image to begin', canvas.width/2, canvas.height/2);
+      ctx.fillText('Upload a map image, then click anywhere to drop a label', canvas.width/2, canvas.height/2);
     }
 
+    // ---- Territories ----
+    const smoothEdges = document.getElementById('map-smooth-edges')?.checked;
+    mapTerritories.forEach(t=>{
+      if(t.points.length<3) return;
+      const path = smoothEdges ? buildSmoothPath(t.points) : buildStraightPath(t.points);
+      const opacity = t.opacity!=null ? t.opacity : 0.55;
+      const c = territoryCentroid(t);
+
+      if(t.style==='glow'){
+        const feather = t.feather!=null ? t.feather : 18;
+        const maxR = Math.max(...t.points.map(p=>Math.hypot(p.x-c.x, p.y-c.y))) || 40;
+
+        // wide soft glow pass, gradient fading from bright core to translucent edge
+        ctx.save();
+        try{ ctx.filter = `blur(${feather}px)`; }catch(e){}
+        const grad1 = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, maxR*1.2);
+        grad1.addColorStop(0, hexToRgba(t.color, Math.min(1, opacity+0.15)));
+        grad1.addColorStop(0.65, hexToRgba(t.color, opacity*0.8));
+        grad1.addColorStop(1, hexToRgba(t.color, 0));
+        ctx.fillStyle = grad1;
+        ctx.fill(path);
+        ctx.restore();
+
+        // tighter, more opaque core pass for definition
+        ctx.save();
+        try{ ctx.filter = `blur(${Math.max(2, feather*0.3)}px)`; }catch(e){}
+        const grad2 = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, maxR*0.95);
+        grad2.addColorStop(0, hexToRgba(t.color, Math.min(1, opacity+0.35)));
+        grad2.addColorStop(1, hexToRgba(t.color, opacity*0.55));
+        ctx.fillStyle = grad2;
+        ctx.fill(path);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = hexToRgba(t.color, Math.min(0.6, opacity));
+        ctx.fill(path);
+        ctx.strokeStyle = t.color;
+        ctx.lineWidth = territorySelected===t.id ? 3 : 2;
+        ctx.stroke(path);
+      }
+
+      if(t.name){
+        ctx.font = `bold 16px Cinzel, serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+        ctx.strokeText(t.name.toUpperCase(), c.x, c.y);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(t.name.toUpperCase(), c.x, c.y);
+      }
+      if(territorySelected===t.id){
+        t.points.forEach(pt=>{
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 5, 0, Math.PI*2);
+          ctx.fillStyle = '#c9a227'; ctx.fill();
+          ctx.strokeStyle = '#111'; ctx.lineWidth = 1; ctx.stroke();
+        });
+      }
+    });
+    if(drawingTerritory && drawingTerritory.points.length){
+      ctx.beginPath();
+      ctx.moveTo(drawingTerritory.points[0].x, drawingTerritory.points[0].y);
+      drawingTerritory.points.slice(1).forEach(pt=>ctx.lineTo(pt.x, pt.y));
+      if(territoryDrawPreviewPoint) ctx.lineTo(territoryDrawPreviewPoint.x, territoryDrawPreviewPoint.y);
+      ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2; ctx.setLineDash([6,4]);
+      ctx.stroke(); ctx.setLineDash([]);
+      drawingTerritory.points.forEach((pt,i)=>{
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, i===0?6:4, 0, Math.PI*2);
+        ctx.fillStyle = i===0 ? '#ffffff' : '#c9a227';
+        ctx.fill();
+        ctx.strokeStyle = '#111'; ctx.lineWidth = 1; ctx.stroke();
+      });
+    }
+
+    // ---- Connectors ----
+    mapConnectors.forEach(c=>{
+      const a = resolveEndpoint(c.a), b = resolveEndpoint(c.b);
+      if(!a || !b) return;
+      if(c.style==='corridor'){
+        drawCorridor(ctx, a, b, c.color||'#e0a52c', c.width||26, 0.6, c.feather!=null?c.feather:14);
+      } else {
+        ctx.save();
+        ctx.strokeStyle = c.color || '#c9a227';
+        ctx.lineWidth = (c.width||3) + (connectorSelected===c.id?1.5:0);
+        if(c.style==='dashed') ctx.setLineDash([10,6]);
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = c.color || '#c9a227';
+        [a,b].forEach(pt=>{ ctx.beginPath(); ctx.arc(pt.x,pt.y,4,0,Math.PI*2); ctx.fill(); });
+        ctx.restore();
+      }
+      if(c.label){
+        const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+        ctx.font = 'bold 13px EB Garamond, serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        const tw = ctx.measureText(c.label).width;
+        ctx.fillStyle = 'rgba(10,10,10,0.75)';
+        ctx.fillRect(mx-tw/2-6, my-10, tw+12, 20);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(c.label, mx, my);
+      }
+    });
+    if(connectorPending){
+      const a = resolveEndpoint(connectorPending);
+      if(a){
+        ctx.beginPath(); ctx.arc(a.x, a.y, 8, 0, Math.PI*2);
+        ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+    }
+
+    // ---- Labels (nation = big bold, city = dot + small caption) ----
     const defaultColor = document.getElementById('map-label-color').value;
-    const defaultSize = parseInt(document.getElementById('map-font-size').value)||28;
     const shadow = document.getElementById('map-label-shadow').checked;
     const outline = document.getElementById('map-label-outline')?.checked;
     const showLegend = document.getElementById('map-legend')?.checked;
 
     mapLabels.forEach(l=>{
-      const size = l.size || defaultSize;
       const color = l.color || defaultColor;
-      ctx.font = `bold ${size}px 'Playfair Display', Cinzel, serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      if(outline){
-        ctx.lineWidth = Math.max(3, size*0.12);
-        ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-        ctx.lineJoin = 'round';
-        ctx.strokeText(l.text, l.x, l.y);
+      const m = labelMetrics(ctx, l);
+      if(l.kind==='city'){
+        ctx.beginPath(); ctx.arc(l.x, l.y, 3, 0, Math.PI*2);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.font = `600 ${m.size}px 'EB Garamond', serif`;
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        const txt = l.text.toUpperCase();
+        if(outline){
+          ctx.lineWidth = Math.max(2, m.size*0.15);
+          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+          ctx.strokeText(txt, l.x+8, l.y);
+        }
+        if(shadow){ ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillText(txt, l.x+9, l.y+1); }
+        ctx.fillStyle = color;
+        ctx.fillText(txt, l.x+8, l.y);
+      } else {
+        ctx.font = `bold ${m.size}px 'Playfair Display', Cinzel, serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if(outline){
+          ctx.lineWidth = Math.max(3, m.size*0.12);
+          ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+          ctx.lineJoin = 'round';
+          ctx.strokeText(l.text, l.x, l.y);
+        }
+        if(shadow){
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          ctx.fillText(l.text, l.x+2, l.y+2);
+        }
+        ctx.fillStyle = color;
+        ctx.fillText(l.text, l.x, l.y);
       }
-      if(shadow){
-        ctx.fillStyle = 'rgba(0,0,0,0.55)';
-        ctx.fillText(l.text, l.x+2, l.y+2);
-      }
-      ctx.fillStyle = color;
-      ctx.fillText(l.text, l.x, l.y);
       if(mapSelected === l.id){
-        const tw = ctx.measureText(l.text).width;
         ctx.strokeStyle = '#c9a227';
         ctx.lineWidth = 2;
         ctx.setLineDash([5,3]);
-        ctx.strokeRect(l.x - tw/2 - 8, l.y - size/2 - 6, tw + 16, size + 12);
+        ctx.strokeRect(m.x0, m.y0, m.w, m.h);
         ctx.setLineDash([]);
       }
     });
 
-    // Legend box
-    if(showLegend && mapLabels.length){
-      const pad = 10, rowH = 18, boxW = 160;
-      const boxH = pad*2 + mapLabels.length * rowH;
+    const legendEntries = [
+      ...mapTerritories.map(t=>({ text:t.name||'Territory', color:t.color })),
+      ...mapLabels.filter(l=>l.kind!=='city').map(l=>({ text:l.text, color:l.color||defaultColor }))
+    ];
+    if(showLegend && legendEntries.length){
+      const pad = 10, rowH = 18, boxW = 180;
+      const boxH = pad*2 + legendEntries.length * rowH;
       const bx = canvas.width - boxW - 12, by = 12;
       ctx.fillStyle = 'rgba(10,12,16,0.78)';
       ctx.fillRect(bx, by, boxW, boxH);
@@ -2665,44 +3391,247 @@
       ctx.font = '12px Cinzel, serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      mapLabels.forEach((l,i)=>{
+      legendEntries.forEach((entry,i)=>{
         const cy = by + pad + i*rowH + rowH/2;
-        ctx.fillStyle = l.color || defaultColor;
+        ctx.fillStyle = entry.color || defaultColor;
         ctx.fillRect(bx+10, cy-5, 10, 10);
         ctx.fillStyle = '#f0e6d0';
-        ctx.fillText(l.text.slice(0,18), bx+28, cy);
+        ctx.fillText((entry.text||'').slice(0,22), bx+28, cy);
       });
+    }
+
+    renderFlagInset(ctx, canvas.width, canvas.height);
+    renderTitleBlock(ctx, canvas.width, canvas.height);
+
+    if(document.getElementById('map-finish-grain')?.checked){
+      drawGrain(ctx, canvas.width, canvas.height, 0.08);
+      drawVignette(ctx, canvas.width, canvas.height, 0.22);
     }
   }
 
+  function finishTerritory(){
+    if(!drawingTerritory || drawingTerritory.points.length<3){
+      drawingTerritory = null;
+      territoryDrawPreviewPoint = null;
+      document.getElementById('territory-draw-controls').style.display='none';
+      renderMap();
+      return;
+    }
+    const id = 't'+Date.now();
+    const color = territoryColors[mapTerritories.length % territoryColors.length];
+    mapTerritories.push({ id, name:'New Territory', color, opacity:0.55, style:'glow', feather:18, points:drawingTerritory.points });
+    drawingTerritory = null;
+    territoryDrawPreviewPoint = null;
+    territorySelected = id;
+    document.getElementById('territory-draw-controls').style.display='none';
+    renderTerritoryList();
+    renderConnectorList();
+    renderMap();
+    const inp = document.querySelector(`[data-nameinput="${id}"]`);
+    if(inp){ inp.focus(); inp.select(); }
+  }
+  function cancelTerritoryDraw(){
+    drawingTerritory = null;
+    territoryDrawPreviewPoint = null;
+    document.getElementById('territory-draw-controls').style.display='none';
+    renderMap();
+  }
+
+  function renderTerritoryList(){
+    const list = document.getElementById('territory-list');
+    if(!mapTerritories.length){ list.innerHTML = '<div class="saved-empty">No territories yet — click the map to start drawing one</div>'; return; }
+    list.innerHTML = '';
+    mapTerritories.forEach(t=>{
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (territorySelected===t.id?' selected':'');
+      const style = t.style || 'glow';
+      const feather = t.feather!=null ? t.feather : 18;
+      item.innerHTML = `
+        <div class="layer-head">
+          <span class="layer-label">🗺️ ${t.name||'Territory'}</span>
+          <div class="layer-btns"><button class="danger" data-del="${t.id}">×</button></div>
+        </div>
+        <input type="text" data-nameinput="${t.id}" value="${(t.name||'').replace(/"/g,'&quot;')}" placeholder="Nation name">
+        <div class="row2" style="margin-bottom:6px;">
+          <input type="color" data-colorinput="${t.id}" value="${t.color}" style="width:100%;height:34px;border-radius:6px;border:1px solid var(--panel-line);background:#100e0a;">
+          <select data-styleselect="${t.id}">
+            <option value="glow" ${style==='glow'?'selected':''}>Soft glow</option>
+            <option value="solid" ${style==='solid'?'selected':''}>Solid border</option>
+          </select>
+        </div>
+        <div class="mini-row"><label>Fill</label><input type="range" min="0.1" max="0.9" step="0.05" value="${t.opacity!=null?t.opacity:0.55}" data-oprange="${t.id}"><span class="mini-val">${Math.round((t.opacity!=null?t.opacity:0.55)*100)}%</span></div>
+        <div class="mini-row" data-featherrow="${t.id}" style="${style==='glow'?'':'display:none;'}"><label>Feather</label><input type="range" min="2" max="45" value="${feather}" data-featherrange="${t.id}"><span class="mini-val">${feather}px</span></div>`;
+      list.appendChild(item);
+      item.addEventListener('click', e=>{
+        if(['INPUT','SELECT','BUTTON'].includes(e.target.tagName)) return;
+        territorySelected = t.id; renderTerritoryList(); renderMap();
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+      mapTerritories = mapTerritories.filter(x=>x.id!==b.dataset.del);
+      if(territorySelected===b.dataset.del) territorySelected=null;
+      renderTerritoryList(); renderConnectorList(); renderMap();
+    }));
+    list.querySelectorAll('[data-nameinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const t = mapTerritories.find(x=>x.id===inp.dataset.nameinput);
+      if(t){ t.name = inp.value; renderMap(); renderConnectorList(); }
+    }));
+    list.querySelectorAll('[data-colorinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const t = mapTerritories.find(x=>x.id===inp.dataset.colorinput);
+      if(t){ t.color = inp.value; renderMap(); }
+    }));
+    list.querySelectorAll('[data-styleselect]').forEach(sel=>sel.addEventListener('change',()=>{
+      const t = mapTerritories.find(x=>x.id===sel.dataset.styleselect);
+      if(t){
+        t.style = sel.value;
+        const row = list.querySelector(`[data-featherrow="${t.id}"]`);
+        if(row) row.style.display = t.style==='glow' ? '' : 'none';
+        renderMap();
+      }
+    }));
+    list.querySelectorAll('[data-oprange]').forEach(r=>r.addEventListener('input',()=>{
+      const t = mapTerritories.find(x=>x.id===r.dataset.oprange);
+      if(t){ t.opacity = parseFloat(r.value); r.nextElementSibling.textContent = Math.round(t.opacity*100)+'%'; renderMap(); }
+    }));
+    list.querySelectorAll('[data-featherrange]').forEach(r=>r.addEventListener('input',()=>{
+      const t = mapTerritories.find(x=>x.id===r.dataset.featherrange);
+      if(t){ t.feather = parseInt(r.value); r.nextElementSibling.textContent = t.feather+'px'; renderMap(); }
+    }));
+  }
+
+  function renderConnectorList(){
+    const list = document.getElementById('connector-list');
+    if(!mapConnectors.length){ list.innerHTML = '<div class="saved-empty">No connectors yet</div>'; return; }
+    list.innerHTML = '';
+    mapConnectors.forEach(c=>{
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (connectorSelected===c.id?' selected':'');
+      const style = c.style || 'solid';
+      const feather = c.feather!=null ? c.feather : 14;
+      item.innerHTML = `
+        <div class="layer-head">
+          <span class="layer-label">🔗 ${describeEndpoint(c.a)} → ${describeEndpoint(c.b)}</span>
+          <div class="layer-btns"><button class="danger" data-del="${c.id}">×</button></div>
+        </div>
+        <input type="text" data-labelinput="${c.id}" value="${(c.label||'').replace(/"/g,'&quot;')}" placeholder="Label (optional, e.g. Alliance)">
+        <div class="row2" style="margin-bottom:6px;">
+          <input type="color" data-colorinput="${c.id}" value="${c.color||'#c9a227'}" style="width:100%;height:34px;border-radius:6px;border:1px solid var(--panel-line);background:#100e0a;">
+          <select data-styleselect="${c.id}">
+            <option value="solid" ${style==='solid'?'selected':''}>Line — solid</option>
+            <option value="dashed" ${style==='dashed'?'selected':''}>Line — dashed</option>
+            <option value="corridor" ${style==='corridor'?'selected':''}>Corridor (filled claim strip)</option>
+          </select>
+        </div>
+        <div class="mini-row"><label>Width</label><input type="range" min="1" max="60" value="${c.width||3}" data-widthrange="${c.id}"><span class="mini-val">${c.width||3}</span></div>
+        <div class="mini-row" data-featherrow="${c.id}" style="${style==='corridor'?'':'display:none;'}"><label>Feather</label><input type="range" min="2" max="40" value="${feather}" data-featherrange="${c.id}"><span class="mini-val">${feather}px</span></div>`;
+      list.appendChild(item);
+      item.addEventListener('click', e=>{
+        if(['INPUT','SELECT','BUTTON'].includes(e.target.tagName)) return;
+        connectorSelected = c.id; renderConnectorList(); renderMap();
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+      mapConnectors = mapConnectors.filter(x=>x.id!==b.dataset.del);
+      if(connectorSelected===b.dataset.del) connectorSelected=null;
+      renderConnectorList(); renderMap();
+    }));
+    list.querySelectorAll('[data-labelinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const c = mapConnectors.find(x=>x.id===inp.dataset.labelinput);
+      if(c){ c.label = inp.value; renderMap(); }
+    }));
+    list.querySelectorAll('[data-colorinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const c = mapConnectors.find(x=>x.id===inp.dataset.colorinput);
+      if(c){ c.color = inp.value; renderMap(); }
+    }));
+    list.querySelectorAll('[data-styleselect]').forEach(sel=>sel.addEventListener('change',()=>{
+      const c = mapConnectors.find(x=>x.id===sel.dataset.styleselect);
+      if(c){
+        c.style = sel.value;
+        const row = list.querySelector(`[data-featherrow="${c.id}"]`);
+        if(row) row.style.display = c.style==='corridor' ? '' : 'none';
+        if(c.style==='corridor' && (!c.width || c.width<15)) c.width = 26;
+        renderConnectorList();
+        renderMap();
+      }
+    }));
+    list.querySelectorAll('[data-widthrange]').forEach(r=>r.addEventListener('input',()=>{
+      const c = mapConnectors.find(x=>x.id===r.dataset.widthrange);
+      if(c){ c.width = parseInt(r.value); r.nextElementSibling.textContent = c.width; renderMap(); }
+    }));
+    list.querySelectorAll('[data-featherrange]').forEach(r=>r.addEventListener('input',()=>{
+      const c = mapConnectors.find(x=>x.id===r.dataset.featherrange);
+      if(c){ c.feather = parseInt(r.value); r.nextElementSibling.textContent = c.feather+'px'; renderMap(); }
+    }));
+  }
+
+  const mapModeHints = {
+    label: 'Click empty space to drop a nation label. Drag an existing label to reposition it.',
+    territory: 'Click the map to start a territory outline. Keep clicking to add corners. Click near the first point (or press Finish) to close it. Click inside a finished territory to select it — drag the gold handles to reshape, or drag the fill to move the whole thing.',
+    connect: 'Click a nation label or territory, then click a second one to draw a connector line between them (alliance, trade route, border — whatever you label it).'
+  };
+  function setMapUiMode(mode){
+    mapUiMode = mode;
+    document.querySelectorAll('#map-mode-row .filter-btn').forEach(b=>b.classList.toggle('active', b.dataset.mapmode===mode));
+    document.getElementById('map-labels-section').style.display = mode==='label' ? 'block' : 'none';
+    document.getElementById('map-territory-section').style.display = mode==='territory' ? 'block' : 'none';
+    document.getElementById('map-connector-section').style.display = mode==='connect' ? 'block' : 'none';
+    document.getElementById('map-mode-hint').textContent = mapModeHints[mode] || '';
+    connectorPending = null;
+    if(mode!=='territory') cancelTerritoryDraw();
+    const canvas = document.getElementById('map-canvas');
+    canvas.style.cursor = mode==='territory' ? 'crosshair' : (mode==='connect' ? 'pointer' : 'crosshair');
+    renderMap();
+  }
+  document.getElementById('map-mode-row').addEventListener('click', e=>{
+    const btn = e.target.closest('[data-mapmode]');
+    if(btn) setMapUiMode(btn.dataset.mapmode);
+  });
+  document.getElementById('territory-finish').addEventListener('click', finishTerritory);
+  document.getElementById('territory-cancel').addEventListener('click', cancelTerritoryDraw);
+
   function renderMapLabelsList(){
     const list = document.getElementById('map-labels-list');
-    list.innerHTML = mapLabels.map((l,i)=>`
-      <div class="party-card" style="padding:10px;${mapSelected===l.id?'border-color:var(--gold);':''}">
-        <div class="field" style="margin-bottom:6px;">
-          <input type="text" value="${l.text}" data-text="${l.id}" placeholder="Nation name">
+    if(!mapLabels.length){ list.innerHTML = '<div class="saved-empty">No labels yet — click the map or "+ add"</div>'; return; }
+    list.innerHTML = '';
+    mapLabels.forEach(l=>{
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (mapSelected===l.id?' selected':'');
+      item.innerHTML = `
+        <div class="layer-head">
+          <span class="layer-label">${l.kind==='city'?'📌':'📍'} ${l.text||'Nation'}</span>
+          <div class="layer-btns"><button class="danger" data-del="${l.id}">×</button></div>
         </div>
-        <div class="row2">
-          <div class="color-input">
-            <input type="color" value="${l.color||'#ffffff'}" data-color="${l.id}">
-          </div>
-          <button class="icon-btn danger" data-del="${l.id}" style="width:auto;padding:0 10px;">×</button>
+        <input type="text" data-textinput="${l.id}" value="${(l.text||'').replace(/"/g,'&quot;')}" placeholder="Nation name">
+        <div class="row2" style="margin-bottom:6px;">
+          <input type="color" data-colorinput="${l.id}" value="${l.color||'#ffffff'}" style="width:100%;height:34px;border-radius:6px;border:1px solid var(--panel-line);background:#100e0a;">
+          <select data-kindselect="${l.id}">
+            <option value="nation" ${l.kind!=='city'?'selected':''}>Nation (big)</option>
+            <option value="city" ${l.kind==='city'?'selected':''}>City (dot + small)</option>
+          </select>
         </div>
-      </div>`).join('') || '<div class="saved-empty">No labels yet — add some</div>';
-
-    list.querySelectorAll('[data-text]').forEach(inp=>{
-      inp.addEventListener('input', ()=>{
-        const l = mapLabels.find(x=>x.id===inp.dataset.text);
-        if(l){ l.text = inp.value; renderMap(); }
-      });
-      inp.addEventListener('focus', ()=>{ mapSelected = inp.dataset.text; renderMap(); renderMapLabelsList(); });
-    });
-    list.querySelectorAll('[data-color]').forEach(inp=>{
-      inp.addEventListener('input', ()=>{
-        const l = mapLabels.find(x=>x.id===inp.dataset.color);
-        if(l){ l.color = inp.value; renderMap(); }
+        <div class="mini-row"><label>Size</label><input type="range" min="14" max="72" value="${l.size||28}" data-sizerange="${l.id}"><span class="mini-val">${l.size||28}</span></div>`;
+      list.appendChild(item);
+      item.addEventListener('click', e=>{
+        if(['INPUT','SELECT','BUTTON'].includes(e.target.tagName)) return;
+        mapSelected = l.id; renderMapLabelsList(); renderMap();
       });
     });
+    list.querySelectorAll('[data-textinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const l = mapLabels.find(x=>x.id===inp.dataset.textinput);
+      if(l){ l.text = inp.value; renderMap(); }
+    }));
+    list.querySelectorAll('[data-colorinput]').forEach(inp=>inp.addEventListener('input',()=>{
+      const l = mapLabels.find(x=>x.id===inp.dataset.colorinput);
+      if(l){ l.color = inp.value; renderMap(); }
+    }));
+    list.querySelectorAll('[data-kindselect]').forEach(sel=>sel.addEventListener('change',()=>{
+      const l = mapLabels.find(x=>x.id===sel.dataset.kindselect);
+      if(l){ l.kind = sel.value; renderMapLabelsList(); renderMap(); }
+    }));
+    list.querySelectorAll('[data-sizerange]').forEach(r=>r.addEventListener('input',()=>{
+      const l = mapLabels.find(x=>x.id===r.dataset.sizerange);
+      if(l){ l.size = parseInt(r.value); r.nextElementSibling.textContent = l.size; renderMap(); }
+    }));
     list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
       mapLabels = mapLabels.filter(x=>x.id!==b.dataset.del);
       if(mapSelected===b.dataset.del) mapSelected=null;
@@ -2713,72 +3642,212 @@
   document.getElementById('map-upload').addEventListener('change', e=>{
     const f = e.target.files[0]; if(!f) return;
     const img = new Image();
-    img.onload = ()=>{ mapImage = img; renderMap(); };
+    img.onload = ()=>{ mapImage = img; rebuildMapBg(); renderMap(); };
     img.src = URL.createObjectURL(f);
   });
-  document.getElementById('map-clear').addEventListener('click', ()=>{ mapImage=null; renderMap(); });
+  document.getElementById('map-clear').addEventListener('click', ()=>{ mapImage=null; mapBgFiltered=null; renderMap(); });
+  document.getElementById('map-desaturate').addEventListener('change', ()=>{ rebuildMapBg(); renderMap(); });
+  document.getElementById('map-smooth-edges').addEventListener('change', renderMap);
+  document.getElementById('map-finish-grain').addEventListener('change', renderMap);
+
+  document.getElementById('map-flag1-upload').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = ()=>{ mapFlagImages[0] = img; renderMap(); };
+    img.src = URL.createObjectURL(f);
+  });
+  document.getElementById('map-flag2-upload').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = ()=>{ mapFlagImages[1] = img; renderMap(); };
+    img.src = URL.createObjectURL(f);
+  });
+  document.getElementById('map-flags-clear').addEventListener('click', ()=>{ mapFlagImages = []; renderMap(); });
+  document.getElementById('map-flag-anchor').addEventListener('change', renderMap);
+
+  document.getElementById('title-enabled').addEventListener('change', e=>{ titleBlock.enabled = e.target.checked; renderMap(); });
+  document.getElementById('title-tag').addEventListener('input', e=>{ titleBlock.tag = e.target.value; renderMap(); });
+  document.getElementById('title-main').addEventListener('input', e=>{ titleBlock.title = e.target.value; renderMap(); });
+  document.getElementById('title-anchor').addEventListener('change', e=>{ titleBlock.anchor = e.target.value; renderMap(); });
+  syncColor('title-tag-color','title-tag-color-hex', ()=>{ titleBlock.tagColor = document.getElementById('title-tag-color').value; renderMap(); });
+  syncColor('title-color','title-color-hex', ()=>{ titleBlock.titleColor = document.getElementById('title-color').value; renderMap(); });
+
   document.getElementById('map-add-label').addEventListener('click', ()=>{
     const canvas = document.getElementById('map-canvas');
+    const id = 'l'+Date.now();
     mapLabels.push({
-      id: 'l'+Date.now(),
-      text: 'Nation',
-      x: canvas.width/2,
-      y: canvas.height/2,
+      id, text: 'Nation', x: canvas.width/2, y: canvas.height/2,
       color: document.getElementById('map-label-color').value,
       size: parseInt(document.getElementById('map-font-size').value)||28
     });
+    mapSelected = id;
     renderMapLabelsList();
     renderMap();
   });
   document.getElementById('map-font-size').addEventListener('input', renderMap);
   document.getElementById('map-label-shadow').addEventListener('change', renderMap);
-  const mapOutline = document.getElementById('map-label-outline');
-  if(mapOutline) mapOutline.addEventListener('change', renderMap);
-  const mapLegend = document.getElementById('map-legend');
-  if(mapLegend) mapLegend.addEventListener('change', renderMap);
-  document.getElementById('map-label-color').addEventListener('input', e=>{
-    document.getElementById('map-label-color-hex').value = e.target.value;
-  });
+  document.getElementById('map-label-outline').addEventListener('change', renderMap);
+  document.getElementById('map-legend').addEventListener('change', renderMap);
+  syncColor('map-label-color','map-label-color-hex', renderMap);
 
-  // Map label dragging
   (function(){
     const canvas = document.getElementById('map-canvas');
     function toCanvas(e){
       const r = canvas.getBoundingClientRect();
-      return {
-        x: (e.clientX - r.left) * (canvas.width / r.width),
-        y: (e.clientY - r.top) * (canvas.height / r.height)
-      };
+      return { x:(e.clientX-r.left)*(canvas.width/r.width), y:(e.clientY-r.top)*(canvas.height/r.height) };
     }
+    function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
     canvas.addEventListener('mousedown', e=>{
       const p = toCanvas(e);
-      const ctx = canvas.getContext('2d');
-      for(let i=mapLabels.length-1;i>=0;i--){
-        const l = mapLabels[i];
-        ctx.font = `bold ${l.size||28}px serif`;
-        const tw = ctx.measureText(l.text).width;
-        const th = l.size||28;
-        if(p.x > l.x-tw/2-10 && p.x < l.x+tw/2+10 && p.y > l.y-th/2-8 && p.y < l.y+th/2+8){
-          mapSelected = l.id;
-          mapDragging = true;
-          mapDragOffset = {x: p.x-l.x, y: p.y-l.y};
-          renderMapLabelsList();
+
+      if(mapUiMode==='label'){
+        const ctx = canvas.getContext('2d');
+        for(let i=mapLabels.length-1;i>=0;i--){
+          const l = mapLabels[i];
+          const m = labelMetrics(ctx, l);
+          if(p.x>=m.x0 && p.x<=m.x0+m.w && p.y>=m.y0 && p.y<=m.y0+m.h){
+            mapSelected = l.id;
+            mapDragging = true;
+            mapDragOffset = {x: p.x-l.x, y: p.y-l.y};
+            renderMapLabelsList();
+            renderMap();
+            return;
+          }
+        }
+        const id = 'l'+Date.now();
+        mapLabels.push({
+          id, text:'Nation', x:p.x, y:p.y,
+          color: document.getElementById('map-label-color').value,
+          size: parseInt(document.getElementById('map-font-size').value)||28
+        });
+        mapSelected = id;
+        renderMapLabelsList();
+        renderMap();
+        const firstInput = document.querySelector(`[data-textinput="${id}"]`);
+        if(firstInput){ firstInput.focus(); firstInput.select(); }
+        return;
+      }
+
+      if(mapUiMode==='territory'){
+        if(drawingTerritory){
+          const first = drawingTerritory.points[0];
+          if(drawingTerritory.points.length>=3 && dist(p,first)<14){
+            finishTerritory();
+          } else {
+            drawingTerritory.points.push(p);
+            document.getElementById('territory-draw-info').textContent = drawingTerritory.points.length + ' points placed — click near the first point to close, or press Finish.';
+            renderMap();
+          }
+          return;
+        }
+        // vertex / shape drag on selected territory
+        if(territorySelected){
+          const t = mapTerritories.find(x=>x.id===territorySelected);
+          if(t){
+            for(let i=0;i<t.points.length;i++){
+              if(dist(p, t.points[i])<10){ territoryDragging = {type:'vertex', id:t.id, vIndex:i}; return; }
+            }
+            if(t.points.length>=3 && pointInPolygon(p, t.points)){
+              territoryDragging = {type:'shape', id:t.id, start:p, orig:t.points.map(pt=>({...pt}))};
+              return;
+            }
+          }
+        }
+        // click an existing territory to select it
+        for(let i=mapTerritories.length-1;i>=0;i--){
+          if(mapTerritories[i].points.length>=3 && pointInPolygon(p, mapTerritories[i].points)){
+            territorySelected = mapTerritories[i].id;
+            renderTerritoryList();
+            renderMap();
+            return;
+          }
+        }
+        // otherwise start a new polygon
+        territorySelected = null;
+        drawingTerritory = { points:[p] };
+        document.getElementById('territory-draw-controls').style.display = 'block';
+        document.getElementById('territory-draw-info').textContent = '1 point placed — keep clicking to add corners.';
+        renderTerritoryList();
+        renderMap();
+        return;
+      }
+
+      if(mapUiMode==='connect'){
+        const picked = pickEndpointAt(canvas, p);
+        if(!connectorPending){
+          connectorPending = picked;
           renderMap();
+        } else {
+          const id = 'c'+Date.now();
+          mapConnectors.push({ id, a:connectorPending, b:picked, color:'#c9a227', style:'solid', width:3, label:'' });
+          connectorPending = null;
+          connectorSelected = id;
+          renderConnectorList();
+          renderMap();
+        }
+        return;
+      }
+    });
+
+    window.addEventListener('mousemove', e=>{
+      const p = toCanvas(e);
+      if(mapUiMode==='label' && mapDragging && mapSelected){
+        const l = mapLabels.find(x=>x.id===mapSelected);
+        if(l){ l.x = p.x - mapDragOffset.x; l.y = p.y - mapDragOffset.y; renderMap(); }
+        return;
+      }
+      if(mapUiMode==='territory'){
+        if(drawingTerritory){
+          territoryDrawPreviewPoint = p;
+          renderMap();
+          return;
+        }
+        if(territoryDragging){
+          const t = mapTerritories.find(x=>x.id===territoryDragging.id);
+          if(t){
+            if(territoryDragging.type==='vertex'){
+              t.points[territoryDragging.vIndex] = p;
+            } else if(territoryDragging.type==='shape'){
+              const dx = p.x-territoryDragging.start.x, dy = p.y-territoryDragging.start.y;
+              t.points = territoryDragging.orig.map(pt=>({x:pt.x+dx, y:pt.y+dy}));
+            }
+            renderMap();
+          }
           return;
         }
       }
     });
-    window.addEventListener('mousemove', e=>{
-      if(!mapDragging || !mapSelected) return;
-      const l = mapLabels.find(x=>x.id===mapSelected);
-      if(!l) return;
-      const p = toCanvas(e);
-      l.x = p.x - mapDragOffset.x;
-      l.y = p.y - mapDragOffset.y;
-      renderMap();
-    });
-    window.addEventListener('mouseup', ()=>{ mapDragging=false; });
+    window.addEventListener('mouseup', ()=>{ mapDragging=false; territoryDragging=null; });
   })();
+
+  document.addEventListener('keydown', e=>{
+    if(currentMode !== 'maps') return;
+    if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+    if(e.key==='Escape' && mapUiMode==='territory' && drawingTerritory){
+      cancelTerritoryDraw();
+      return;
+    }
+    if(e.key==='Delete' || e.key==='Backspace'){
+      if(mapUiMode==='label' && mapSelected){
+        mapLabels = mapLabels.filter(x=>x.id!==mapSelected);
+        mapSelected = null;
+        renderMapLabelsList();
+        renderMap();
+      } else if(mapUiMode==='territory' && territorySelected){
+        mapTerritories = mapTerritories.filter(x=>x.id!==territorySelected);
+        territorySelected = null;
+        renderTerritoryList();
+        renderConnectorList();
+        renderMap();
+      } else if(mapUiMode==='connect' && connectorSelected){
+        mapConnectors = mapConnectors.filter(x=>x.id!==connectorSelected);
+        connectorSelected = null;
+        renderConnectorList();
+        renderMap();
+      }
+    }
+  });
 
   document.getElementById('btn-map-png').addEventListener('click', ()=>{
     const canvas = document.getElementById('map-canvas');
@@ -2796,32 +3865,36 @@
   });
 
   // ========== DISCORD BANNER + ICON ==========
-  function syncDiscordColors(){
-    ['discord-c1','discord-c2','discord-accent','discord-text','discord-icon-bg','discord-icon-fg'].forEach(id=>{
-      const hex = id + '-hex';
-      const c = document.getElementById(id);
-      const h = document.getElementById(hex);
-      if(!c || !h) return;
-      c.addEventListener('input', ()=>{ h.value = c.value; renderDiscordBanner(); renderDiscordIcon(); });
-      h.addEventListener('input', ()=>{
-        if(/^#[0-9a-fA-F]{6}$/.test(h.value)){ c.value = h.value; renderDiscordBanner(); renderDiscordIcon(); }
-      });
-    });
+  const discordPalettes = [
+    { name:'Naval Gold', c1:'#0f1a2e', c2:'#1a3a6e', accent:'#c9a227', text:'#f5e6c8' },
+    { name:'Crimson Empire', c1:'#1a0a0a', c2:'#5a1414', accent:'#d4af37', text:'#f0e0d0' },
+    { name:'Verdant Realm', c1:'#0f1e12', c2:'#1f4d2e', accent:'#c9a227', text:'#eef2e6' },
+    { name:'Royal Violet', c1:'#150c22', c2:'#3a2154', accent:'#c9a8e0', text:'#f0e6f7' },
+    { name:'Iron Republic', c1:'#141414', c2:'#2a2a2a', accent:'#8a2f2f', text:'#e6e6e6' },
+    { name:'Arctic Steel', c1:'#0d1520', c2:'#1c3a5e', accent:'#dce6f0', text:'#f2f6fa' }
+  ];
+  function setDiscordColors(p){
+    document.getElementById('discord-c1').value=p.c1; document.getElementById('discord-c1-hex').value=p.c1;
+    document.getElementById('discord-c2').value=p.c2; document.getElementById('discord-c2-hex').value=p.c2;
+    document.getElementById('discord-accent').value=p.accent; document.getElementById('discord-accent-hex').value=p.accent;
+    document.getElementById('discord-text').value=p.text; document.getElementById('discord-text-hex').value=p.text;
+    document.getElementById('discord-icon-bg').value=p.c1; document.getElementById('discord-icon-bg-hex').value=p.c1;
+    document.getElementById('discord-icon-fg').value=p.accent; document.getElementById('discord-icon-fg-hex').value=p.accent;
+    renderDiscordBanner(); renderDiscordIcon();
   }
-  syncDiscordColors();
-  ['discord-banner-style','discord-title','discord-sub','discord-tag','discord-icon-text'].forEach(id=>{
+  buildPaletteRow('discord-palettes', discordPalettes, setDiscordColors);
+
+  ['discord-c1','discord-c2','discord-accent','discord-text','discord-icon-bg','discord-icon-fg'].forEach(id=>{
+    syncColor(id, id+'-hex', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
+  });
+  ['discord-banner-style','discord-title','discord-sub','discord-tag','discord-icon-text','discord-use-emblem','discord-icon-use-emblem','discord-grain'].forEach(id=>{
     const el = document.getElementById(id);
-    if(el){
-      el.addEventListener('input', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
-      el.addEventListener('change', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
-    }
+    if(!el) return;
+    el.addEventListener('input', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
+    el.addEventListener('change', ()=>{ renderDiscordBanner(); renderDiscordIcon(); });
   });
 
-  function renderDiscordBanner(){
-    const canvas = document.getElementById('discord-banner-canvas');
-    const w=960, h=540;
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext('2d');
+  function drawDiscordBannerArt(ctx, w, h){
     const style = document.getElementById('discord-banner-style').value;
     const title = document.getElementById('discord-title').value;
     const sub = document.getElementById('discord-sub').value;
@@ -2830,63 +3903,80 @@
     const c2 = document.getElementById('discord-c2').value;
     const accent = document.getElementById('discord-accent').value;
     const textCol = document.getElementById('discord-text').value;
+    const useEmblem = document.getElementById('discord-use-emblem').checked;
 
-    // Background
-    if(style==='gradient' || style==='emblem' || style==='minimal'){
+    ctx.clearRect(0,0,w,h);
+
+    if(style!=='flag'){
       const g = ctx.createLinearGradient(0,0,w,h);
       g.addColorStop(0, c1);
       g.addColorStop(1, c2);
       ctx.fillStyle = g;
       ctx.fillRect(0,0,w,h);
-    } else if(style==='flag'){
-      ctx.fillStyle = c1;
-      ctx.fillRect(0,0,w,h/3);
-      ctx.fillStyle = c2;
-      ctx.fillRect(0,h/3,w,h/3);
-      ctx.fillStyle = accent;
-      ctx.fillRect(0,2*h/3,w,h/3);
+    } else {
+      ctx.fillStyle = c1; ctx.fillRect(0,0,w,h/3);
+      ctx.fillStyle = c2; ctx.fillRect(0,h/3,w,h/3);
+      ctx.fillStyle = accent; ctx.fillRect(0,2*h/3,w,h/3);
     }
 
-    // Decorative bars
-    if(style==='gradient' || style==='emblem'){
+    if(style==='gradient'){
       ctx.fillStyle = accent;
-      ctx.fillRect(0, h*0.42, w, 4);
-      ctx.fillRect(0, h*0.58, w, 2);
+      ctx.fillRect(0, h*0.42, w, h*0.007);
+      ctx.fillRect(0, h*0.58, w, h*0.004);
     }
     if(style==='minimal'){
       ctx.fillStyle = accent;
-      ctx.fillRect(w*0.1, h*0.7, w*0.15, 3);
+      ctx.fillRect(w*0.1, h*0.7, w*0.15, h*0.006);
     }
 
-    // Title
-    ctx.fillStyle = textCol;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `bold ${style==='minimal' ? 42 : 56}px Cinzel, serif`;
-    ctx.fillText(title.toUpperCase(), w/2, style==='minimal' ? h*0.4 : h*0.32);
-
-    // Subtitle
-    if(sub){
-      ctx.fillStyle = accent;
-      ctx.font = `500 22px EB Garamond, serif`;
-      ctx.fillText(sub, w/2, style==='minimal' ? h*0.52 : h*0.48);
-    }
-
-    // Tagline
-    if(tag && style!=='minimal'){
+    if(style==='emblem'){
+      const embCanvas = document.getElementById('emblem-canvas');
+      const es = h*0.62;
+      if(useEmblem && embCanvas && embCanvas.width>0){
+        ctx.save();
+        ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=h*0.03;
+        ctx.drawImage(embCanvas, w/2-es/2, h*0.06, es, es);
+        ctx.restore();
+      }
       ctx.fillStyle = textCol;
-      ctx.globalAlpha = 0.75;
-      ctx.font = `400 18px EB Garamond, serif`;
-      ctx.fillText(tag, w/2, h*0.68);
-      ctx.globalAlpha = 1;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `bold ${Math.round(h*0.09)}px Cinzel, serif`;
+      ctx.fillText(title.toUpperCase(), w/2, useEmblem ? h*0.88 : h*0.32);
+      if(sub && !useEmblem){
+        ctx.fillStyle = accent;
+        ctx.font = `500 ${Math.round(h*0.041)}px EB Garamond, serif`;
+        ctx.fillText(sub, w/2, h*0.48);
+      }
+    } else {
+      ctx.fillStyle = textCol;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `bold ${style==='minimal'? Math.round(h*0.078) : Math.round(h*0.104)}px Cinzel, serif`;
+      ctx.fillText(title.toUpperCase(), w/2, style==='minimal'? h*0.4 : h*0.32);
+
+      if(sub){
+        ctx.fillStyle = accent;
+        ctx.font = `500 ${Math.round(h*0.041)}px EB Garamond, serif`;
+        ctx.fillText(sub, w/2, style==='minimal'? h*0.52 : h*0.48);
+      }
+      if(tag && style!=='minimal'){
+        ctx.fillStyle = textCol;
+        ctx.globalAlpha = 0.75;
+        ctx.font = `400 ${Math.round(h*0.033)}px EB Garamond, serif`;
+        ctx.fillText(tag, w/2, h*0.68);
+        ctx.globalAlpha = 1;
+      }
     }
 
-    // Subtle vignette
-    const vg = ctx.createRadialGradient(w/2,h/2,h*0.3,w/2,h/2,h*0.8);
-    vg.addColorStop(0,'rgba(0,0,0,0)');
-    vg.addColorStop(1,'rgba(0,0,0,0.35)');
-    ctx.fillStyle = vg;
-    ctx.fillRect(0,0,w,h);
+    if(document.getElementById('discord-grain').checked){
+      drawGrain(ctx,w,h,0.08);
+      drawVignette(ctx,w,h,0.32);
+    }
+  }
+
+  function renderDiscordBanner(){
+    const canvas = document.getElementById('discord-banner-canvas');
+    canvas.width = 960; canvas.height = 540;
+    drawDiscordBannerArt(canvas.getContext('2d'), 960, 540);
   }
 
   function renderDiscordIcon(){
@@ -2894,36 +3984,48 @@
     const size = 512;
     canvas.width = size; canvas.height = size;
     const ctx = canvas.getContext('2d');
-    const text = document.getElementById('discord-icon-text').value || 'XX';
+    const useEmblem = document.getElementById('discord-icon-use-emblem').checked;
     const bg = document.getElementById('discord-icon-bg').value;
     const fg = document.getElementById('discord-icon-fg').value;
 
-    // Circle background
-    ctx.beginPath();
-    ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
-    ctx.fillStyle = bg;
-    ctx.fill();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(size/2,size/2,size/2,0,Math.PI*2); ctx.clip();
 
-    // Ring
-    ctx.beginPath();
-    ctx.arc(size/2, size/2, size*0.42, 0, Math.PI*2);
-    ctx.lineWidth = size*0.04;
-    ctx.strokeStyle = fg;
-    ctx.stroke();
-
-    // Initials
-    ctx.fillStyle = fg;
-    ctx.font = `bold ${Math.round(size*0.28)}px Cinzel, serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text.toUpperCase(), size/2, size/2 + size*0.02);
+    if(useEmblem){
+      const embCanvas = document.getElementById('emblem-canvas');
+      if(embCanvas && embCanvas.width>0){
+        ctx.drawImage(embCanvas, 0, 0, size, size);
+      } else {
+        ctx.fillStyle = bg; ctx.fillRect(0,0,size,size);
+      }
+    } else {
+      ctx.fillStyle = bg; ctx.fillRect(0,0,size,size);
+      ctx.beginPath(); ctx.arc(size/2, size/2, size*0.42, 0, Math.PI*2);
+      ctx.lineWidth = size*0.04; ctx.strokeStyle = fg; ctx.stroke();
+      ctx.fillStyle = fg;
+      ctx.font = `bold ${Math.round(size*0.28)}px Cinzel, serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const text = document.getElementById('discord-icon-text').value || 'XX';
+      ctx.fillText(text.toUpperCase(), size/2, size/2 + size*0.02);
+    }
+    ctx.restore();
   }
 
+  document.getElementById('btn-discord-surprise').addEventListener('click', ()=>{
+    const styles = ['gradient','flag','emblem','minimal'];
+    document.getElementById('discord-banner-style').value = styles[Math.floor(Math.random()*styles.length)];
+    const p = discordPalettes[Math.floor(Math.random()*discordPalettes.length)];
+    setDiscordColors(p);
+  });
+
   document.getElementById('btn-discord-banner').addEventListener('click', ()=>{
-    const canvas = document.getElementById('discord-banner-canvas');
+    const scale = parseInt(document.getElementById('discord-banner-scale').value)||1;
+    const hi = document.createElement('canvas');
+    hi.width = 960*scale; hi.height = 540*scale;
+    drawDiscordBannerArt(hi.getContext('2d'), 960*scale, 540*scale);
     const link = document.createElement('a');
     link.download = 'discord-banner.png';
-    link.href = canvas.toDataURL('image/png');
+    link.href = hi.toDataURL('image/png');
     link.click();
   });
   document.getElementById('btn-discord-icon').addEventListener('click', ()=>{
@@ -2937,8 +4039,9 @@
   // Initial renders
   try { renderFlag(); } catch(e){ console.error(e); }
   try { renderEmblem(); } catch(e){ console.error(e); }
-  try { renderPropaganda(); } catch(e){ console.error(e); }
-  try { renderMap(); } catch(e){ console.error(e); }
+  try { rebuildPropBg(); renderPropaganda(); } catch(e){ console.error(e); }
+  try { renderPropLayersList(); } catch(e){ console.error(e); }
+  try { setMapUiMode('label'); renderMap(); renderMapLabelsList(); renderTerritoryList(); renderConnectorList(); } catch(e){ console.error(e); }
   try { renderDiscordBanner(); } catch(e){ console.error(e); }
   try { renderDiscordIcon(); } catch(e){ console.error(e); }
 })();
