@@ -377,9 +377,9 @@
     box-shadow:
       0 4px 10px rgba(0,0,0,.4),
       0 1px 2px rgba(0,0,0,.3),
-      inset 0 3px 5px rgba(255,180,160,.35),
+      inset 0 3px 5px rgba(255,255,255,.28),
       inset 0 -4px 8px rgba(0,0,0,.45),
-      inset 2px 2px 4px rgba(255,200,180,.2),
+      inset 2px 2px 4px rgba(255,255,255,.15),
       inset -2px -2px 5px rgba(0,0,0,.35);
     outline:none; flex-shrink:0;
     text-shadow: 0 1px 1px rgba(0,0,0,.6);
@@ -388,7 +388,7 @@
     content:"";
     position:absolute; inset:5px;
     border-radius:50%;
-    border:1.5px solid rgba(248,220,160,.35);
+    border:1.5px solid rgba(248,232,200,.4);
     box-shadow:
       inset 0 0 0 1px rgba(0,0,0,.25),
       0 0 0 1px rgba(0,0,0,.15);
@@ -403,7 +403,7 @@
     pointer-events:none;
     z-index:0;
   }
-  .seal{ z-index:1; border: 1px solid rgba(80,10,10,.4); }
+  .seal{ z-index:1; border: 1px solid rgba(0,0,0,.35); }
   .flag{
     width:44px;height:29px;background:center/cover no-repeat #ccc;
     border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.25);
@@ -415,13 +415,20 @@
     position:absolute; top:64px; right:18px; width:120px; height:120px;
     display:flex; align-items:center; justify-content:center; pointer-events:none;
     transform:rotate(-18deg);
+    z-index:4;
   }
+  .stamp.stamp-hidden{ display:none !important; }
   .stamp span{
-    font-family:'Cinzel',serif; font-weight:700; font-size:17px; letter-spacing:.12em; text-transform:uppercase;
-    color:#a02020; border:3px solid #a02020; border-radius:50%; padding:18px 10px; text-align:center;
-    opacity:.72; line-height:1.15;
+    font-family:'Cinzel',serif; font-weight:700; font-size:15px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--stamp-color, #a02020); border:3px solid var(--stamp-color, #a02020); border-radius:50%;
+    padding:14px 8px; text-align:center; opacity:.82; line-height:1.12;
+    max-width:110px; word-break:break-word; hyphens:auto;
   }
-  #document.paper-dark .stamp span{color:#c79a3e; border-color:#c79a3e;}
+  #document.paper-dark .stamp span,
+  #document.paper-navy .stamp span,
+  #document.paper-crimson .stamp span{
+    color:var(--gold-bright, #c79a3e); border-color:var(--gold-bright, #c79a3e);
+  }
 
   [contenteditable]:hover{background:rgba(169,129,47,.1);border-radius:3px;}
   [contenteditable]:focus{background:rgba(169,129,47,.16);border-radius:3px;}
@@ -523,7 +530,8 @@
     font-size:12px;
   }
   .layout-royal .flag{display:none;}
-  .layout-royal .stamp{display:none !important;}
+  /* Stamp is allowed on royal layout; visibility is controlled by .stamp-hidden + toggle */
+  .layout-royal .stamp{ top:52px; right:22px; }
   .layout-royal .sig-scribble{display:none !important;}
   .layout-royal .sig-stamp{display:none !important;}
   .layout-royal.paper-parchment, .layout-royal.paper-cream{
@@ -1714,6 +1722,9 @@
     const t = themes[name] || themes["Parchment & Gold"];
     document.documentElement.style.setProperty('--gold', t.gold);
     document.documentElement.style.setProperty('--gold-bright', t.goldBright);
+    // Stamp ink follows theme; Iron/Crimson keeps a stronger red, others use accent
+    const stampInk = (name === 'Iron & Crimson') ? '#a8433f' : (name === 'Naval Blue' ? '#3c6690' : t.goldBright);
+    document.documentElement.style.setProperty('--stamp-color', stampInk);
     state.theme = name;
   }
 
@@ -1883,17 +1894,28 @@
   }
 
   function waxVars(hex){
-    const r = parseInt((hex||'#9b1b1b').slice(1,3),16)||155;
-    const g = parseInt((hex||'#9b1b1b').slice(3,5),16)||27;
-    const b = parseInt((hex||'#9b1b1b').slice(5,7),16)||27;
-    const wr = Math.min(255, Math.round(r*0.35 + 180*0.65));
-    const wg = Math.min(255, Math.round(g*0.25 + 30*0.75));
-    const wb = Math.min(255, Math.round(b*0.25 + 30*0.75));
-    const hi = `rgb(${Math.min(255,wr+40)},${Math.min(255,wg+25)},${Math.min(255,wb+20)})`;
-    const mid = `rgb(${wr},${wg},${wb})`;
-    const lo = `rgb(${Math.max(0,wr-50)},${Math.max(0,wg-20)},${Math.max(0,wb-20)})`;
-    const deep = `rgb(${Math.max(0,wr-90)},${Math.max(0,wg-35)},${Math.max(0,wb-35)})`;
-    return `--wax-hi:${hi};--wax-mid:${mid};--wax:${lo};--wax-lo:${deep};--wax-deep:${deep}`;
+    // Derive a full wax gradient from the chosen seal color (keeps hue; no more everything-looks-red)
+    let r = parseInt((hex||'#9b1b1b').slice(1,3),16); if(Number.isNaN(r)) r = 155;
+    let g = parseInt((hex||'#9b1b1b').slice(3,5),16); if(Number.isNaN(g)) g = 27;
+    let b = parseInt((hex||'#9b1b1b').slice(5,7),16); if(Number.isNaN(b)) b = 27;
+    const clamp = (n)=>Math.max(0, Math.min(255, Math.round(n)));
+    const lift = (rr,gg,bb,amt)=>({
+      r: clamp(rr + (255-rr)*amt),
+      g: clamp(gg + (255-gg)*amt),
+      b: clamp(bb + (255-bb)*amt)
+    });
+    const shade = (rr,gg,bb,amt)=>({
+      r: clamp(rr*(1-amt)),
+      g: clamp(gg*(1-amt)),
+      b: clamp(bb*(1-amt))
+    });
+    const hi = lift(r,g,b,0.45);
+    const mid = lift(r,g,b,0.12);
+    const base = { r, g, b };
+    const lo = shade(r,g,b,0.35);
+    const deep = shade(r,g,b,0.55);
+    const rgb = (o)=>`rgb(${o.r},${o.g},${o.b})`;
+    return `--wax-hi:${rgb(hi)};--wax-mid:${rgb(mid)};--wax:${rgb(base)};--wax-lo:${rgb(lo)};--wax-deep:${rgb(deep)}`;
   }
 
   function renderSignatures(){
@@ -2004,11 +2026,30 @@
     if(closing) closing.textContent = pack.closing;
   });
 
-  document.getElementById('stamp-toggle').addEventListener('change', e=>{
-    document.getElementById('stamp-el').style.display = e.target.checked ? 'flex' : 'none';
-  });
-  document.getElementById('in-stamp').addEventListener('input', e=>{
-    document.getElementById('stamp-text').textContent = e.target.value;
+  function updateStampVisibility(){
+    const el = document.getElementById('stamp-el');
+    const on = document.getElementById('stamp-toggle').checked;
+    if(!el) return;
+    el.classList.toggle('stamp-hidden', !on);
+    el.style.display = on ? 'flex' : 'none';
+  }
+  document.getElementById('stamp-toggle').addEventListener('change', updateStampVisibility);
+  function setStampText(val){
+    const t = document.getElementById('stamp-text');
+    const inp = document.getElementById('in-stamp');
+    if(t) t.textContent = val;
+    if(inp && inp.value !== val) inp.value = val;
+  }
+  document.getElementById('in-stamp').addEventListener('input', e=> setStampText(e.target.value));
+  // Live-edit the stamp circle itself
+  const stampTextEl = document.getElementById('stamp-text');
+  if(stampTextEl){
+    stampTextEl.setAttribute('contenteditable', 'true');
+    stampTextEl.addEventListener('input', ()=> setStampText(stampTextEl.textContent || ''));
+  }
+  // Keep stamp visible after layout switches (royal no longer hard-hides it)
+  document.getElementById('layout-select').addEventListener('change', ()=>{
+    updateStampVisibility();
   });
 
   document.getElementById('preset-select').addEventListener('change', e=>{
@@ -2052,9 +2093,11 @@
     renderArticleDoc();
   });
   document.getElementById('add-party').addEventListener('click', ()=>{
-    state.parties.push({ name:'New Signatory', role:'Title', seal:'XX', color:sealColors[state.parties.length%sealColors.length], flag:null });
+    state.parties.push({ name:'New Signatory', role:'Title', seal:'XX', color:sealColors[state.parties.length%sealColors.length], flag:null, emblem:null });
     renderPartyInputs();
     renderSignatures();
+    renderCornerEmblems();
+    renderHeraldry();
   });
 
   bindText('in-eyebrow','doc-eyebrow');
@@ -2072,6 +2115,7 @@
   renderSignatures();
   renderCornerEmblems();
   renderHeraldry();
+  updateStampVisibility();
 
   async function captureDoc(type){
     const el = document.getElementById('document');
