@@ -278,12 +278,185 @@
   /* DOCUMENT STYLES (kept from original) */
   #document{
     width:var(--doc-width, 700px); max-width:100%;
-    padding:54px 54px 46px;
+    padding:var(--doc-pad-y, 54px) var(--doc-pad-x, 54px) var(--doc-pad-bot, 46px);
     position:relative;
     box-shadow:0 30px 60px -20px rgba(0,0,0,.65);
     border-radius:2px;
     transition:background .3s ease, color .3s ease, width .12s ease;
+    --title-font: 'Playfair Display', serif;
+    --body-font: 'EB Garamond', serif;
+    --title-size: 31px;
+    --body-size: 15.5px;
+    --line-height: 1.65;
+    --seal-scale: 1;
+    overflow: hidden;
   }
+  #document .doc-title{ font-family: var(--title-font); font-size: var(--title-size); }
+  #document ol.articles li{ font-family: var(--body-font); font-size: var(--body-size); line-height: var(--line-height); }
+  #document .doc-subtitle, #document .doc-meta, #document .doc-preamble, #document .doc-closing, #document .sig-role{
+    font-family: var(--body-font);
+  }
+  #document .seal{ transform: scale(var(--seal-scale)); transform-origin: center center; }
+  #document.density-compact{ --doc-pad-y:36px; --doc-pad-x:40px; --doc-pad-bot:28px; }
+  #document.density-compact .doc-title{ --title-size: 26px; }
+  #document.density-compact ol.articles li{ margin-bottom:8px; line-height:1.45; }
+  #document.density-airy{ --doc-pad-y:72px; --doc-pad-x:64px; --doc-pad-bot:60px; }
+  #document.density-airy ol.articles li{ margin-bottom:18px; line-height:1.85; }
+  #document.align-left .doc-title,
+  #document.align-left .doc-subtitle,
+  #document.align-left .doc-meta,
+  #document.align-left .eyebrow,
+  #document.align-left .doc-preamble,
+  #document.align-left .doc-closing{ text-align:left; }
+  #document.align-left .ornament{ justify-content:flex-start; }
+  #document.align-left .heraldry-row{ justify-content:flex-start; }
+  /* Watermark */
+  #document .doc-watermark{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; z-index:0; overflow:hidden;
+  }
+  #document .doc-watermark span{
+    font-family:'Cinzel',serif; font-weight:700; font-size:72px; letter-spacing:.2em;
+    text-transform:uppercase; color:currentColor; opacity:0.07;
+    transform:rotate(-28deg); white-space:nowrap; user-select:none;
+  }
+  #document > *:not(.doc-watermark):not(.corner-emblem):not(.stamp){ position:relative; z-index:1; }
+  /* Protocol / doc number */
+  #document .doc-protocol{
+    text-align:center; font-family:'Cinzel',serif; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; opacity:.55; margin:0 0 8px; outline:none;
+  }
+  #document .doc-protocol:empty{ display:none; }
+  /* Stamp styles */
+  #document.stamp-style-square .stamp span{
+    border-radius:6px; padding:14px 12px;
+  }
+  #document.stamp-style-banner .stamp{
+    width:auto; height:auto; transform:rotate(-6deg);
+  }
+  #document.stamp-style-banner .stamp span{
+    border-radius:2px; border-width:2px; padding:8px 18px;
+    letter-spacing:.18em; font-size:13px;
+  }
+  #document.stamp-style-wax .stamp span{
+    border-radius:50%; border-width:4px; padding:22px 12px;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.15), 0 2px 6px rgba(0,0,0,.2);
+  }
+  /* Signature styles */
+  #document.sig-style-formal .sig-name{
+    font-family:'Cinzel',serif !important; font-size:16px !important; font-weight:700;
+    letter-spacing:.06em; text-transform:uppercase; border-bottom-width:1px;
+  }
+  #document.sig-style-mono .sig-name{
+    font-family:'Special Elite', 'Courier New', monospace !important;
+    font-size:18px !important; font-style:normal;
+  }
+  #document.sig-style-cursive .sig-name{
+    font-family:'Tangerine', cursive !important; font-size:42px !important;
+  }
+  /* Hide closing when toggled off */
+  #document.hide-closing .doc-closing{ display:none !important; }
+  #document.hide-ornament .ornament{ display:none !important; }
+  /* Letter layout */
+  .layout-letter .heraldry-row{ display:none; }
+  .layout-letter .ornament{ display:none; }
+  .layout-letter .eyebrow{
+    text-align:left; font-size:10px; letter-spacing:.18em; margin-bottom:6px;
+  }
+  .layout-letter .doc-title{
+    text-align:left; font-size:22px; font-weight:700; margin:0 0 4px;
+    text-decoration:none;
+  }
+  .layout-letter .doc-subtitle{ text-align:left; font-style:normal; opacity:.7; }
+  .layout-letter .doc-meta{ text-align:right; margin-top:-28px; margin-bottom:24px; }
+  .layout-letter .doc-preamble{ text-align:left; text-transform:none; letter-spacing:0; font-family:var(--body-font); font-size:14px; }
+  .layout-letter ol.articles{ padding-left:18px; }
+  .layout-letter ol.articles li{ text-align:left; }
+  .layout-letter .signatures{ justify-content:flex-end; }
+  .layout-letter .sig-block{ text-align:right; }
+  .layout-letter .stamp{ top:40px; right:24px; }
+  /* Charter layout */
+  .layout-charter .eyebrow{
+    border:1px solid var(--gold); display:inline-block; padding:5px 16px; margin:0 auto 12px;
+  }
+  .layout-charter .doc-title{
+    font-family:'Cinzel',serif; font-size:28px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .layout-charter .ornament{ margin-bottom:10px; }
+  .layout-charter ol.articles li{
+    border-left:2px solid var(--gold); padding-left:14px; margin-bottom:14px;
+  }
+  /* Title ribbon / divider */
+  #document.show-title-rule .doc-title{
+    border-bottom:1.5px solid var(--gold); padding-bottom:10px; margin-bottom:14px;
+  }
+  #document.show-title-rule.layout-royal .doc-title{
+    text-decoration:none;
+  }
+  /* Extra paper finishes */
+  #document.paper-ruled{
+    background:
+      repeating-linear-gradient(transparent, transparent 27px, rgba(36,28,18,.08) 28px),
+      linear-gradient(180deg,#faf6ea,#f3ead2);
+    color:#2a2118;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.55), 0 0 0 1px #e0d4b0;
+  }
+  #document.paper-marble{
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(255,255,255,.55), transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(180,180,190,.25), transparent 45%),
+      linear-gradient(160deg,#e8e8ec,#d4d4da);
+    color:#1a1a22;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.55), 0 0 0 1px #c8c8d0;
+  }
+  #document.paper-velvet{
+    background:linear-gradient(160deg,#1a0a12,#0e060a 40%,#160810);
+    color:#f0e0d8;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.85), 0 0 0 1px #3a1820;
+  }
+  /* Witnesses block */
+  .witnesses{
+    margin-top:28px; padding-top:16px; border-top:1px solid rgba(169,129,47,.35);
+    display:none;
+  }
+  #document.show-witnesses .witnesses{ display:block; }
+  .witnesses-title{
+    font-family:'Cinzel',serif; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    text-align:center; opacity:.65; margin-bottom:12px;
+  }
+  .witness-list{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:18px 28px;
+  }
+  .witness-block{ flex:1 1 140px; max-width:200px; text-align:center; }
+  .witness-name{
+    font-family:'Tangerine',cursive; font-size:28px; border-bottom:1px solid currentColor;
+    opacity:.9; margin-bottom:4px; outline:none;
+  }
+  .witness-role{ font-size:11px; opacity:.65; outline:none; }
+  #document.sig-style-formal .witness-name{
+    font-family:'Cinzel',serif !important; font-size:13px !important; text-transform:uppercase; letter-spacing:.05em;
+  }
+  #document.sig-style-mono .witness-name{
+    font-family:'Special Elite',monospace !important; font-size:14px !important;
+  }
+  /* Stage zoom */
+  .stage-toolbar{
+    position:sticky; top:8px; z-index:8; display:flex; gap:8px; justify-content:center;
+    margin-bottom:12px; flex-wrap:wrap;
+  }
+  .stage-toolbar button{
+    font-family:'Cinzel',serif; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    padding:7px 12px; border-radius:6px; border:1px solid var(--panel-line);
+    background:#1c1a15; color:var(--panel-muted); cursor:pointer;
+  }
+  .stage-toolbar button:hover{ color:#fff; border-color:var(--gold); }
+  #doc-stage-inner{ transform-origin: top center; transition: transform .15s ease; }
+  .quick-insert{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .quick-insert button{
+    font-size:11px; padding:5px 9px; border-radius:5px; border:1px solid var(--panel-line);
+    background:#100e0a; color:var(--panel-muted); cursor:pointer; font-family:'EB Garamond',serif;
+  }
+  .quick-insert button:hover{ color:#fff; border-color:var(--gold); }
   #document.paper-parchment{
     background:radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.5), transparent 55%), var(--paper);
     color:var(--ink); box-shadow:0 30px 60px -20px rgba(0,0,0,.65), 0 0 0 1px var(--paper-edge);
@@ -404,6 +577,15 @@
     z-index:0;
   }
   .seal{ z-index:1; border: 1px solid rgba(0,0,0,.35); }
+  /* Canvas-drawn seals: hide pseudo rings (detail is already in the image) */
+  .seal.seal-img::before, .seal.seal-img::after{ display:none !important; }
+  .seal.seal-img{
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35) !important;
+    color: transparent !important;
+    text-shadow: none !important;
+  }
   .flag{
     width:44px;height:29px;background:center/cover no-repeat #ccc;
     border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.25);
@@ -647,6 +829,9 @@
           <option value="embargo">Trade Embargo</option>
           <option value="military">Military Access Pact</option>
           <option value="culture">Cultural Exchange</option>
+          <option value="recognition">Diplomatic Recognition</option>
+          <option value="credentials">Letter of Credentials</option>
+          <option value="invitation">State Invitation</option>
           <option value="blank">Blank Document</option>
         </select>
       </div>
@@ -658,6 +843,8 @@
           <option value="layout-modern">Modern Clean</option>
           <option value="layout-imperial">Imperial Decree</option>
           <option value="layout-field">Field Report (typewriter)</option>
+          <option value="layout-letter">Diplomatic Letter</option>
+          <option value="layout-charter">Grand Charter</option>
         </select>
       </div>
       <div class="field">
@@ -695,6 +882,9 @@
             <option value="paper-dark">War Room Dark</option>
             <option value="paper-navy">Navy Official</option>
             <option value="paper-crimson">Crimson Decree</option>
+            <option value="paper-ruled">Ruled ledger</option>
+            <option value="paper-marble">Marble</option>
+            <option value="paper-velvet">Velvet night</option>
           </select>
         </div>
         <div class="field">
@@ -714,14 +904,147 @@
         <label for="stamp-toggle">Show stamp</label>
       </div>
       <div class="field" id="stamp-text-field"><label>Stamp text</label><input type="text" id="in-stamp" value="Ratified"></div>
+      <div class="field">
+        <label>Stamp color</label>
+        <div class="color-input">
+          <input type="color" id="stamp-color" value="#c79a3e">
+          <input type="text" id="stamp-color-hex" value="#c79a3e">
+        </div>
+      </div>
+      <button class="add-btn" id="btn-fill-parties" style="margin-bottom:12px;">Fill subtitle from signatories</button>
+
+      <h2>Typography & Style</h2>
+      <div class="row2">
+        <div class="field">
+          <label>Title font</label>
+          <select id="title-font">
+            <option value="'Playfair Display', serif">Playfair (classic)</option>
+            <option value="'Cinzel', serif">Cinzel (imperial)</option>
+            <option value="'EB Garamond', serif">Garamond (body)</option>
+            <option value="'Special Elite', monospace">Typewriter</option>
+            <option value="'UnifrakturCook', cursive">Blackletter</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Body font</label>
+          <select id="body-font">
+            <option value="'EB Garamond', serif">Garamond</option>
+            <option value="'Playfair Display', serif">Playfair</option>
+            <option value="'Cinzel', serif">Cinzel</option>
+            <option value="'Special Elite', monospace">Typewriter</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Title size <span id="title-size-readout" style="text-transform:none;color:var(--panel-text);">31px</span></label>
+        <input type="range" id="title-size" min="18" max="48" value="31">
+      </div>
+      <div class="field">
+        <label>Body size <span id="body-size-readout" style="text-transform:none;color:var(--panel-text);">15.5px</span></label>
+        <input type="range" id="body-size" min="12" max="22" step="0.5" value="15.5">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Density</label>
+          <select id="density-select">
+            <option value="density-compact">Compact</option>
+            <option value="density-normal" selected>Normal</option>
+            <option value="density-airy">Airy / ceremonial</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Text align</label>
+          <select id="align-select">
+            <option value="align-center" selected>Centered</option>
+            <option value="align-left">Left</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Stamp style</label>
+          <select id="stamp-style">
+            <option value="stamp-style-circle">Circle seal</option>
+            <option value="stamp-style-square">Square chop</option>
+            <option value="stamp-style-banner">Banner ribbon</option>
+            <option value="stamp-style-wax">Heavy wax</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Signature style</label>
+          <select id="sig-style">
+            <option value="sig-style-cursive">Cursive script</option>
+            <option value="sig-style-formal">Formal caps</option>
+            <option value="sig-style-mono">Typewriter</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Article numbers</label>
+          <select id="article-num-style">
+            <option value="roman">Roman (I, II…)</option>
+            <option value="arabic">Arabic (1, 2…)</option>
+            <option value="none">None / plain</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Seal size</label>
+          <input type="range" id="seal-scale" min="0.7" max="1.5" step="0.05" value="1">
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="show-closing" checked>
+        <label for="show-closing">Show closing statement</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="show-ornament" checked>
+        <label for="show-ornament">Show center ornament</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="show-title-rule">
+        <label for="show-title-rule">Gold rule under title</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="show-witnesses">
+        <label for="show-witnesses">Show witnesses block</label>
+      </div>
+      <div class="field">
+        <label>Protocol / document №</label>
+        <input type="text" id="in-protocol" placeholder="e.g. Protocol № 47-A / Year of Our Lord">
+      </div>
+      <div class="field">
+        <label>Watermark text (faint background)</label>
+        <input type="text" id="in-watermark" placeholder="e.g. CONFIDENTIAL · DRAFT · SECRET">
+      </div>
+      <div class="field">
+        <label>Closing statement</label>
+        <textarea id="in-closing" rows="2">In witness whereof, the undersigned, being duly authorized, have signed this instrument.</textarea>
+      </div>
 
       <h2>Articles</h2>
+      <div class="quick-insert" id="article-quick">
+        <button type="button" data-art="Sovereignty & mutual recognition of governments and borders.">Sovereignty</button>
+        <button type="button" data-art="Non-aggression: neither party shall raid, trap, snipe, or support hostilities against the other.">Non-aggression</button>
+        <button type="button" data-art="Mutual defense: an attack on one is an attack on both, to the extent of available forces.">Defense</button>
+        <button type="button" data-art="Free transit and trade of goods across recognized borders under equal protection.">Trade</button>
+        <button type="button" data-art="This instrument remains in force indefinitely unless terminated by seven days' written notice.">Duration</button>
+        <button type="button" data-art="Disputes shall be settled by negotiation or neutral arbitration, not force.">Arbitration</button>
+      </div>
       <div id="article-list"></div>
       <button class="add-btn" id="add-article">+ Add article</button>
 
       <h2>Signatories <button class="tiny-btn" id="add-party">+ add party</button></h2>
       <div id="party-list"></div>
 
+      <h2>Witnesses <button class="tiny-btn" id="add-witness">+ add</button></h2>
+      <div id="witness-inputs"></div>
+      <div class="hint" style="margin-top:0;border:none;padding-top:4px;">Enable “Show witnesses block” above to display them on the document.</div>
+
+      <div class="field">
+        <label>Export filename</label>
+        <input type="text" id="export-filename" placeholder="auto from title">
+      </div>
       <div class="field">
         <label>Export resolution</label>
         <select id="export-scale">
@@ -735,6 +1058,12 @@
         <button class="btn-secondary" id="btn-copy">Copy image</button>
         <button class="btn-primary" id="btn-png">Download PNG</button>
         <button class="btn-primary" id="btn-jpg">Download JPG</button>
+      </div>
+      <div class="export-bar" style="margin-top:8px;">
+        <button class="btn-secondary" id="btn-export-json">Export JSON</button>
+        <button class="btn-secondary" id="btn-import-json">Import JSON</button>
+        <input type="file" id="import-json-file" accept="application/json,.json" style="display:none;">
+        <button class="btn-secondary" id="btn-copy-text">Copy text</button>
       </div>
 
       <h2>My saved documents</h2>
@@ -1276,13 +1605,22 @@
   <div class="stage">
     <!-- Document stage -->
     <div id="doc-stage">
-      <div id="document" class="paper-parchment layout-royal border-double">
+      <div class="stage-toolbar">
+        <button type="button" id="zoom-out" title="Zoom out">− Zoom</button>
+        <button type="button" id="zoom-reset">100%</button>
+        <button type="button" id="zoom-in" title="Zoom in">+ Zoom</button>
+        <button type="button" id="btn-date-today">Date → today</button>
+      </div>
+      <div id="doc-stage-inner">
+      <div id="document" class="paper-parchment layout-royal border-double density-normal align-center stamp-style-circle sig-style-cursive">
+        <div class="doc-watermark" id="doc-watermark" style="display:none;"><span id="doc-watermark-text"></span></div>
         <div class="corner-emblem left" id="corner-emblem-a"></div>
         <div class="corner-emblem right" id="corner-emblem-b"></div>
         <div class="stamp" id="stamp-el"><span id="stamp-text">Ratified</span></div>
         <div class="heraldry-row" id="heraldry-row"></div>
         <p class="eyebrow" id="doc-eyebrow" contenteditable="true">Official Diplomatic Record</p>
         <div class="ornament" id="ornament-slot"></div>
+        <p class="doc-protocol" id="doc-protocol" contenteditable="true"></p>
         <p class="doc-meta" id="doc-meta" contenteditable="true">August 15, 2026</p>
         <h1 class="doc-title" id="doc-title" contenteditable="true">Alliance Treaty</h1>
         <p class="doc-subtitle" id="doc-subtitle" contenteditable="true">Between [Nation A] and [Nation B]</p>
@@ -1290,6 +1628,11 @@
         <ol class="articles" id="doc-articles"></ol>
         <p class="doc-closing" id="doc-closing" contenteditable="true">In witness whereof, the undersigned, being duly authorized, have signed this instrument.</p>
         <div class="signatures" id="doc-signatures"></div>
+        <div class="witnesses" id="doc-witnesses">
+          <div class="witnesses-title">In the presence of</div>
+          <div class="witness-list" id="witness-list"></div>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -1690,6 +2033,48 @@
       ],
       stamp:"Exchange"
     },
+    recognition: {
+      eyebrow:"Diplomatic Instrument",
+      title:"Recognition of Sovereignty",
+      subtitle:"Issued by [Recognizing Nation] concerning [Recognized Nation]",
+      meta:"Proclaimed this day",
+      preamble:"By the authority vested in this government, it is hereby declared:",
+      articles:[
+        "The undersigned nation formally recognizes the sovereignty, independence, and legitimate government of the named state.",
+        "Full diplomatic relations shall be established, including the exchange of envoys at the earliest practical opportunity.",
+        "Territorial integrity and political independence of the recognized state shall be respected in all future dealings.",
+        "This recognition is irrevocable except by formal instrument of equal solemnity."
+      ],
+      stamp:"Recognized"
+    },
+    credentials: {
+      eyebrow:"Letter of Credence",
+      title:"Letters of Credence",
+      subtitle:"Accrediting [Envoy Name] to the Court of [Host Nation]",
+      meta:"Given under seal this day",
+      preamble:"To His / Her Excellency, and to whom these presents shall come:",
+      articles:[
+        "We do hereby appoint and accredit the bearer as our Ambassador Extraordinary and Plenipotentiary.",
+        "We request that full faith and credit be given to all that the said envoy shall communicate in our name.",
+        "The envoy is authorized to negotiate and conclude instruments subject to our final ratification.",
+        "These letters remain in force until formally recalled or superseded."
+      ],
+      stamp:"Accredited"
+    },
+    invitation: {
+      eyebrow:"State Invitation",
+      title:"Invitation to State Occasion",
+      subtitle:"Extended by [Host Nation] to [Guest Nation]",
+      meta:"To be honored on the appointed day",
+      preamble:"With high regard and friendship, the undersigned cordially invites:",
+      articles:[
+        "The distinguished representatives of the guest nation are invited to attend the ceremony and reception.",
+        "Suitable honors, lodging, and protection shall be afforded for the duration of the visit.",
+        "Matters of mutual interest may be discussed in confidence at the discretion of both parties.",
+        "A formal reply is requested within fourteen days of receipt."
+      ],
+      stamp:"Invited"
+    },
     blank: {
       eyebrow:"",
       title:"Untitled Agreement",
@@ -1715,16 +2100,23 @@
     parties: [
       { name: "Mesh", role: "Emperor of Brazil", seal: "BR", color: "#7a2323", flag: null, emblem: null },
       { name: "Prode", role: "Emperor of Italy", seal: "IT", color: "#1f3a52", flag: null, emblem: null }
-    ]
+    ],
+    witnesses: []
   };
 
-  function applyTheme(name){
+  function applyTheme(name, keepStampColor){
     const t = themes[name] || themes["Parchment & Gold"];
     document.documentElement.style.setProperty('--gold', t.gold);
     document.documentElement.style.setProperty('--gold-bright', t.goldBright);
-    // Stamp ink follows theme; Iron/Crimson keeps a stronger red, others use accent
-    const stampInk = (name === 'Iron & Crimson') ? '#a8433f' : (name === 'Naval Blue' ? '#3c6690' : t.goldBright);
-    document.documentElement.style.setProperty('--stamp-color', stampInk);
+    if(!keepStampColor){
+      // Stamp ink follows theme unless user locked a custom stamp color
+      const stampInk = (name === 'Iron & Crimson') ? '#a8433f' : (name === 'Naval Blue' ? '#3c6690' : t.goldBright);
+      document.documentElement.style.setProperty('--stamp-color', stampInk);
+      const sc = document.getElementById('stamp-color');
+      const sch = document.getElementById('stamp-color-hex');
+      if(sc) sc.value = stampInk;
+      if(sch) sch.value = stampInk;
+    }
     state.theme = name;
   }
 
@@ -1787,13 +2179,18 @@
   function renderArticleDoc(){
     const ol = document.getElementById('doc-articles');
     ol.innerHTML = '';
-    const isRoyal = state.layout === 'layout-royal';
+    const isRoyal = state.layout === 'layout-royal' || state.layout === 'layout-charter';
+    const numStyle = document.getElementById('article-num-style')?.value || 'roman';
     state.articles.forEach((art,i)=>{
       const li = document.createElement('li');
       li.contentEditable = true;
-      li.dataset.roman = toRoman(i+1);
-      if(isRoyal){
-        const roman = toRoman(i+1);
+      const roman = toRoman(i+1);
+      const arabic = String(i+1);
+      li.dataset.roman = roman;
+      if(numStyle === 'arabic') li.dataset.roman = arabic;
+      if(numStyle === 'none') li.dataset.roman = '';
+      if(isRoyal && numStyle !== 'none'){
+        const label = numStyle === 'arabic' ? arabic : roman;
         if(/^Article\s+[IVXLCDM0-9]+/i.test(art)){
           li.innerHTML = art.replace(/^(Article\s+[IVXLCDM0-9]+\s*[—–-]?\s*[^\s—–-]*(?:\s+[^\s—–-]*){0,4})/i, function(m){
             return '<strong>'+m.trim()+'</strong>';
@@ -1801,11 +2198,13 @@
         } else {
           const m = art.match(/^(.{2,50}?)(\s*[—–-]\s*)(.+)$/);
           if(m){
-            li.innerHTML = '<strong>Article '+roman+' – '+m[1].trim()+'</strong> '+m[3].trim();
+            li.innerHTML = '<strong>Article '+label+' – '+m[1].trim()+'</strong> '+m[3].trim();
           } else {
-            li.innerHTML = '<strong>Article '+roman+'</strong> '+art;
+            li.innerHTML = '<strong>Article '+label+'</strong> '+art;
           }
         }
+      } else if(numStyle === 'arabic' && !isRoyal){
+        li.textContent = (i+1) + '. ' + art.replace(/^\d+\.\s*/, '');
       } else {
         li.textContent = art;
       }
@@ -1833,7 +2232,10 @@
         <div class="row2">
           <div class="field"><label>Seal letters</label><input type="text" class="p-seal" value="${p.seal||''}" maxlength="3"></div>
           <div class="field"><label>Seal color</label>
-            <select class="p-color">${sealColors.map(c=>`<option value="${c}" ${c===p.color?'selected':''} style="background:${c}">${c}</option>`).join('')}</select>
+            <div class="color-input">
+              <input type="color" class="p-color" value="${p.color||'#7a2323'}">
+              <input type="text" class="p-color-hex" value="${p.color||'#7a2323'}">
+            </div>
           </div>
         </div>
         <div class="flag-upload">
@@ -1851,7 +2253,20 @@
       card.querySelector('.p-name').addEventListener('input', e=>{ p.name = e.target.value; renderSignatures(); });
       card.querySelector('.p-role').addEventListener('input', e=>{ p.role = e.target.value; renderSignatures(); });
       card.querySelector('.p-seal').addEventListener('input', e=>{ p.seal = e.target.value; renderSignatures(); renderHeraldry(); });
-      card.querySelector('.p-color').addEventListener('change', e=>{ p.color = e.target.value; renderSignatures(); renderHeraldry(); });
+      const colorInp = card.querySelector('.p-color');
+      const colorHex = card.querySelector('.p-color-hex');
+      colorInp.addEventListener('input', e=>{
+        p.color = e.target.value;
+        if(colorHex) colorHex.value = e.target.value;
+        renderSignatures(); renderHeraldry();
+      });
+      if(colorHex) colorHex.addEventListener('input', e=>{
+        if(/^#[0-9a-fA-F]{6}$/.test(e.target.value)){
+          p.color = e.target.value;
+          colorInp.value = e.target.value;
+          renderSignatures(); renderHeraldry();
+        }
+      });
       card.querySelector('.p-flag').addEventListener('change', e=>{
         const file = e.target.files[0];
         if(!file) return;
@@ -1915,11 +2330,59 @@
     const lo = shade(r,g,b,0.35);
     const deep = shade(r,g,b,0.55);
     const rgb = (o)=>`rgb(${o.r},${o.g},${o.b})`;
-    return { hi:rgb(hi), mid:rgb(mid), base:rgb(base), lo:rgb(lo), deep:rgb(deep) };
+    return { hi:rgb(hi), mid:rgb(mid), base:rgb(base), lo:rgb(lo), deep:rgb(deep), hex: hex||'#9b1b1b' };
+  }
+  // Canvas-drawn wax seal — html2canvas always keeps image data (CSS gradients often go gray)
+  function drawWaxSealDataURL(hex, letters, size){
+    size = size || 128;
+    const p = waxPalette(hex);
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    const cx = size/2, cy = size/2, r = size*0.46;
+    // soft drop shadow
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy+size*0.02, r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
+    ctx.restore();
+    // wax body
+    const grad = ctx.createRadialGradient(cx-r*0.28, cy-r*0.32, r*0.08, cx, cy, r);
+    grad.addColorStop(0, p.hi);
+    grad.addColorStop(0.28, p.mid);
+    grad.addColorStop(0.55, p.base);
+    grad.addColorStop(0.78, p.lo);
+    grad.addColorStop(1, p.deep);
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = grad; ctx.fill();
+    // rim
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = size*0.02; ctx.stroke();
+    // inner gold ring
+    ctx.beginPath(); ctx.arc(cx, cy, r*0.78, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(248,232,200,0.4)'; ctx.lineWidth = size*0.025; ctx.stroke();
+    // inner dark disc for depth
+    ctx.beginPath(); ctx.arc(cx, cy, r*0.55, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
+    // letters
+    const text = (letters||'XX').toUpperCase().slice(0,3);
+    ctx.fillStyle = '#f8e8c0';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `bold ${Math.round(size*0.28)}px Cinzel, Georgia, serif`;
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = size*0.03;
+    ctx.fillText(text, cx, cy+size*0.01);
+    ctx.shadowBlur = 0;
+    // top highlight
+    const hi = ctx.createRadialGradient(cx-r*0.3, cy-r*0.35, 0, cx, cy, r);
+    hi.addColorStop(0, 'rgba(255,255,255,0.22)');
+    hi.addColorStop(0.45, 'rgba(255,255,255,0)');
+    hi.addColorStop(1, 'rgba(0,0,0,0.12)');
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = hi; ctx.fill();
+    return c.toDataURL('image/png');
   }
   function waxVars(hex){
-    // Bake colors into the gradient itself so html2canvas keeps seal color on export
-    // (CSS variables on inline styles are often dropped by html2canvas)
+    // CSS fallback for live preview + baked gradient
     const p = waxPalette(hex);
     return [
       `--wax-hi:${p.hi}`,
@@ -1929,6 +2392,21 @@
       `--wax-deep:${p.deep}`,
       `background:radial-gradient(circle at 32% 28%, ${p.hi} 0%, ${p.mid} 28%, ${p.base} 55%, ${p.lo} 78%, ${p.deep} 100%)`
     ].join(';');
+  }
+  function applySealLook(el, hex, letters){
+    if(!el) return;
+    const data = drawWaxSealDataURL(hex, letters, 128);
+    el.style.background = 'transparent';
+    el.style.backgroundImage = `url(${data})`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundRepeat = 'no-repeat';
+    el.style.boxShadow = 'none';
+    el.style.border = 'none';
+    el.style.color = 'transparent'; // letters are in the image
+    el.style.textShadow = 'none';
+    el.dataset.sealHex = hex||'#9b1b1b';
+    el.dataset.sealLetters = (letters||'XX').toUpperCase().slice(0,3);
   }
 
   function renderSignatures(){
@@ -1942,15 +2420,15 @@
         <div class="sig-name" contenteditable="true">${p.name||'Name'}</div>
         <div class="sig-role" contenteditable="true">${p.role||'Title'}</div>
         <div class="seal-flag-row">
-          <div class="seal" style="${waxVars(p.color)}" contenteditable="true" title="Wax seal">${letters}</div>
+          <div class="seal seal-img" title="Wax seal — edit letters in the panel"></div>
           <div class="flag ${p.flag?'':'empty'}" style="${p.flag?`background-image:url(${p.flag})`:''}"></div>
         </div>
         <div class="sig-scribble">${scribbleSVG(p.color||'#7a2323', i)}</div>
         <div class="sig-stamp" style="color:${p.color||'#7a2323'};right:${10+i*20}px;bottom:10px;">OFFICIAL</div>`;
       wrap.appendChild(block);
+      applySealLook(block.querySelector('.seal'), p.color||'#7a2323', letters);
       block.querySelector('.sig-name').addEventListener('input', e=>{ p.name = e.target.textContent; const inp=document.querySelectorAll('.p-name')[i]; if(inp)inp.value=p.name; });
       block.querySelector('.sig-role').addEventListener('input', e=>{ p.role = e.target.textContent; const inp=document.querySelectorAll('.p-role')[i]; if(inp)inp.value=p.role; });
-      block.querySelector('.seal').addEventListener('input', e=>{ p.seal = e.target.textContent; const inp=document.querySelectorAll('.p-seal')[i]; if(inp)inp.value=p.seal; });
     });
   }
 
@@ -1968,10 +2446,14 @@
     if(!row) return;
     row.innerHTML = state.parties.slice(0,4).map(p=>{
       const arms = p.emblem || p.flag;
-      const emblemStyle = arms
-        ? `background-image:url(${arms})`
-        : `background:${p.color||'#7a2323'};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f4e8c8;font-family:Cinzel,serif;font-weight:700;font-size:18px`;
-      const emblemContent = arms ? '' : (p.seal||'XX');
+      let emblemStyle, emblemContent = '';
+      if(arms){
+        emblemStyle = `background-image:url(${arms});background-size:contain;background-repeat:no-repeat;background-position:center`;
+      } else {
+        // Canvas wax so top heraldry matches signature seals (and survives export)
+        const data = drawWaxSealDataURL(p.color||'#7a2323', p.seal||'XX', 128);
+        emblemStyle = `background-image:url(${data});background-size:cover;background-position:center;border-radius:50%`;
+      }
       const flagClass = p.flag ? 'h-flag' : 'h-flag empty';
       const flagStyle = p.flag ? `background-image:url(${p.flag})` : '';
       return `<div class="heraldry-party">
@@ -2011,17 +2493,83 @@
 
   document.getElementById('paper-select').addEventListener('change', e=>{
     const doc = document.getElementById('document');
-    doc.classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson');
+    doc.classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson','paper-ruled','paper-marble','paper-velvet');
     doc.classList.add(e.target.value);
   });
   document.getElementById('layout-select').addEventListener('change', e=>{
     const doc = document.getElementById('document');
-    doc.classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial');
+    doc.classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial','layout-letter','layout-charter');
     doc.classList.add(e.target.value);
     state.layout = e.target.value;
     renderArticleDoc();
     renderSignatures();
     renderHeraldry();
+  });
+
+  // ---- Advanced typography & style controls ----
+  const docEl = ()=> document.getElementById('document');
+  function setDocClassGroup(prefix, value){
+    const doc = docEl();
+    [...doc.classList].filter(c=>c.startsWith(prefix)).forEach(c=>doc.classList.remove(c));
+    if(value) doc.classList.add(value);
+  }
+  document.getElementById('title-font').addEventListener('change', e=>{
+    docEl().style.setProperty('--title-font', e.target.value);
+  });
+  document.getElementById('body-font').addEventListener('change', e=>{
+    docEl().style.setProperty('--body-font', e.target.value);
+  });
+  document.getElementById('title-size').addEventListener('input', e=>{
+    const v = e.target.value + 'px';
+    docEl().style.setProperty('--title-size', v);
+    document.getElementById('title-size-readout').textContent = v;
+  });
+  document.getElementById('body-size').addEventListener('input', e=>{
+    const v = e.target.value + 'px';
+    docEl().style.setProperty('--body-size', v);
+    document.getElementById('body-size-readout').textContent = v;
+  });
+  document.getElementById('density-select').addEventListener('change', e=> setDocClassGroup('density-', e.target.value));
+  document.getElementById('align-select').addEventListener('change', e=> setDocClassGroup('align-', e.target.value));
+  document.getElementById('stamp-style').addEventListener('change', e=> setDocClassGroup('stamp-style-', e.target.value));
+  document.getElementById('sig-style').addEventListener('change', e=>{
+    setDocClassGroup('sig-style-', e.target.value);
+    renderSignatures();
+  });
+  document.getElementById('article-num-style').addEventListener('change', ()=> renderArticleDoc());
+  document.getElementById('seal-scale').addEventListener('input', e=>{
+    docEl().style.setProperty('--seal-scale', e.target.value);
+  });
+  document.getElementById('show-closing').addEventListener('change', e=>{
+    docEl().classList.toggle('hide-closing', !e.target.checked);
+  });
+  document.getElementById('show-ornament').addEventListener('change', e=>{
+    docEl().classList.toggle('hide-ornament', !e.target.checked);
+  });
+  document.getElementById('show-title-rule').addEventListener('change', e=>{
+    docEl().classList.toggle('show-title-rule', e.target.checked);
+  });
+  document.getElementById('show-witnesses').addEventListener('change', e=>{
+    docEl().classList.toggle('show-witnesses', e.target.checked);
+  });
+  document.getElementById('in-protocol').addEventListener('input', e=>{
+    document.getElementById('doc-protocol').textContent = e.target.value;
+  });
+  document.getElementById('doc-protocol').addEventListener('input', e=>{
+    document.getElementById('in-protocol').value = e.target.textContent;
+  });
+  document.getElementById('in-watermark').addEventListener('input', e=>{
+    const wrap = document.getElementById('doc-watermark');
+    const txt = document.getElementById('doc-watermark-text');
+    const v = e.target.value.trim();
+    txt.textContent = v;
+    wrap.style.display = v ? 'flex' : 'none';
+  });
+  document.getElementById('in-closing').addEventListener('input', e=>{
+    document.getElementById('doc-closing').textContent = e.target.value;
+  });
+  document.getElementById('doc-closing').addEventListener('input', e=>{
+    document.getElementById('in-closing').value = e.target.textContent;
   });
   document.getElementById('border-select').addEventListener('change', e=>{
     const doc = document.getElementById('document');
@@ -2060,9 +2608,35 @@
     stampTextEl.setAttribute('contenteditable', 'true');
     stampTextEl.addEventListener('input', ()=> setStampText(stampTextEl.textContent || ''));
   }
+  // Custom stamp color (inline — syncColor helper is defined later with flag tools)
+  (function(){
+    const c = document.getElementById('stamp-color');
+    const h = document.getElementById('stamp-color-hex');
+    if(!c||!h) return;
+    function applyStampCol(){
+      document.documentElement.style.setProperty('--stamp-color', c.value);
+      const span = document.getElementById('stamp-text');
+      if(span){ span.style.color = c.value; span.style.borderColor = c.value; }
+    }
+    c.addEventListener('input', ()=>{ h.value = c.value; applyStampCol(); });
+    h.addEventListener('input', ()=>{
+      if(/^#[0-9a-fA-F]{6}$/.test(h.value)){ c.value = h.value; applyStampCol(); }
+    });
+  })();
   // Keep stamp visible after layout switches (royal no longer hard-hides it)
   document.getElementById('layout-select').addEventListener('change', ()=>{
     updateStampVisibility();
+  });
+  document.getElementById('btn-fill-parties').addEventListener('click', ()=>{
+    const names = state.parties.map(p=>p.name).filter(Boolean);
+    if(!names.length){ toast('Add signatories first', false); return; }
+    let sub;
+    if(names.length === 1) sub = 'Of ' + names[0];
+    else if(names.length === 2) sub = 'Between ' + names[0] + ' and ' + names[1];
+    else sub = 'Between ' + names.slice(0,-1).join(', ') + ', and ' + names[names.length-1];
+    document.getElementById('in-subtitle').value = sub;
+    document.getElementById('doc-subtitle').textContent = sub;
+    toast('Subtitle updated');
   });
 
   document.getElementById('preset-select').addEventListener('change', e=>{
@@ -2113,6 +2687,93 @@
     renderHeraldry();
   });
 
+  // Quick-insert article chips
+  document.getElementById('article-quick').addEventListener('click', e=>{
+    const btn = e.target.closest('[data-art]');
+    if(!btn) return;
+    state.articles.push(btn.dataset.art);
+    renderArticleInputs();
+    renderArticleDoc();
+    toast('Article added');
+  });
+
+  // Witnesses
+  function renderWitnessInputs(){
+    const box = document.getElementById('witness-inputs');
+    if(!box) return;
+    if(!state.witnesses.length){
+      box.innerHTML = '<div class="saved-empty">No witnesses yet</div>';
+      renderWitnessDoc();
+      return;
+    }
+    box.innerHTML = '';
+    state.witnesses.forEach((w,i)=>{
+      const row = document.createElement('div');
+      row.className = 'party-card';
+      row.innerHTML = `
+        <div class="party-head"><span>Witness ${i+1}</span>
+          <button class="tiny-btn danger-w" data-i="${i}">remove</button>
+        </div>
+        <div class="field"><label>Name</label><input type="text" class="w-name" value="${(w.name||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>Role</label><input type="text" class="w-role" value="${(w.role||'').replace(/"/g,'&quot;')}"></div>`;
+      box.appendChild(row);
+      row.querySelector('.w-name').addEventListener('input', e=>{ w.name = e.target.value; renderWitnessDoc(); });
+      row.querySelector('.w-role').addEventListener('input', e=>{ w.role = e.target.value; renderWitnessDoc(); });
+      row.querySelector('.danger-w').addEventListener('click', ()=>{
+        state.witnesses.splice(i,1);
+        renderWitnessInputs();
+      });
+    });
+    renderWitnessDoc();
+  }
+  function renderWitnessDoc(){
+    const list = document.getElementById('witness-list');
+    if(!list) return;
+    list.innerHTML = state.witnesses.map(w=>`
+      <div class="witness-block">
+        <div class="witness-name" contenteditable="true">${w.name||'Witness'}</div>
+        <div class="witness-role" contenteditable="true">${w.role||'Observer'}</div>
+      </div>`).join('');
+    list.querySelectorAll('.witness-block').forEach((block,i)=>{
+      block.querySelector('.witness-name').addEventListener('input', e=>{
+        state.witnesses[i].name = e.target.textContent;
+        const inp = document.querySelectorAll('.w-name')[i];
+        if(inp) inp.value = state.witnesses[i].name;
+      });
+      block.querySelector('.witness-role').addEventListener('input', e=>{
+        state.witnesses[i].role = e.target.textContent;
+        const inp = document.querySelectorAll('.w-role')[i];
+        if(inp) inp.value = state.witnesses[i].role;
+      });
+    });
+  }
+  document.getElementById('add-witness').addEventListener('click', ()=>{
+    state.witnesses.push({ name:'Witness', role:'Neutral observer' });
+    document.getElementById('show-witnesses').checked = true;
+    docEl().classList.add('show-witnesses');
+    renderWitnessInputs();
+  });
+
+  // Stage zoom + today date
+  let stageZoom = 1;
+  function applyStageZoom(){
+    const inner = document.getElementById('doc-stage-inner');
+    if(inner) inner.style.transform = 'scale('+stageZoom+')';
+    const zbtn = document.getElementById('zoom-reset');
+    if(zbtn) zbtn.textContent = Math.round(stageZoom*100)+'%';
+  }
+  document.getElementById('zoom-in').addEventListener('click', ()=>{ stageZoom = Math.min(1.6, stageZoom+0.1); applyStageZoom(); });
+  document.getElementById('zoom-out').addEventListener('click', ()=>{ stageZoom = Math.max(0.5, stageZoom-0.1); applyStageZoom(); });
+  document.getElementById('zoom-reset').addEventListener('click', ()=>{ stageZoom = 1; applyStageZoom(); });
+  document.getElementById('btn-date-today').addEventListener('click', ()=>{
+    const d = new Date();
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const text = months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    document.getElementById('in-meta').value = text;
+    document.getElementById('doc-meta').textContent = text;
+    toast('Date set to today');
+  });
+
   bindText('in-eyebrow','doc-eyebrow');
   bindText('in-title','doc-title');
   bindText('in-subtitle','doc-subtitle');
@@ -2128,26 +2789,27 @@
   renderSignatures();
   renderCornerEmblems();
   renderHeraldry();
+  renderWitnessInputs();
   updateStampVisibility();
 
   function freezeColorsForExport(root){
-    // html2canvas often drops CSS variables — push computed colors onto inline styles
+    // Seals are canvas images — re-bake at higher res so export stays sharp & colored
     root.querySelectorAll('.seal').forEach(seal=>{
-      const cs = getComputedStyle(seal);
-      // Prefer already-baked inline background; otherwise rebuild from CSS vars if present
-      if(!seal.style.background || seal.style.background.indexOf('gradient')===-1){
-        const hi = cs.getPropertyValue('--wax-hi').trim() || '#d43c3c';
-        const mid = cs.getPropertyValue('--wax-mid').trim() || '#b22222';
-        const base = cs.getPropertyValue('--wax').trim() || '#9b1b1b';
-        const lo = cs.getPropertyValue('--wax-lo').trim() || '#5c0e0e';
-        const deep = cs.getPropertyValue('--wax-deep').trim() || '#3a0808';
-        seal.style.background = `radial-gradient(circle at 32% 28%, ${hi} 0%, ${mid} 28%, ${base} 55%, ${lo} 78%, ${deep} 100%)`;
-      }
+      const hex = seal.dataset.sealHex || '#7a2323';
+      const letters = seal.dataset.sealLetters || 'XX';
+      const data = drawWaxSealDataURL(hex, letters, 256);
+      seal.style.backgroundImage = `url(${data})`;
+      seal.style.backgroundSize = 'cover';
+      seal.style.backgroundColor = 'transparent';
+      seal.style.color = 'transparent';
+      seal.style.border = 'none';
+      seal.style.boxShadow = '0 4px 10px rgba(0,0,0,.35)';
     });
     const stampSpan = root.querySelector('.stamp span');
     if(stampSpan){
-      const cs = getComputedStyle(stampSpan);
-      const col = cs.color || cs.getPropertyValue('--stamp-color').trim() || '#a02020';
+      const col = getComputedStyle(document.documentElement).getPropertyValue('--stamp-color').trim()
+        || getComputedStyle(stampSpan).color
+        || '#a02020';
       stampSpan.style.color = col;
       stampSpan.style.borderColor = col;
     }
@@ -2156,34 +2818,109 @@
     const goldBright = getComputedStyle(document.documentElement).getPropertyValue('--gold-bright').trim() || '#c79a3e';
     root.style.setProperty('--gold', gold);
     root.style.setProperty('--gold-bright', goldBright);
+    // Ornament SVGs use currentColor / var(--gold) — force stroke/fill
+    root.querySelectorAll('#ornament-slot svg [stroke], #ornament-slot svg [fill]').forEach(node=>{
+      if(node.getAttribute('stroke') && node.getAttribute('stroke') !== 'none') node.setAttribute('stroke', gold);
+      if(node.getAttribute('fill') && node.getAttribute('fill') !== 'none') node.setAttribute('fill', gold);
+    });
+  }
+  function toast(msg, ok){
+    let el = document.getElementById('dmc-toast');
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'dmc-toast';
+      el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 20px;border-radius:8px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 8px 30px rgba(0,0,0,.45);transition:opacity .25s;pointer-events:none;';
+      document.body.appendChild(el);
+    }
+    el.style.background = ok===false ? '#3a1212' : 'linear-gradient(180deg,#c79a3e,#a9812f)';
+    el.style.color = ok===false ? '#f5d0d0' : '#241c12';
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(()=>{ el.style.opacity = '0'; }, 2200);
   }
   async function captureDoc(type){
     const el = document.getElementById('document');
     const scale = parseInt(document.getElementById('export-scale')?.value)||2;
     freezeColorsForExport(el);
-    const canvas = await html2canvas(el, {
-      scale,
-      backgroundColor: null,
-      useCORS: true,
-      allowTaint: true,
-      logging: false
-    });
-    if(type==='copy'){
-      canvas.toBlob(async blob=>{
-        try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Copied to clipboard'); }
-        catch(e){ alert('Copy failed — try Download instead'); }
+    toast('Rendering…');
+    try{
+      const canvas = await html2canvas(el, {
+        scale,
+        backgroundColor: null,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
       });
-      return;
+      if(type==='copy'){
+        canvas.toBlob(async blob=>{
+          try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); toast('Copied to clipboard'); }
+          catch(e){ toast('Copy failed — try Download', false); }
+        });
+        return;
+      }
+      const link = document.createElement('a');
+      const custom = (document.getElementById('export-filename')?.value||'').trim();
+      const base = custom || (document.getElementById('in-title')?.value||'diplomatic-document').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-') || 'diplomatic-document';
+      link.download = base + '.' + (type==='jpg'?'jpg':'png');
+      link.href = canvas.toDataURL(type==='jpg'?'image/jpeg': 'image/png', 0.95);
+      link.click();
+      toast('Downloaded ' + (type==='jpg'?'JPG':'PNG'));
+    }catch(err){
+      console.error(err);
+      toast('Export failed', false);
     }
-    const link = document.createElement('a');
-    link.download = 'diplomatic-document.' + (type==='jpg'?'jpg':'png');
-    link.href = canvas.toDataURL(type==='jpg'?'image/jpeg': 'image/png', 0.95);
-    link.click();
   }
   document.getElementById('btn-png').addEventListener('click', ()=>captureDoc('png'));
   document.getElementById('btn-jpg').addEventListener('click', ()=>captureDoc('jpg'));
   document.getElementById('btn-copy').addEventListener('click', ()=>captureDoc('copy'));
   document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
+
+  document.getElementById('btn-export-json').addEventListener('click', ()=>{
+    const data = snapshot();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    const name = (document.getElementById('export-filename')?.value||document.getElementById('in-title')?.value||'document').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-') || 'document';
+    a.download = name + '.json';
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    toast('JSON exported');
+  });
+  document.getElementById('btn-import-json').addEventListener('click', ()=> document.getElementById('import-json-file').click());
+  document.getElementById('import-json-file').addEventListener('change', e=>{
+    const f = e.target.files?.[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        loadSnapshot(data);
+        toast('Document imported');
+      }catch(err){ toast('Invalid JSON', false); }
+    };
+    reader.readAsText(f);
+    e.target.value = '';
+  });
+  document.getElementById('btn-copy-text').addEventListener('click', async ()=>{
+    const parts = [
+      document.getElementById('doc-eyebrow')?.textContent,
+      document.getElementById('doc-protocol')?.textContent,
+      document.getElementById('doc-meta')?.textContent,
+      document.getElementById('doc-title')?.textContent,
+      document.getElementById('doc-subtitle')?.textContent,
+      document.getElementById('doc-preamble')?.textContent,
+      '',
+      ...state.articles.map((a,i)=> (i+1)+'. '+a),
+      '',
+      document.getElementById('doc-closing')?.textContent,
+      '',
+      ...state.parties.map(p=> (p.name||'') + (p.role? ' — '+p.role : '')),
+      ...(state.witnesses.length ? ['', 'Witnesses:', ...state.witnesses.map(w=> (w.name||'')+(w.role?' — '+w.role:''))] : [])
+    ].filter(x=>x!=null).join('\n');
+    try{
+      await navigator.clipboard.writeText(parts);
+      toast('Text copied');
+    }catch(e){ toast('Copy failed', false); }
+  });
 
   const STORAGE_KEY = 'dmc-graphic-docs';
   function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{return [];} }
@@ -2196,11 +2933,34 @@
       meta: document.getElementById('in-meta').value,
       preamble: document.getElementById('in-preamble').value,
       stamp: document.getElementById('in-stamp').value,
+      stampColor: document.getElementById('stamp-color')?.value,
+      stampOn: document.getElementById('stamp-toggle')?.checked,
       articles: [...state.articles],
       parties: state.parties.map(p=>({...p})),
       theme: state.theme,
       layout: state.layout,
-      paper: document.getElementById('paper-select').value
+      paper: document.getElementById('paper-select').value,
+      border: document.getElementById('border-select')?.value,
+      size: parseInt(document.getElementById('size-slider')?.value)||700,
+      titleFont: document.getElementById('title-font')?.value,
+      bodyFont: document.getElementById('body-font')?.value,
+      titleSize: document.getElementById('title-size')?.value,
+      bodySize: document.getElementById('body-size')?.value,
+      density: document.getElementById('density-select')?.value,
+      align: document.getElementById('align-select')?.value,
+      stampStyle: document.getElementById('stamp-style')?.value,
+      sigStyle: document.getElementById('sig-style')?.value,
+      articleNum: document.getElementById('article-num-style')?.value,
+      sealScale: document.getElementById('seal-scale')?.value,
+      showClosing: document.getElementById('show-closing')?.checked,
+      showOrnament: document.getElementById('show-ornament')?.checked,
+      protocol: document.getElementById('in-protocol')?.value,
+      watermark: document.getElementById('in-watermark')?.value,
+      closing: document.getElementById('in-closing')?.value,
+      witnesses: (state.witnesses||[]).map(w=>({...w})),
+      showWitnesses: document.getElementById('show-witnesses')?.checked,
+      showTitleRule: document.getElementById('show-title-rule')?.checked,
+      exportFilename: document.getElementById('export-filename')?.value
     };
   }
   function loadSnapshot(s){
@@ -2220,17 +2980,68 @@
     state.parties = s.parties||[];
     state.theme = s.theme||'Parchment & Gold';
     state.layout = s.layout||'layout-classic';
-    applyTheme(state.theme);
+    applyTheme(state.theme, !!s.stampColor);
     buildSwatchRow(document.getElementById('theme-swatches'), state.theme, applyTheme);
     document.getElementById('layout-select').value = state.layout;
-    document.getElementById('document').classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial');
+    document.getElementById('document').classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial','layout-letter','layout-charter');
     document.getElementById('document').classList.add(state.layout);
     if(s.paper){
       document.getElementById('paper-select').value = s.paper;
-      document.getElementById('document').classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson');
+      document.getElementById('document').classList.remove('paper-parchment','paper-white','paper-dark','paper-cream','paper-navy','paper-crimson','paper-ruled','paper-marble','paper-velvet');
       document.getElementById('document').classList.add(s.paper);
     }
+    if(s.border){
+      document.getElementById('border-select').value = s.border;
+      const doc = document.getElementById('document');
+      doc.classList.remove('border-double','border-single','border-ornate','border-none');
+      doc.classList.add('border-'+s.border);
+    }
+    if(s.size) setDocWidth(s.size);
+    if(s.stampColor){
+      document.documentElement.style.setProperty('--stamp-color', s.stampColor);
+      const sc = document.getElementById('stamp-color');
+      const sch = document.getElementById('stamp-color-hex');
+      if(sc) sc.value = s.stampColor;
+      if(sch) sch.value = s.stampColor;
+      const span = document.getElementById('stamp-text');
+      if(span){ span.style.color = s.stampColor; span.style.borderColor = s.stampColor; }
+    }
+    if(typeof s.stampOn === 'boolean'){
+      document.getElementById('stamp-toggle').checked = s.stampOn;
+      updateStampVisibility();
+    }
+    const doc = document.getElementById('document');
+    if(s.titleFont){ document.getElementById('title-font').value = s.titleFont; doc.style.setProperty('--title-font', s.titleFont); }
+    if(s.bodyFont){ document.getElementById('body-font').value = s.bodyFont; doc.style.setProperty('--body-font', s.bodyFont); }
+    if(s.titleSize){ document.getElementById('title-size').value = s.titleSize; doc.style.setProperty('--title-size', s.titleSize+'px'); document.getElementById('title-size-readout').textContent = s.titleSize+'px'; }
+    if(s.bodySize){ document.getElementById('body-size').value = s.bodySize; doc.style.setProperty('--body-size', s.bodySize+'px'); document.getElementById('body-size-readout').textContent = s.bodySize+'px'; }
+    if(s.density){ document.getElementById('density-select').value = s.density; setDocClassGroup('density-', s.density); }
+    if(s.align){ document.getElementById('align-select').value = s.align; setDocClassGroup('align-', s.align); }
+    if(s.stampStyle){ document.getElementById('stamp-style').value = s.stampStyle; setDocClassGroup('stamp-style-', s.stampStyle); }
+    if(s.sigStyle){ document.getElementById('sig-style').value = s.sigStyle; setDocClassGroup('sig-style-', s.sigStyle); }
+    if(s.articleNum) document.getElementById('article-num-style').value = s.articleNum;
+    if(s.sealScale){ document.getElementById('seal-scale').value = s.sealScale; doc.style.setProperty('--seal-scale', s.sealScale); }
+    if(typeof s.showClosing === 'boolean'){ document.getElementById('show-closing').checked = s.showClosing; doc.classList.toggle('hide-closing', !s.showClosing); }
+    if(typeof s.showOrnament === 'boolean'){ document.getElementById('show-ornament').checked = s.showOrnament; doc.classList.toggle('hide-ornament', !s.showOrnament); }
+    if(s.protocol != null){ document.getElementById('in-protocol').value = s.protocol; document.getElementById('doc-protocol').textContent = s.protocol; }
+    if(s.watermark){
+      document.getElementById('in-watermark').value = s.watermark;
+      document.getElementById('doc-watermark-text').textContent = s.watermark;
+      document.getElementById('doc-watermark').style.display = 'flex';
+    }
+    if(s.closing){ document.getElementById('in-closing').value = s.closing; document.getElementById('doc-closing').textContent = s.closing; }
+    state.witnesses = s.witnesses || [];
+    if(typeof s.showWitnesses === 'boolean'){
+      document.getElementById('show-witnesses').checked = s.showWitnesses;
+      doc.classList.toggle('show-witnesses', s.showWitnesses);
+    }
+    if(typeof s.showTitleRule === 'boolean'){
+      document.getElementById('show-title-rule').checked = s.showTitleRule;
+      doc.classList.toggle('show-title-rule', s.showTitleRule);
+    }
+    if(s.exportFilename != null) document.getElementById('export-filename').value = s.exportFilename;
     renderArticleInputs(); renderArticleDoc(); renderPartyInputs(); renderSignatures(); renderCornerEmblems(); renderHeraldry();
+    renderWitnessInputs();
   }
   function renderSavedList(){
     const list = document.getElementById('saved-list');
@@ -2265,6 +3076,7 @@
     renderSavedList();
     document.getElementById('save-status').style.display='block';
     document.getElementById('save-status').textContent = 'Saved "'+name+'"';
+    toast('Saved "'+name+'"');
   });
   renderSavedList();
 
