@@ -330,42 +330,42 @@
     background:
       radial-gradient(circle at 32% 28%, var(--wax-hi) 0%, var(--wax-mid) 28%, var(--wax) 55%, var(--wax-lo) 78%, var(--wax-deep) 100%);
     box-shadow:
-      /* outer drop */
       0 4px 10px rgba(0,0,0,.4),
       0 1px 2px rgba(0,0,0,.3),
-      /* raised rim highlight */
       inset 0 3px 5px rgba(255,180,160,.35),
       inset 0 -4px 8px rgba(0,0,0,.45),
       inset 2px 2px 4px rgba(255,200,180,.2),
       inset -2px -2px 5px rgba(0,0,0,.35);
     outline:none; flex-shrink:0;
-    text-shadow: 0 1px 1px rgba(0,0,0,.6);
+    border: 1px solid rgba(80,10,10,.4);
+    z-index:1;
   }
   .seal::before{
     content:"";
     position:absolute; inset:5px;
     border-radius:50%;
-    border:1.5px solid rgba(248,220,160,.35);
+    border:1.5px solid rgba(248,220,160,.45);
     box-shadow:
       inset 0 0 0 1px rgba(0,0,0,.25),
       0 0 0 1px rgba(0,0,0,.15);
     pointer-events:none;
+    z-index:1;
   }
   .seal::after{
     content:"";
     position:absolute; inset:9px;
     border-radius:50%;
-    background: radial-gradient(circle at 40% 35%, rgba(0,0,0,.12), rgba(0,0,0,.28) 70%);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,.35);
+    background: radial-gradient(circle at 40% 35%, rgba(0,0,0,.08), rgba(0,0,0,.18) 70%);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.25);
     pointer-events:none;
     z-index:0;
   }
-  .seal{
-    z-index:1;
-  }
-  /* slight organic edge — soft irregularity via layered shadow */
-  .seal{
-    border: 1px solid rgba(80,10,10,.4);
+  .seal .seal-text{
+    position:relative;
+    z-index:2;
+    text-shadow: 0 1px 2px rgba(0,0,0,.75), 0 0 1px rgba(0,0,0,.5);
+    line-height:1;
+    user-select:text;
   }
   .flag{
     width:44px;height:29px;background:center/cover no-repeat #ccc;
@@ -633,7 +633,7 @@
   .layout-modern .doc-subtitle{font-style:normal; font-size:14px; opacity:.7;}
   .layout-modern ol.articles{padding-left:18px;}
   .layout-modern ol.articles li{font-size:14.5px; line-height:1.7; margin-bottom:10px;}
-  .layout-modern .seal{border-radius:8px;}
+  .layout-modern .seal{border-radius:50%;} /* keep circular wax seals */
   .layout-modern .sig-name{font-family:'EB Garamond',serif; font-size:20px; font-style:italic;}
 
   /* IMPERIAL DECREE LAYOUT */
@@ -2119,7 +2119,10 @@
         <div class="row2">
           <div class="field"><label>Seal letters</label><input type="text" class="p-seal" value="${p.seal||''}" maxlength="3"></div>
           <div class="field"><label>Seal color</label>
-            <select class="p-color">${sealColors.map(c=>`<option value="${c}" ${c===p.color?'selected':''} style="background:${c}">${c}</option>`).join('')}</select>
+            <div class="color-input">
+              <input type="color" class="p-color" value="${p.color||'#9b1b1b'}">
+              <input type="text" class="p-color-hex" value="${p.color||'#9b1b1b'}" maxlength="7">
+            </div>
           </div>
         </div>
         <div class="flag-upload">
@@ -2137,7 +2140,22 @@
       card.querySelector('.p-name').addEventListener('input', e=>{ p.name = e.target.value; renderSignatures(); });
       card.querySelector('.p-role').addEventListener('input', e=>{ p.role = e.target.value; renderSignatures(); });
       card.querySelector('.p-seal').addEventListener('input', e=>{ p.seal = e.target.value; renderSignatures(); renderHeraldry(); });
-      card.querySelector('.p-color').addEventListener('change', e=>{ p.color = e.target.value; renderSignatures(); renderHeraldry(); });
+      const colorInp = card.querySelector('.p-color');
+      const colorHex = card.querySelector('.p-color-hex');
+      const applyColor = (val)=>{
+        if(!/^#[0-9a-fA-F]{6}$/.test(val)) return;
+        p.color = val.toLowerCase();
+        if(colorInp) colorInp.value = p.color;
+        if(colorHex) colorHex.value = p.color;
+        renderSignatures();
+        renderHeraldry();
+      };
+      colorInp?.addEventListener('input', e=> applyColor(e.target.value));
+      colorHex?.addEventListener('input', e=>{
+        let v = e.target.value.trim();
+        if(v && v[0]!=='#') v = '#'+v;
+        applyColor(v);
+      });
       card.querySelector('.p-flag').addEventListener('change', e=>{
         const file = e.target.files[0];
         if(!file) return;
@@ -2180,41 +2198,61 @@
   }
 
   function waxVars(hex){
-    // Blend nation color slightly into classic red sealing wax
-    const r = parseInt((hex||'#9b1b1b').slice(1,3),16)||155;
-    const g = parseInt((hex||'#9b1b1b').slice(3,5),16)||27;
-    const b = parseInt((hex||'#9b1b1b').slice(5,7),16)||27;
-    // Push toward red wax
-    const wr = Math.min(255, Math.round(r*0.35 + 180*0.65));
-    const wg = Math.min(255, Math.round(g*0.25 + 30*0.75));
-    const wb = Math.min(255, Math.round(b*0.25 + 30*0.75));
-    const hi = `rgb(${Math.min(255,wr+40)},${Math.min(255,wg+25)},${Math.min(255,wb+20)})`;
-    const mid = `rgb(${wr},${wg},${wb})`;
-    const lo = `rgb(${Math.max(0,wr-50)},${Math.max(0,wg-20)},${Math.max(0,wb-20)})`;
-    const deep = `rgb(${Math.max(0,wr-90)},${Math.max(0,wg-35)},${Math.max(0,wb-35)})`;
-    return `--wax-hi:${hi};--wax-mid:${mid};--wax:${lo};--wax-lo:${deep};--wax-deep:${deep}`;
+    // Use the chosen seal color as real wax pigment (with light/shadow)
+    let h = (hex||'#9b1b1b').trim();
+    if(h[0]!=='#') h = '#'+h;
+    if(h.length===4) h = '#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];
+    let r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+    if(isNaN(r)||isNaN(g)||isNaN(b)){ r=155; g=27; b=27; }
+    const clamp = (n)=>Math.max(0,Math.min(255,Math.round(n)));
+    const hi = `rgb(${clamp(r*0.55+120)},${clamp(g*0.55+90)},${clamp(b*0.55+70)})`;
+    const mid = `rgb(${r},${g},${b})`;
+    const lo = `rgb(${clamp(r*0.65)},${clamp(g*0.65)},${clamp(b*0.65)})`;
+    const deep = `rgb(${clamp(r*0.35)},${clamp(g*0.35)},${clamp(b*0.35)})`;
+    return `--wax-hi:${hi};--wax-mid:${mid};--wax:${mid};--wax-lo:${lo};--wax-deep:${deep}`;
   }
 
   function renderSignatures(){
     const wrap = document.getElementById('doc-signatures');
+    if(!wrap) return;
     wrap.innerHTML = '';
     state.parties.forEach((p,i)=>{
       const block = document.createElement('div');
       block.className = 'sig-block';
-      const letters = (p.seal||'XX').toUpperCase().slice(0,3);
+      if(!p.seal) p.seal = (p.name||'XX').replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase() || 'XX';
+      const letters = String(p.seal||'XX').toUpperCase().slice(0,3);
+      const color = p.color || '#9b1b1b';
       block.innerHTML = `
         <div class="sig-name" contenteditable="true">${p.name||'Name'}</div>
         <div class="sig-role" contenteditable="true">${p.role||'Title'}</div>
         <div class="seal-flag-row">
-          <div class="seal" style="${waxVars(p.color)}" contenteditable="true" title="Wax seal">${letters}</div>
+          <div class="seal" style="${waxVars(color)}" title="Wax seal — edit letters in the sidebar">
+            <span class="seal-text" contenteditable="true">${letters}</span>
+          </div>
           <div class="flag ${p.flag?'':'empty'}" style="${p.flag?`background-image:url(${p.flag})`:''}"></div>
         </div>
-        <div class="sig-scribble">${scribbleSVG(p.color||'#7a2323', i)}</div>
-        <div class="sig-stamp" style="color:${p.color||'#7a2323'};right:${10+i*20}px;bottom:10px;">OFFICIAL</div>`;
+        <div class="sig-scribble">${scribbleSVG(color, i)}</div>
+        <div class="sig-stamp" style="color:${color};right:${10+i*20}px;bottom:10px;">OFFICIAL</div>`;
       wrap.appendChild(block);
       block.querySelector('.sig-name').addEventListener('input', e=>{ p.name = e.target.textContent; const inp=document.querySelectorAll('.p-name')[i]; if(inp)inp.value=p.name; });
       block.querySelector('.sig-role').addEventListener('input', e=>{ p.role = e.target.textContent; const inp=document.querySelectorAll('.p-role')[i]; if(inp)inp.value=p.role; });
-      block.querySelector('.seal').addEventListener('input', e=>{ p.seal = e.target.textContent; const inp=document.querySelectorAll('.p-seal')[i]; if(inp)inp.value=p.seal; });
+      const sealText = block.querySelector('.seal-text');
+      if(sealText){
+        sealText.addEventListener('input', e=>{
+          const v = (e.target.textContent||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);
+          p.seal = v || 'XX';
+          e.target.textContent = p.seal;
+          // keep caret at end
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(e.target);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          const inp=document.querySelectorAll('.p-seal')[i];
+          if(inp) inp.value = p.seal;
+        });
+      }
     });
   }
 
