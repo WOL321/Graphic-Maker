@@ -192,6 +192,57 @@
   .add-btn,.tiny-btn,.tpl-btn{cursor:pointer;}
   .mode-tab{cursor:pointer;}
 
+  /* Pro / license gate */
+  .pro-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+    padding:8px 10px; margin-bottom:12px; border-radius:8px;
+    background:linear-gradient(90deg,rgba(201,162,39,0.12),rgba(122,35,35,0.15));
+    border:1px solid rgba(201,162,39,0.35); font-size:12px;
+  }
+  .pro-bar .pro-status{color:var(--panel-muted);}
+  .pro-bar .pro-status.unlocked{color:#8dcf8a;}
+  .pro-bar button{
+    padding:6px 10px; border-radius:6px; border:1px solid rgba(201,162,39,0.5);
+    background:rgba(201,162,39,0.15); color:var(--gold-bright); cursor:pointer;
+    font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+  }
+  .pro-bar button:hover{background:rgba(201,162,39,0.28);}
+  .pro-badge{
+    display:inline-block; font-size:9px; letter-spacing:0.12em; text-transform:uppercase;
+    padding:2px 6px; border-radius:3px; margin-left:6px; vertical-align:middle;
+    background:rgba(201,162,39,0.2); color:var(--gold-bright); border:1px solid rgba(201,162,39,0.4);
+    font-family:'Cinzel',serif;
+  }
+  .mode-tab.pro-locked{opacity:0.75;}
+  .mode-tab.pro-locked::after{content:"PRO"; font-size:8px; margin-left:4px; color:var(--gold);}
+  .pro-modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10050;
+    display:none; align-items:center; justify-content:center; padding:16px;
+  }
+  .pro-modal-overlay.open{display:flex;}
+  .pro-modal{
+    width:min(420px,94vw); background:#1c1a15; border:1px solid var(--gold);
+    border-radius:12px; padding:22px 20px; color:var(--panel-text);
+    box-shadow:0 24px 60px rgba(0,0,0,0.55);
+  }
+  .pro-modal h2{font-family:'Cinzel',serif; color:var(--gold-bright); margin:0 0 10px; font-size:1.25rem;}
+  .pro-modal p{margin:0 0 10px; color:var(--panel-muted); line-height:1.5; font-size:14px;}
+  .pro-modal .pro-price{
+    background:rgba(201,162,39,0.1); border:1px solid rgba(201,162,39,0.3);
+    border-radius:8px; padding:10px 12px; margin:12px 0; font-size:13px;
+  }
+  .pro-modal input[type="text"]{
+    width:100%; padding:10px 12px; border-radius:7px; border:1px solid var(--panel-line);
+    background:#100e0a; color:var(--panel-text); font-size:15px; letter-spacing:0.08em;
+    font-family:ui-monospace, monospace; margin:8px 0 12px;
+  }
+  .pro-modal .pro-actions{display:flex; flex-direction:column; gap:8px;}
+  .pro-modal .pro-actions button{width:100%;}
+  .pro-modal .pro-err{color:#e07070; font-size:12px; min-height:1.2em; margin:0 0 6px;}
+  .pro-modal .pro-ok{color:#8dcf8a; font-size:12px;}
+  body:not(.is-pro) .pro-only-tab{position:relative;}
+  .export-watermark-note{font-size:11px; color:var(--panel-muted); margin-top:6px;}
+
   .hint{font-size:11px;color:var(--panel-muted);margin-top:16px;line-height:1.5;padding-top:14px;border-top:1px solid var(--panel-line);}
 
   .size-presets{display:flex;gap:6px;margin-bottom:8px;}
@@ -701,11 +752,19 @@
   <div class="panel">
     <div class="mode-tabs" style="flex-wrap:wrap;">
       <button class="mode-tab active" data-mode="docs">Docs</button>
-      <button class="mode-tab" data-mode="flags">Flags</button>
-      <button class="mode-tab" data-mode="emblems">Emblems</button>
-      <button class="mode-tab" data-mode="posters">Propaganda</button>
-      <button class="mode-tab" data-mode="maps">Claim Maps</button>
-      <button class="mode-tab" data-mode="discord">Discord</button>
+      <button class="mode-tab pro-only-tab" data-mode="flags" data-pro="1">Flags</button>
+      <button class="mode-tab pro-only-tab" data-mode="emblems" data-pro="1">Emblems</button>
+      <button class="mode-tab pro-only-tab" data-mode="posters" data-pro="1">Propaganda</button>
+      <button class="mode-tab pro-only-tab" data-mode="maps" data-pro="1">Claim Maps</button>
+      <button class="mode-tab pro-only-tab" data-mode="discord" data-pro="1">Discord</button>
+    </div>
+
+    <div class="pro-bar" id="pro-bar">
+      <span class="pro-status" id="pro-status">Free · demo only · watermark</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button type="button" id="btn-pro-unlock">Enter key</button>
+        <button type="button" id="btn-pro-request">Request key (DM 4nt.exe)</button>
+      </div>
     </div>
 
     <!-- ===================== DOCUMENTS MODE ===================== -->
@@ -1555,6 +1614,141 @@
 
 <script>
 (function(){
+  // ========== SAFE STORAGE (sandbox / blocked localStorage fallback) ==========
+  const _memStore = Object.create(null);
+  const safeStorage = {
+    getItem(k){
+      try { return window.localStorage.getItem(k); }
+      catch(_){ return Object.prototype.hasOwnProperty.call(_memStore,k) ? _memStore[k] : null; }
+    },
+    setItem(k,v){
+      try { window.localStorage.setItem(k, String(v)); }
+      catch(_){ _memStore[k] = String(v); }
+    },
+    removeItem(k){
+      try { window.localStorage.removeItem(k); }
+      catch(_){ delete _memStore[k]; }
+    }
+  };
+
+  // ========== PRO / LICENSE (DMC gold → key from 4nt.exe) ==========
+  const PRO_KEY_STORAGE = 'dmc-gm-license';
+  // Free = basic Docs; best layouts/tools are Pro
+  const FREE_PRESETS = new Set(['alliance','treaty','peace','blank']);
+  const FREE_LAYOUTS = new Set(['layout-classic','layout-modern','layout-field']);
+  const PRO_MODES = new Set(['flags','emblems','posters','maps','discord']);
+  const FREE_MAX_ARTICLES = 4;
+  const FREE_MAX_PARTIES = 2;
+
+  // Valid key format: DMC-GM-XXXX-XXXX (checksum on 2nd block)
+  function proChecksum(part){
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let n = 0;
+    for(let i=0;i<part.length;i++) n = (n * 31 + part.charCodeAt(i)) >>> 0;
+    let out = '';
+    for(let i=0;i<4;i++){ out += alphabet[n % alphabet.length]; n = (n / alphabet.length) | 0; }
+    return out;
+  }
+  function normalizeKey(k){ return String(k||'').trim().toUpperCase().replace(/\s+/g,''); }
+  function isValidProKey(k){
+    const key = normalizeKey(k);
+    const m = key.match(/^DMC-GM-([A-Z0-9]{4})-([A-Z0-9]{4})$/);
+    if(!m) return false;
+    return m[2] === proChecksum(m[1]);
+  }
+  // Owner helper: generate keys in console → window.__genProKey('AB12')
+  window.__genProKey = function(seed){
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = (seed||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+    while(s.length<4) s += alphabet[Math.floor(Math.random()*alphabet.length)];
+    return 'DMC-GM-' + s + '-' + proChecksum(s);
+  };
+
+  function isPro(){
+    const k = safeStorage.getItem(PRO_KEY_STORAGE)||'';
+    return isValidProKey(k);
+  }
+  function setProKey(k){
+    safeStorage.setItem(PRO_KEY_STORAGE, normalizeKey(k));
+    applyProUI();
+  }
+  function clearPro(){
+    safeStorage.removeItem(PRO_KEY_STORAGE);
+    applyProUI();
+  }
+  function openProModal(msg){
+    const modal = document.getElementById('proModal');
+    const err = document.getElementById('pro-key-err');
+    if(err){ err.textContent = msg||''; err.className = msg && msg.includes('Unlocked') ? 'pro-ok' : 'pro-err'; }
+    modal?.classList.add('open');
+    setTimeout(()=>document.getElementById('pro-key-input')?.focus(), 50);
+  }
+  function closeProModal(){ document.getElementById('proModal')?.classList.remove('open'); }
+
+  function applyProUI(){
+    const pro = isPro();
+    document.body.classList.toggle('is-pro', pro);
+    const status = document.getElementById('pro-status');
+    if(status){
+      status.textContent = pro ? 'Pro unlocked · full access · no watermark' : 'Free · demo only (Alliance/Blank) · watermark';
+      status.classList.toggle('unlocked', pro);
+    }
+    document.querySelectorAll('.mode-tab[data-pro="1"]').forEach(t=>{
+      t.classList.toggle('pro-locked', !pro);
+    });
+    // Mark pro presets in select
+    const sel = document.getElementById('preset-select');
+    if(sel){
+      [...sel.options].forEach(opt=>{
+        if(!opt.value) return;
+        const needs = !FREE_PRESETS.has(opt.value);
+        let label = opt.textContent.replace(/\s*·\s*PRO$/,'');
+        if(needs && !pro) label += ' · PRO';
+        opt.textContent = label;
+      });
+    }
+    // Best Docs tools + everything else = Pro
+    const proControls = [
+      'btn-translate-doc','btn-surprise',
+      'custom-title-font','custom-body-font',
+      'custom-title-size','custom-body-size','custom-ink','custom-accent',
+      'custom-line-height','custom-padding','custom-justify','custom-dropcap',
+      'np-save','np-apply','np-name','np-color','np-seal','np-flag',
+      'btn-export-json','import-json','export-scale',
+      'witness-toggle','doc-class','doc-serial','doc-watermark',
+      'border-select','lang-select'
+    ];
+    proControls.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.disabled = !pro;
+      if(!pro) el.title = 'Pro feature — enter a key to unlock';
+      else el.title = '';
+    });
+    // Layout options: mark / restrict royal & imperial
+    const layoutSel = document.getElementById('layout-select');
+    if(layoutSel){
+      [...layoutSel.options].forEach(opt=>{
+        const needsPro = !FREE_LAYOUTS.has(opt.value);
+        let t = opt.textContent.replace(/\s*·\s*PRO$/,'');
+        if(needsPro && !pro) t += ' · PRO';
+        opt.textContent = t;
+        opt.disabled = needsPro && !pro;
+      });
+      if(!pro && !FREE_LAYOUTS.has(layoutSel.value)){
+        layoutSel.value = 'layout-classic';
+        layoutSel.dispatchEvent(new Event('change'));
+      }
+    }
+    const scale = document.getElementById('export-scale');
+    if(scale && !pro) scale.value = '2';
+  }
+  function requirePro(feature){
+    if(isPro()) return true;
+    openProModal(feature ? ('Pro required: ' + feature) : 'Enter a license key to unlock Pro.');
+    return false;
+  }
+
   // ========== MODE SWITCHING ==========
   const modes = {
     docs: { panel: 'mode-docs', stage: 'doc-stage' },
@@ -1569,6 +1763,10 @@
       const key = tab.dataset.mode;
       const m = modes[key];
       if(!m) return;
+      if(PRO_MODES.has(key) && !isPro()){
+        openProModal('Free is a small demo only. Flags, Emblems, Propaganda, Maps, and Discord need Pro — pay gold in-game, then DM 4nt.exe.');
+        return;
+      }
       document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
       document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
       Object.values(modes).forEach(mm=>{
@@ -1589,6 +1787,49 @@
       } catch(err) { console.error('Mode render error:', err); }
     });
   });
+
+  // Pro modal — event delegation (modal HTML may load after this script)
+  document.addEventListener('click', e=>{
+    const t = e.target;
+    if(!t || !t.id) return;
+    if(t.id === 'btn-pro-unlock'){ openProModal(''); return; }
+    if(t.id === 'btn-pro-request'){
+      const msg = 'Hey 4nt.exe — I want Graphic Maker Pro for DMC. Nation: [YOUR NATION]. I will pay / have paid gold in-game.';
+      try { navigator.clipboard.writeText(msg); } catch(_){}
+      openProModal('Message copied. Open Discord and DM 4nt.exe — paste it, pay gold in-game, get your key.');
+      return;
+    }
+    if(t.id === 'pro-modal-close'){ closeProModal(); return; }
+    if(t.id === 'proModal'){ closeProModal(); return; }
+    if(t.id === 'pro-key-submit'){
+      const input = document.getElementById('pro-key-input');
+      const key = input?.value||'';
+      if(!isValidProKey(key)){
+        const err = document.getElementById('pro-key-err');
+        if(err){ err.className='pro-err'; err.textContent = 'Invalid key. Check spelling or DM 4nt.exe.'; }
+        return;
+      }
+      setProKey(key);
+      const err = document.getElementById('pro-key-err');
+      if(err){ err.className='pro-ok'; err.textContent = 'Unlocked — Pro is active on this browser.'; }
+      setTimeout(closeProModal, 700);
+      return;
+    }
+    if(t.id === 'pro-dm-discord'){
+      const msg = 'Hey 4nt.exe — Graphic Maker Pro key request. Nation: [YOUR NATION]. Paying gold in-game.';
+      try { navigator.clipboard.writeText(msg); } catch(_){}
+      window.open('https://discord.com/channels/@me', '_blank');
+      const err = document.getElementById('pro-key-err');
+      if(err){ err.className='pro-ok'; err.textContent = 'Discord opened. DM 4nt.exe (message copied to clipboard).'; }
+      return;
+    }
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && e.target && e.target.id === 'pro-key-input'){
+      document.getElementById('pro-key-submit')?.click();
+    }
+  });
+  applyProUI();
 
   // ========== DOCUMENTS (original logic, cleaned) ==========
   const themes = {
@@ -2406,10 +2647,16 @@
   });
   applyCustomStyle();
   document.getElementById('layout-select').addEventListener('change', e=>{
+    let val = e.target.value;
+    if(!isPro() && !FREE_LAYOUTS.has(val)){
+      openProModal('Royal & Imperial layouts are Pro. Free layouts: Classic, Modern, Field.');
+      e.target.value = 'layout-classic';
+      val = 'layout-classic';
+    }
     const doc = document.getElementById('document');
     doc.classList.remove('layout-classic','layout-field','layout-royal','layout-modern','layout-imperial');
-    doc.classList.add(e.target.value);
-    state.layout = e.target.value;
+    doc.classList.add(val);
+    state.layout = val;
     renderArticleDoc();
     renderSignatures();
     renderHeraldry();
@@ -2622,7 +2869,13 @@
   });
 
   document.getElementById('preset-select').addEventListener('change', e=>{
-    const p = presets[e.target.value];
+    const key = e.target.value;
+    if(key && !FREE_PRESETS.has(key) && !isPro()){
+      e.target.value = 'alliance';
+      openProModal('That preset is Pro. Free: Alliance, Treaty, Peace, Blank. Royal layout & best tools need Pro.');
+      return;
+    }
+    const p = presets[key];
     if(!p) return;
     document.getElementById('in-eyebrow').value = p.eyebrow;
     document.getElementById('in-title').value = p.title;
@@ -2637,11 +2890,17 @@
     document.getElementById('doc-preamble').textContent = p.preamble;
     document.getElementById('stamp-text').textContent = p.stamp;
     state.articles = [...p.articles];
-    // Alliance-style treaties look best in Royal layout
-    if(e.target.value === 'alliance' || e.target.value === 'defense' || e.target.value === 'treaty'){
+    // Alliance-style treaties look best in Royal layout (Pro only)
+    if(isPro() && (e.target.value === 'alliance' || e.target.value === 'defense' || e.target.value === 'treaty')){
       const sel = document.getElementById('layout-select');
       sel.value = 'layout-royal';
       sel.dispatchEvent(new Event('change'));
+    } else if(!isPro()){
+      const sel = document.getElementById('layout-select');
+      if(sel && !FREE_LAYOUTS.has(sel.value)){
+        sel.value = 'layout-classic';
+        sel.dispatchEvent(new Event('change'));
+      }
     }
     renderArticleInputs();
     renderArticleDoc();
@@ -2649,8 +2908,12 @@
 
   // Surprise
   document.getElementById('btn-surprise').addEventListener('click', ()=>{
-    const keys = Object.keys(presets).filter(k=>k!=='blank');
-    const key = keys[Math.floor(Math.random()*keys.length)];
+    const keys = Object.keys(presets).filter(k=>{
+      if(k==='blank') return false;
+      if(!isPro() && !FREE_PRESETS.has(k)) return false;
+      return true;
+    });
+    const key = keys[Math.floor(Math.random()*keys.length)] || 'alliance';
     document.getElementById('preset-select').value = key;
     document.getElementById('preset-select').dispatchEvent(new Event('change'));
     const themeKeys = Object.keys(themes);
@@ -2661,8 +2924,8 @@
   // Nation pack
   const NP_KEY = 'dmc-nation-packs';
   let npFlagData = null;
-  function getNationPacks(){ try{ return JSON.parse(localStorage.getItem(NP_KEY)||'[]'); }catch{return [];} }
-  function setNationPacks(arr){ localStorage.setItem(NP_KEY, JSON.stringify(arr)); }
+  function getNationPacks(){ try{ return JSON.parse(safeStorage.getItem(NP_KEY)||'[]'); }catch{return [];} }
+  function setNationPacks(arr){ safeStorage.setItem(NP_KEY, JSON.stringify(arr)); }
   function renderNationPackList(){
     const list = document.getElementById('np-list');
     if(!list) return;
@@ -2728,11 +2991,19 @@
 
   // Articles / parties
   document.getElementById('add-article').addEventListener('click', ()=>{
+    if(!isPro() && state.articles.length >= FREE_MAX_ARTICLES){
+      openProModal('Free demo allows '+FREE_MAX_ARTICLES+' articles max. Unlock Pro for unlimited.');
+      return;
+    }
     state.articles.push('New article...');
     renderArticleInputs();
     renderArticleDoc();
   });
   document.getElementById('add-party').addEventListener('click', ()=>{
+    if(!isPro() && state.parties.length >= FREE_MAX_PARTIES){
+      openProModal('Free demo allows '+FREE_MAX_PARTIES+' signatories. Unlock Pro for more.');
+      return;
+    }
     state.parties.push({ name:'New Signatory', role:'Title', seal:'XX', color:sealColors[state.parties.length%sealColors.length], flag:null });
     renderPartyInputs();
     renderSignatures();
@@ -2759,11 +3030,29 @@
   // Export helpers
   async function captureDoc(type){
     const el = document.getElementById('document');
-    const scale = parseInt(document.getElementById('export-scale')?.value)||2;
+    let scale = parseInt(document.getElementById('export-scale')?.value)||2;
+    if(!isPro()){
+      scale = 1; // free: 1× only
+    }
     const canvas = await html2canvas(el, { scale, backgroundColor:null, useCORS:true });
+    // Free tier watermark
+    if(!isPro()){
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.font = 'bold ' + Math.round(canvas.width * 0.035) + 'px Cinzel, serif';
+      ctx.fillStyle = 'rgba(120,90,30,0.28)';
+      ctx.textAlign = 'center';
+      ctx.translate(canvas.width/2, canvas.height/2);
+      ctx.rotate(-0.35);
+      ctx.fillText('GRAPHIC MAKER · FREE', 0, 0);
+      ctx.restore();
+    }
     if(type==='copy'){
+      if(!isPro() && !requirePro('Copy without watermark')){
+        // still allow copy of watermarked
+      }
       canvas.toBlob(async blob=>{
-        try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert('Copied to clipboard'); }
+        try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); alert(isPro()?'Copied to clipboard':'Copied (free watermark)'); }
         catch(e){ alert('Copy failed — try Download instead'); }
       });
       return;
@@ -2780,8 +3069,8 @@
 
   // Local save (simple localStorage)
   const STORAGE_KEY = 'dmc-graphic-docs';
-  function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{return [];} }
-  function setSaved(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+  function getSaved(){ try{ return JSON.parse(safeStorage.getItem(STORAGE_KEY)||'[]'); }catch{return [];} }
+  function setSaved(arr){ safeStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
   function snapshot(){
     return {
       eyebrow: document.getElementById('in-eyebrow').value,
@@ -4173,11 +4462,11 @@
 
   // Onboarding
   const onboard = document.getElementById('onboardOverlay');
-  if(onboard && !localStorage.getItem('dmc-gm-onboarded')){
+  if(onboard && !safeStorage.getItem('dmc-gm-onboarded')){
     onboard.classList.add('open');
   }
   document.getElementById('onboardClose')?.addEventListener('click', ()=>{
-    localStorage.setItem('dmc-gm-onboarded','1');
+    safeStorage.setItem('dmc-gm-onboarded','1');
     onboard.classList.remove('open');
   });
 
@@ -4212,8 +4501,18 @@
     const sel = document.getElementById('preset-select');
     if(sel){ sel.value = key; sel.dispatchEvent(new Event('change')); }
   });
-  onBtn('add-article', ()=>{ state.articles.push('New article...'); renderArticleInputs(); renderArticleDoc(); });
+  onBtn('add-article', ()=>{
+    if(!isPro() && state.articles.length >= FREE_MAX_ARTICLES){
+      openProModal('Free demo allows '+FREE_MAX_ARTICLES+' articles max.');
+      return;
+    }
+    state.articles.push('New article...'); renderArticleInputs(); renderArticleDoc();
+  });
   onBtn('add-party', ()=>{
+    if(!isPro() && state.parties.length >= FREE_MAX_PARTIES){
+      openProModal('Free demo allows '+FREE_MAX_PARTIES+' signatories.');
+      return;
+    }
     state.parties.push({ name:'New Signatory', role:'Title', seal:'XX', color:sealColors[state.parties.length%sealColors.length], flag:null, emblem:null });
     renderPartyInputs(); renderSignatures(); renderHeraldry();
   });
@@ -4347,8 +4646,12 @@
     if(e.key==='Escape'){
       document.getElementById('cmdOverlay')?.classList.remove('open');
       document.getElementById('onboardOverlay')?.classList.remove('open');
+      document.getElementById('proModal')?.classList.remove('open');
     }
   });
+
+  // Re-apply pro labels after DOM ready
+  try { applyProUI(); } catch(e){}
 
   // Initial renders
   try { renderFlag(); } catch(e){ console.error(e); }
@@ -4361,6 +4664,25 @@
   try { renderSignatures(); renderPartyInputs(); renderArticleDoc(); } catch(e){ console.error(e); }
 })();
 </script>
+
+<div class="pro-modal-overlay" id="proModal">
+  <div class="pro-modal" role="dialog" aria-label="Graphic Maker Pro">
+    <h2>Graphic Maker <span class="pro-badge">Pro</span></h2>
+    <p>Free: basic Docs (Alliance/Treaty/Peace/Blank, classic layouts, watermarked). Pro unlocks Royal layout, all presets, flags, maps, propaganda, Discord, HD export, no watermark.</p>
+    <div class="pro-price">
+      <strong>Pay in DMC gold in-game</strong>, then DM <strong>4nt.exe</strong> on Discord for a license key.<br>
+      Tell them your nation name + that you paid.
+    </div>
+    <label for="pro-key-input" style="font-size:12px;color:var(--panel-muted);">License key</label>
+    <input type="text" id="pro-key-input" placeholder="DMC-GM-XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <div class="pro-err" id="pro-key-err"></div>
+    <div class="pro-actions">
+      <button type="button" class="btn-primary" id="pro-key-submit">Unlock Pro</button>
+      <button type="button" class="btn-secondary" id="pro-dm-discord">DM 4nt.exe on Discord</button>
+      <button type="button" class="btn-secondary" id="pro-modal-close">Not now</button>
+    </div>
+  </div>
+</div>
 
 <div class="cmd-overlay" id="cmdOverlay" aria-hidden="true">
   <div class="cmd-box" role="dialog" aria-label="Command palette">
