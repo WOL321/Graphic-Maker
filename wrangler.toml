@@ -1,0 +1,10 @@
+name = "dmc-license"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+
+# After creating the KV namespace with:
+#   npx wrangler kv namespace create PRO_KEYS
+# paste the "id" it prints into the line below.
+kv_namespaces = [
+  { binding = "PRO_KEYS", id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" }
+]
