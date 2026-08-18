@@ -175,14 +175,22 @@
   .clear-flag{font-size:11px;color:var(--panel-muted);text-decoration:underline;cursor:pointer;background:none;border:none;}
 
   .export-bar{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
-  .export-bar button{
+  .export-bar button, button.btn-primary, button.btn-secondary{
     flex:1;min-width:110px;padding:11px 6px;border-radius:7px;border:none;font-family:'Cinzel',serif;font-size:11.5px;
     letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
   }
-  .btn-primary{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#241c12;font-weight:700;}
-  .btn-primary:hover{filter:brightness(1.08);}
-  .btn-secondary{background:#2a2419;color:var(--panel-text);border:1px solid var(--panel-line) !important;}
-  .btn-secondary:hover{border-color:var(--gold);}
+  button.btn-primary, .btn-primary{
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#241c12;font-weight:700;cursor:pointer;
+  }
+  button.btn-primary:hover, .btn-primary:hover{filter:brightness(1.08);}
+  button.btn-secondary, .btn-secondary{
+    background:#2a2419;color:var(--panel-text);border:1px solid var(--panel-line) !important;cursor:pointer;
+  }
+  button.btn-secondary:hover, .btn-secondary:hover{border-color:var(--gold);}
+  button:disabled{opacity:0.5; cursor:not-allowed;}
+  .file-btn{cursor:pointer; position:relative;}
+  .add-btn,.tiny-btn,.tpl-btn{cursor:pointer;}
+  .mode-tab{cursor:pointer;}
 
   .hint{font-size:11px;color:var(--panel-muted);margin-top:16px;line-height:1.5;padding-top:14px;border-top:1px solid var(--panel-line);}
 
@@ -4185,6 +4193,163 @@
     alert(hc ? 'High contrast + reduced motion on' : 'Accessibility modes toggled');
   });
 
+  // ---- Safety re-bind critical buttons (survives earlier listener failures) ----
+  function onBtn(id, fn){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', function(ev){
+      try { fn(ev); }
+      catch(err){ console.error('Button '+id+' error:', err); alert('Action failed: '+(err.message||err)); }
+    });
+  }
+  onBtn('btn-png', ()=>captureDoc('png'));
+  onBtn('btn-jpg', ()=>captureDoc('jpg'));
+  onBtn('btn-copy', ()=>captureDoc('copy'));
+  onBtn('btn-pdf', ()=>window.print());
+  onBtn('btn-surprise', ()=>{
+    const keys = Object.keys(presets).filter(k=>k!=='blank');
+    const key = keys[Math.floor(Math.random()*keys.length)];
+    const sel = document.getElementById('preset-select');
+    if(sel){ sel.value = key; sel.dispatchEvent(new Event('change')); }
+  });
+  onBtn('add-article', ()=>{ state.articles.push('New article...'); renderArticleInputs(); renderArticleDoc(); });
+  onBtn('add-party', ()=>{
+    state.parties.push({ name:'New Signatory', role:'Title', seal:'XX', color:sealColors[state.parties.length%sealColors.length], flag:null, emblem:null });
+    renderPartyInputs(); renderSignatures(); renderHeraldry();
+  });
+  onBtn('btn-save-new', ()=>{
+    const name = (document.getElementById('save-name')?.value||'').trim() || 'Untitled';
+    const items = getSaved();
+    items.unshift({ name, updated: Date.now(), data: snapshot() });
+    setSaved(items);
+    renderSavedList();
+    const st = document.getElementById('save-status');
+    if(st){ st.style.display='block'; st.textContent = 'Saved "'+name+'"'; }
+  });
+  onBtn('btn-update-current', ()=>{
+    const name = (document.getElementById('save-name')?.value||'').trim() || 'Untitled';
+    const items = getSaved();
+    const idx = items.findIndex(it=>it.name===name);
+    const row = { name, updated: Date.now(), data: snapshot() };
+    if(idx>=0) items[idx] = row; else items.unshift(row);
+    setSaved(items);
+    renderSavedList();
+    const st = document.getElementById('save-status');
+    if(st){ st.style.display='block'; st.textContent = 'Updated "'+name+'"'; }
+  });
+  onBtn('btn-export-json', ()=>{
+    const payload = { version:1, exported:new Date().toISOString(), document:snapshot(), mapLabels, mapCapitals };
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.download = 'graphic-maker-project.json';
+    a.href = URL.createObjectURL(blob);
+    a.click();
+  });
+  onBtn('btn-flag-png', ()=>{
+    const canvas = document.getElementById('flag-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'nation-flag.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('btn-emblem-png', ()=>{
+    const canvas = document.getElementById('emblem-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'nation-emblem.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('btn-prop-png', ()=>{
+    const canvas = document.getElementById('poster-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'propaganda.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('btn-map-png', ()=>{
+    const canvas = document.getElementById('map-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'claim-map.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('btn-discord-banner', ()=>{
+    const canvas = document.getElementById('discord-banner-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'discord-banner.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('btn-discord-icon', ()=>{
+    const canvas = document.getElementById('discord-icon-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'discord-icon.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('btn-id-card', ()=>{
+    if(typeof renderIdCard==='function') renderIdCard();
+    const canvas = document.getElementById('id-card-canvas');
+    if(!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'nation-id-card.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  onBtn('np-save', ()=>{
+    const name = document.getElementById('np-name')?.value.trim();
+    if(!name){ alert('Enter a nation name'); return; }
+    const arr = getNationPacks();
+    arr.unshift({ name, color: document.getElementById('np-color').value, seal: document.getElementById('np-seal').value, flag: npFlagData, saved: Date.now() });
+    setNationPacks(arr.slice(0,20));
+    renderNationPackList();
+  });
+  onBtn('np-apply', ()=>{
+    if(!state.parties[0]) return;
+    state.parties[0].name = document.getElementById('np-name').value || state.parties[0].name;
+    state.parties[0].color = document.getElementById('np-color').value;
+    state.parties[0].seal = document.getElementById('np-seal').value || state.parties[0].seal;
+    if(npFlagData) state.parties[0].flag = npFlagData;
+    renderPartyInputs(); renderSignatures(); renderHeraldry(); renderCornerEmblems();
+  });
+  onBtn('map-add-label', ()=>{
+    const canvas = document.getElementById('map-canvas');
+    mapLabels.push({ id:'lbl_'+Date.now(), text:'Nation', x:(canvas?.width||900)/2, y:(canvas?.height||600)/2, color:'#ffffff', size:28 });
+    renderMap(); renderMapLabelsList();
+  });
+  onBtn('map-add-capital', ()=>{
+    const canvas = document.getElementById('map-canvas');
+    mapCapitals.push({ id:'cap_'+Date.now(), x:(canvas?.width||900)/2, y:(canvas?.height||600)/2 });
+    renderMap();
+  });
+  onBtn('prop-bg-clear', ()=>{ propBgImage=null; renderPropaganda(); });
+  onBtn('map-clear', ()=>{ mapImage=null; mapLabels=[]; mapCapitals=[]; renderMap(); renderMapLabelsList(); });
+
+  // Show update button when a saved doc is loaded
+  const _savedList = document.getElementById('saved-list');
+  if(_savedList){
+    _savedList.addEventListener('click', e=>{
+      if(e.target?.dataset?.load != null){
+        const upd = document.getElementById('btn-update-current');
+        if(upd) upd.style.display = '';
+      }
+    });
+  }
+
+  // Force-close stuck overlays on Escape
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape'){
+      document.getElementById('cmdOverlay')?.classList.remove('open');
+      document.getElementById('onboardOverlay')?.classList.remove('open');
+    }
+  });
+
   // Initial renders
   try { renderFlag(); } catch(e){ console.error(e); }
   try { renderEmblem(); } catch(e){ console.error(e); }
@@ -4193,6 +4358,7 @@
   try { renderDiscordBanner(); } catch(e){ console.error(e); }
   try { renderDiscordIcon(); } catch(e){ console.error(e); }
   try { renderIdCard(); } catch(e){ console.error(e); }
+  try { renderSignatures(); renderPartyInputs(); renderArticleDoc(); } catch(e){ console.error(e); }
 })();
 </script>
 
