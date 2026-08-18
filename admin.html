@@ -2,110 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DMC Graphic Maker — Key Admin</title>
+<title>DMC Graphic Maker — Key Generator (local, offline)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body{font-family:system-ui,sans-serif;background:#15130f;color:#e7ddc4;max-width:820px;margin:30px auto;padding:0 16px;}
   h1{color:#c79a3e;font-size:1.3rem;}
+  p.note{font-size:13px;color:#9c927a;line-height:1.5;}
   label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9c927a;margin:14px 0 4px;}
-  input,textarea{width:100%;padding:8px 10px;border-radius:6px;border:1px solid #332d21;background:#100e0a;color:#e7ddc4;font-size:14px;box-sizing:border-box;}
-  button{margin-top:12px;padding:9px 16px;border-radius:6px;border:none;background:linear-gradient(180deg,#c79a3e,#a9812f);color:#241c12;font-weight:700;cursor:pointer;}
+  input{padding:8px 10px;border-radius:6px;border:1px solid #332d21;background:#100e0a;color:#e7ddc4;font-size:14px;}
+  button{margin-top:14px;padding:9px 16px;border-radius:6px;border:none;background:linear-gradient(180deg,#c79a3e,#a9812f);color:#241c12;font-weight:700;cursor:pointer;}
   button:hover{filter:brightness(1.08);}
-  button.secondary{background:#2a2419;color:#e7ddc4;border:1px solid #332d21;}
-  textarea#output{margin-top:14px;min-height:120px;font-family:ui-monospace,monospace;font-size:13px;}
-  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
-  th,td{border-bottom:1px solid #332d21;padding:6px 8px;text-align:left;}
-  th{color:#9c927a;text-transform:uppercase;font-size:11px;letter-spacing:.05em;}
-  .status-unused{color:#c79a3e;}
-  .status-redeemed{color:#8dcf8a;}
-  .status-revoked{color:#c94b4b;}
-  .row{display:flex;gap:10px;align-items:end;}
-  .row > div{flex:1;}
-  .note{font-size:12px;color:#9c927a;margin-top:6px;}
+  button.secondary{background:#2a2419;color:#e7ddc4;border:1px solid #332d21;margin-left:8px;}
+  textarea{width:100%;box-sizing:border-box;margin-top:14px;min-height:140px;font-family:ui-monospace,monospace;font-size:13px;padding:10px;border-radius:6px;border:1px solid #332d21;background:#100e0a;color:#e7ddc4;}
+  h2{font-size:14px;color:#c79a3e;margin-top:24px;}
 </style>
 </head>
 <body>
-  <h1>DMC Graphic Maker — License Key Admin</h1>
-  <p class="note">This page talks directly to your Worker. It never touches your public site. Don't share this file or your admin key with anyone.</p>
+  <h1>DMC Graphic Maker — Key Generator</h1>
+  <p class="note">
+    Runs 100% in your browser, offline, no server. Generates real license keys
+    plus the SHA-256 <em>hashes</em> of those keys. Commit the hashes file
+    (<code>pro-keys.json</code>) to your public repo — the hashes are safe to
+    publish because they can't be reversed back into working keys. Keep the
+    plaintext keys list private; hand each one out to one buyer.
+  </p>
 
-  <label>Worker base URL</label>
-  <input id="base-url" placeholder="https://dmc-license.yourname.workers.dev">
-
-  <label>Admin key</label>
-  <input id="admin-key" type="password" placeholder="paste the ADMIN_SECRET you set with wrangler">
-
-  <div class="row">
-    <div>
-      <label>How many keys to generate</label>
-      <input id="gen-count" type="number" value="10" min="1" max="200">
-    </div>
-    <div>
-      <label>Note (optional, e.g. "discord giveaway")</label>
-      <input id="gen-note" placeholder="optional label">
-    </div>
-  </div>
+  <label>How many keys</label>
+  <input id="count" type="number" value="10" min="1" max="500">
   <button id="btn-generate">Generate keys</button>
-  <button class="secondary" id="btn-refresh">Refresh key list</button>
+  <button class="secondary" id="btn-download-hashes" disabled>Download pro-keys.json</button>
+  <button class="secondary" id="btn-download-plain" disabled>Download plaintext keys.txt</button>
 
-  <label>Generated / output</label>
-  <textarea id="output" readonly placeholder="Generated keys will appear here, one per line."></textarea>
+  <h2>New keys (give these out — keep this list private)</h2>
+  <textarea id="plain-out" readonly placeholder="Generated keys appear here."></textarea>
 
-  <table id="key-table">
-    <thead><tr><th>Key</th><th>Status</th><th>Note</th><th>Created</th><th>Redeemed</th><th></th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <h2>pro-keys.json contents (commit this file to your repo)</h2>
+  <textarea id="hash-out" readonly placeholder="Hashed keys appear here — safe to publish."></textarea>
 
 <script>
-function base(){ return document.getElementById('base-url').value.replace(/\/$/,''); }
-function adminKey(){ return document.getElementById('admin-key').value; }
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
 
-async function generate(){
-  const count = document.getElementById('gen-count').value;
-  const note = document.getElementById('gen-note').value;
-  const res = await fetch(base() + '/admin/generate', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-admin-key':adminKey()},
-    body: JSON.stringify({count:Number(count), note})
-  });
-  const data = await res.json();
-  if(data.keys){
-    document.getElementById('output').value = data.keys.join('\n');
-    refresh();
-  } else {
-    document.getElementById('output').value = 'Error: ' + (data.reason || res.status);
+function randomBlock(len){
+  let out = '';
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for(let i=0;i<len;i++) out += ALPHABET[arr[i] % ALPHABET.length];
+  return out;
+}
+
+function makeKey(){
+  return `DMC-GM-${randomBlock(4)}-${randomBlock(4)}`;
+}
+
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+let lastPlain = [];
+let lastHashJson = '';
+
+document.getElementById('btn-generate').addEventListener('click', async ()=>{
+  const count = Math.min(Math.max(parseInt(document.getElementById('count').value)||1,1), 500);
+  const keys = [];
+  const hashes = [];
+  for(let i=0;i<count;i++){
+    const k = makeKey();
+    keys.push(k);
+    hashes.push(await sha256Hex(k));
   }
+  lastPlain = keys;
+  lastHashJson = JSON.stringify({ hashes }, null, 2);
+  document.getElementById('plain-out').value = keys.join('\n');
+  document.getElementById('hash-out').value = lastHashJson;
+  document.getElementById('btn-download-hashes').disabled = false;
+  document.getElementById('btn-download-plain').disabled = false;
+});
+
+function download(filename, text){
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
-async function refresh(){
-  const res = await fetch(base() + '/admin/keys', { headers:{'x-admin-key':adminKey()} });
-  const data = await res.json();
-  const tbody = document.querySelector('#key-table tbody');
-  tbody.innerHTML = '';
-  (data.keys||[]).forEach(k=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${k.key}</td>
-      <td class="status-${k.status}">${k.status}</td>
-      <td>${k.note||''}</td>
-      <td>${(k.createdAt||'').slice(0,10)}</td>
-      <td>${(k.redeemedAt||'').slice(0,10)}</td>
-      <td>${k.status!=='revoked' ? `<button class="secondary" data-revoke="${k.key}">Revoke</button>` : ''}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-document.getElementById('btn-generate').addEventListener('click', generate);
-document.getElementById('btn-refresh').addEventListener('click', refresh);
-document.querySelector('#key-table tbody').addEventListener('click', async (e)=>{
-  const key = e.target?.dataset?.revoke;
-  if(!key) return;
-  await fetch(base() + '/admin/revoke', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-admin-key':adminKey()},
-    body: JSON.stringify({key})
-  });
-  refresh();
+document.getElementById('btn-download-hashes').addEventListener('click', ()=>{
+  download('pro-keys.json', lastHashJson);
+});
+document.getElementById('btn-download-plain').addEventListener('click', ()=>{
+  download('keys.txt', lastPlain.join('\n'));
 });
 </script>
 </body>
