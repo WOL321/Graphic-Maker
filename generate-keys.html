@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DMC Graphic Maker — Key Generator (local, offline)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{font-family:system-ui,sans-serif;background:#15130f;color:#e7ddc4;max-width:820px;margin:30px auto;padding:0 16px;}
+  h1{color:#c79a3e;font-size:1.3rem;}
+  p.note{font-size:13px;color:#9c927a;line-height:1.5;}
+  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9c927a;margin:14px 0 4px;}
+  input{padding:8px 10px;border-radius:6px;border:1px solid #332d21;background:#100e0a;color:#e7ddc4;font-size:14px;}
+  button{margin-top:14px;padding:9px 16px;border-radius:6px;border:none;background:linear-gradient(180deg,#c79a3e,#a9812f);color:#241c12;font-weight:700;cursor:pointer;}
+  button:hover{filter:brightness(1.08);}
+  button.secondary{background:#2a2419;color:#e7ddc4;border:1px solid #332d21;margin-left:8px;}
+  textarea{width:100%;box-sizing:border-box;margin-top:14px;min-height:140px;font-family:ui-monospace,monospace;font-size:13px;padding:10px;border-radius:6px;border:1px solid #332d21;background:#100e0a;color:#e7ddc4;}
+  h2{font-size:14px;color:#c79a3e;margin-top:24px;}
+</style>
+</head>
+<body>
+  <h1>DMC Graphic Maker — Key Generator</h1>
+  <p class="note">
+    Runs 100% in your browser, offline, no server. Generates real license keys
+    plus the SHA-256 <em>hashes</em> of those keys. Commit the hashes file
+    (<code>pro-keys.json</code>) to your public repo — the hashes are safe to
+    publish because they can't be reversed back into working keys. Keep the
+    plaintext keys list private; hand each one out to one buyer.
+  </p>
+
+  <label>How many keys</label>
+  <input id="count" type="number" value="10" min="1" max="500">
+  <button id="btn-generate">Generate keys</button>
+  <button class="secondary" id="btn-download-hashes" disabled>Download pro-keys.json</button>
+  <button class="secondary" id="btn-download-plain" disabled>Download plaintext keys.txt</button>
+
+  <h2>New keys (give these out — keep this list private)</h2>
+  <textarea id="plain-out" readonly placeholder="Generated keys appear here."></textarea>
+
+  <h2>pro-keys.json contents (commit this file to your repo)</h2>
+  <textarea id="hash-out" readonly placeholder="Hashed keys appear here — safe to publish."></textarea>
+
+<script>
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+
+function randomBlock(len){
+  let out = '';
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for(let i=0;i<len;i++) out += ALPHABET[arr[i] % ALPHABET.length];
+  return out;
+}
+
+function makeKey(){
+  return `DMC-GM-${randomBlock(4)}-${randomBlock(4)}`;
+}
+
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+let lastPlain = [];
+let lastHashJson = '';
+
+document.getElementById('btn-generate').addEventListener('click', async ()=>{
+  const count = Math.min(Math.max(parseInt(document.getElementById('count').value)||1,1), 500);
+  const keys = [];
+  const hashes = [];
+  for(let i=0;i<count;i++){
+    const k = makeKey();
+    keys.push(k);
+    hashes.push(await sha256Hex(k));
+  }
+  lastPlain = keys;
+  lastHashJson = JSON.stringify({ hashes }, null, 2);
+  document.getElementById('plain-out').value = keys.join('\n');
+  document.getElementById('hash-out').value = lastHashJson;
+  document.getElementById('btn-download-hashes').disabled = false;
+  document.getElementById('btn-download-plain').disabled = false;
+});
+
+function download(filename, text){
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+document.getElementById('btn-download-hashes').addEventListener('click', ()=>{
+  download('pro-keys.json', lastHashJson);
+});
+document.getElementById('btn-download-plain').addEventListener('click', ()=>{
+  download('keys.txt', lastPlain.join('\n'));
+});
+</script>
+</body>
+</html>
