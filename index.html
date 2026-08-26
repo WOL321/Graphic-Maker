@@ -1632,8 +1632,9 @@
     }
   };
 
-  // ========== PRO / LICENSE (DMC gold → key from 4nt.exe) ==========
+  // ========== PRO / LICENSE (static hash-list, GitHub-only, no backend) ==========
   const PRO_KEY_STORAGE = 'dmc-gm-license';
+  const PRO_VERIFIED_STORAGE = 'dmc-gm-license-verified';
   // Free = basic Docs; best layouts/tools are Pro
   const FREE_PRESETS = new Set(['alliance','treaty','peace','blank']);
   const FREE_LAYOUTS = new Set(['layout-classic','layout-modern','layout-field']);
@@ -1641,40 +1642,54 @@
   const FREE_MAX_ARTICLES = 4;
   const FREE_MAX_PARTIES = 2;
 
-  // Valid key format: DMC-GM-XXXX-XXXX (checksum on 2nd block)
-  function proChecksum(part){
-    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let n = 0;
-    for(let i=0;i<part.length;i++) n = (n * 31 + part.charCodeAt(i)) >>> 0;
-    let out = '';
-    for(let i=0;i<4;i++){ out += alphabet[n % alphabet.length]; n = (n / alphabet.length) | 0; }
-    return out;
-  }
   function normalizeKey(k){ return String(k||'').trim().toUpperCase().replace(/\s+/g,''); }
-  function isValidProKey(k){
-    const key = normalizeKey(k);
-    const m = key.match(/^DMC-GM-([A-Z0-9]{4})-([A-Z0-9]{4})$/);
-    if(!m) return false;
-    return m[2] === proChecksum(m[1]);
-  }
-  // Owner helper: generate keys in console → window.__genProKey('AB12')
-  window.__genProKey = function(seed){
-    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let s = (seed||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
-    while(s.length<4) s += alphabet[Math.floor(Math.random()*alphabet.length)];
-    return 'DMC-GM-' + s + '-' + proChecksum(s);
-  };
 
-  function isPro(){
-    const k = safeStorage.getItem(PRO_KEY_STORAGE)||'';
-    return isValidProKey(k);
+  async function sha256Hex(str){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   }
+
+  let _keyHashCache = null;
+  async function loadKeyHashes(){
+    if(_keyHashCache) return _keyHashCache;
+    try{
+      const res = await fetch('pro-keys.json', {cache:'no-store'});
+      const data = await res.json();
+      _keyHashCache = new Set((data.hashes||[]).map(h=>h.toLowerCase()));
+    }catch(e){
+      _keyHashCache = new Set(); // if the file can't load, nothing validates
+    }
+    return _keyHashCache;
+  }
+
+  // Fast synchronous check used everywhere in the UI (gating, buttons, etc.)
+  // Reflects the last successful server-side (hash-list) verification.
+  function isPro(){
+    return safeStorage.getItem(PRO_VERIFIED_STORAGE) === '1';
+  }
+
+  // Actually checks a key against the published hash list in pro-keys.json.
+  async function verifyProKey(k){
+    const key = normalizeKey(k);
+    if(!/^DMC-GM-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return false;
+    const hashes = await loadKeyHashes();
+    const hash = await sha256Hex(key);
+    if(hashes.has(hash)){
+      safeStorage.setItem(PRO_KEY_STORAGE, key);
+      safeStorage.setItem(PRO_VERIFIED_STORAGE, '1');
+      return true;
+    }
+    safeStorage.removeItem(PRO_VERIFIED_STORAGE);
+    return false;
+  }
+
   function setProKey(k){
     safeStorage.setItem(PRO_KEY_STORAGE, normalizeKey(k));
     applyProUI();
   }
   function clearPro(){
     safeStorage.removeItem(PRO_KEY_STORAGE);
+    safeStorage.removeItem(PRO_VERIFIED_STORAGE);
     applyProUI();
   }
   function openProModal(msg){
@@ -1790,7 +1805,7 @@
   });
 
   // Pro modal — event delegation (modal HTML may load after this script)
-  document.addEventListener('click', e=>{
+  document.addEventListener('click', async e=>{
     const t = e.target;
     if(!t || !t.id) return;
     if(t.id === 'btn-pro-unlock'){ openProModal(''); return; }
@@ -1805,13 +1820,14 @@
     if(t.id === 'pro-key-submit'){
       const input = document.getElementById('pro-key-input');
       const key = input?.value||'';
-      if(!isValidProKey(key)){
-        const err = document.getElementById('pro-key-err');
+      const err = document.getElementById('pro-key-err');
+      if(err){ err.className='pro-err'; err.textContent = 'Checking key…'; }
+      const ok = await verifyProKey(key);
+      if(!ok){
         if(err){ err.className='pro-err'; err.textContent = 'Invalid key. Check spelling or DM 4nt.exe.'; }
         return;
       }
-      setProKey(key);
-      const err = document.getElementById('pro-key-err');
+      applyProUI();
       if(err){ err.className='pro-ok'; err.textContent = 'Unlocked — Pro is active on this browser.'; }
       setTimeout(closeProModal, 700);
       return;
@@ -1831,6 +1847,11 @@
     }
   });
   applyProUI();
+  (async function revalidateProOnLoad(){
+    const saved = safeStorage.getItem(PRO_KEY_STORAGE);
+    if(saved) await verifyProKey(saved);
+    applyProUI();
+  })();
 
   // ========== DOCUMENTS (original logic, cleaned) ==========
   const themes = {
