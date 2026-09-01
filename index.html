@@ -2498,7 +2498,11 @@
   }
 
   function waxVars(hex){
-    // Use the chosen seal color as real wax pigment (with light/shadow)
+    // Use the chosen seal color as real wax pigment (with light/shadow).
+    // Colors are baked in as literal values (not CSS custom properties) —
+    // html2canvas frequently fails to resolve var() references during
+    // export, which was making every seal render as a flat dark blob
+    // instead of each nation's actual color.
     let h = (hex||'#9b1b1b').trim();
     if(h[0]!=='#') h = '#'+h;
     if(h.length===4) h = '#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];
@@ -2509,7 +2513,7 @@
     const mid = `rgb(${r},${g},${b})`;
     const lo = `rgb(${clamp(r*0.65)},${clamp(g*0.65)},${clamp(b*0.65)})`;
     const deep = `rgb(${clamp(r*0.35)},${clamp(g*0.35)},${clamp(b*0.35)})`;
-    return `--wax-hi:${hi};--wax-mid:${mid};--wax:${mid};--wax-lo:${lo};--wax-deep:${deep}`;
+    return `background:radial-gradient(circle at 32% 28%, ${hi} 0%, ${mid} 28%, ${mid} 55%, ${lo} 78%, ${deep} 100%);`;
   }
 
   // Bakes alpha directly into an rgba() color instead of relying on CSS `opacity`,
