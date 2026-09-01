@@ -441,10 +441,10 @@
   }
   .stamp span{
     font-family:'Cinzel',serif; font-weight:700; font-size:17px; letter-spacing:.12em; text-transform:uppercase;
-    color:rgba(160,32,32,0.72); border:3px solid rgba(160,32,32,0.72); border-radius:50%; padding:18px 10px; text-align:center;
-    line-height:1.15;
+    color:rgba(160,32,32,0.78); border:3px solid rgba(160,32,32,0.78); border-radius:50%; padding:18px 10px; text-align:center;
+    line-height:1.15; box-shadow:inset 0 0 0 1.5px rgba(160,32,32,0.35);
   }
-  #document.paper-dark .stamp span{color:rgba(199,154,62,0.72); border-color:rgba(199,154,62,0.72);}
+  #document.paper-dark .stamp span{color:rgba(199,154,62,0.78); border-color:rgba(199,154,62,0.78); box-shadow:inset 0 0 0 1.5px rgba(199,154,62,0.35);}
 
   [contenteditable]:hover{background:rgba(169,129,47,.1);border-radius:3px;}
   [contenteditable]:focus{background:rgba(169,129,47,.16);border-radius:3px;}
@@ -3097,7 +3097,24 @@
     if(!isPro()){
       scale = 1; // free: 1× only
     }
-    const canvas = await html2canvas(el, { scale, backgroundColor:null, useCORS:true });
+    // Make sure webfonts (Cinzel etc.) are fully loaded before snapshotting —
+    // otherwise the stamp/title can get captured mid-swap using a fallback
+    // font, which looks noticeably worse than what's on screen.
+    try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+
+    // foreignObjectRendering uses the browser's own rendering pipeline
+    // instead of html2canvas's manual re-implementation of CSS layout —
+    // this fixes fidelity issues on rotated / rounded / bordered elements
+    // like the stamp (colors, anti-aliasing, and border-radius all render
+    // exactly as they look on screen). Falls back automatically if the
+    // browser/content can't support it (e.g. tainted canvas from a
+    // cross-origin image).
+    let canvas;
+    try{
+      canvas = await html2canvas(el, { scale, backgroundColor:null, useCORS:true, foreignObjectRendering:true, imageTimeout:15000 });
+    }catch(e){
+      canvas = await html2canvas(el, { scale, backgroundColor:null, useCORS:true, foreignObjectRendering:false, imageTimeout:15000 });
+    }
     // Free tier watermark
     if(!isPro()){
       const ctx = canvas.getContext('2d');
