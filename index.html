@@ -737,7 +737,45 @@
   }
   .gm-toast.ok{ border-color:rgba(120,180,100,0.5); }
   .gm-toast.err{ border-color:rgba(200,80,80,0.55); }
-  @keyframes gm-toast-in{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes gm-toast-in{ from{opacity:0; transform:translateY(8px) scale(.96);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+  /* ===== v2.4 "make it feel like an app" polish layer ===== */
+  :root{ --ease-spring:cubic-bezier(.34,1.56,.64,1); }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(1200px 700px at 75% -10%, rgba(199,154,62,.07), transparent 60%),
+               radial-gradient(900px 600px at -10% 110%, rgba(122,35,35,.06), transparent 55%);
+  }
+  .app{position:relative; z-index:1;}
+  .mode-tab{position:relative; overflow:hidden;}
+  .mode-tab.active{box-shadow:0 3px 10px rgba(199,154,62,.35), inset 0 1px 0 rgba(255,255,255,.35);}
+  .mode-tab.active::after{
+    content:""; position:absolute; left:20%; right:20%; bottom:3px; height:2px; border-radius:2px;
+    background:#241c12; opacity:.35;
+  }
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block; animation:gm-panel-in .26s var(--ease-spring);}
+  @keyframes gm-panel-in{ from{opacity:0; transform:translateX(-10px);} to{opacity:1; transform:none;} }
+  button.btn-primary, .btn-primary, button.btn-secondary, .btn-secondary, .file-btn, .add-btn, .tiny-btn, .icon-btn{
+    transition:transform .13s var(--ease-spring), box-shadow .15s ease, border-color .15s ease, filter .15s ease;
+  }
+  button.btn-primary:hover, .btn-primary:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(199,154,62,.35);}
+  button.btn-primary:active, .btn-primary:active, button.btn-secondary:active, .btn-secondary:active{transform:translateY(1px) scale(.98);}
+  button.btn-secondary:hover, .btn-secondary:hover{transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,.3);}
+  .icon-btn:hover{transform:scale(1.08);}
+  .swatch.active{transition:box-shadow .25s var(--ease-spring), transform .12s ease;}
+  .field input[type=text], .field textarea, .field select, .field input[type=number]{transition:border-color .15s ease, box-shadow .15s ease;}
+  .field input:focus, .field textarea:focus, .field select:focus{box-shadow:0 0 0 3px rgba(199,154,62,.18);}
+  .gm-toast{animation:gm-toast-in .3s var(--ease-spring);}
+  #doc-stage{transition:transform .18s var(--ease-spring);}
+  .gm-ripple{
+    position:absolute; border-radius:50%; pointer-events:none; transform:scale(0);
+    background:rgba(255,255,255,.28); animation:gm-rip .5s ease-out forwards;
+  }
+  @keyframes gm-rip{ to{transform:scale(2.6); opacity:0;} }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001s !important; transition-duration:.001s !important;}
+  }
 
   .article-row{ position:relative; }
   .article-row .drag-handle{
@@ -1979,15 +2017,48 @@
     maps: { panel: 'mode-maps', stage: 'maps-stage' },
     discord: { panel: 'mode-discord', stage: 'discord-stage' }
   };
+  // ---- v2.4 app-feel FX helpers (sound + shake) ----
+  window.gmSfx = function(type){
+    try{
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      gmSfx._c = gmSfx._c || new AC();
+      const c = gmSfx._c;
+      if(c.state === 'suspended') c.resume();
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      const t = c.currentTime;
+      let f0 = 620, f1 = 840, dur = 0.07, vol = 0.035, wave = 'triangle';
+      if(type === 'unlock'){ f0 = 520; f1 = 1040; dur = 0.16; vol = 0.05; }
+      if(type === 'error'){ f0 = 220; f1 = 150; dur = 0.14; vol = 0.045; wave = 'sawtooth'; }
+      if(type === 'export'){ f0 = 700; f1 = 1100; dur = 0.1; vol = 0.04; }
+      o.type = wave;
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(Math.max(40,f1), t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.03);
+      o.start(t); o.stop(t + dur + 0.05);
+    }catch(e){/* silent */}
+  };
+  window.gmShake = function(el){
+    try{
+      if(!el || !el.animate) return;
+      el.animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(-3px)'},{transform:'translateX(0)'}],{duration:280,easing:'ease-in-out'});
+    }catch(e){}
+  };
+  window.gmClickFx = function(){ gmSfx('click'); };
   document.querySelectorAll('.mode-tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
       const key = tab.dataset.mode;
       const m = modes[key];
       if(!m) return;
       if(PRO_MODES.has(key) && !isPro()){
+        gmShake(tab);
         openProModal('Free is a small demo only. Flags, Emblems, Propaganda, Maps, and Discord need Pro — pay gold in-game, then DM 4nt.exe.');
         return;
       }
+      gmClickFx();
       document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
       document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
       Object.values(modes).forEach(mm=>{
@@ -2030,9 +2101,12 @@
       const ok = await verifyProKey(key);
       if(!ok){
         if(err){ err.className='pro-err'; err.textContent = 'Invalid key. Check spelling or DM 4nt.exe.'; }
+        gmShake(input); gmSfx('error');
         return;
       }
       applyProUI();
+      gmSfx('unlock');
+      if(window.gmToast) gmToast('Pro unlocked — welcome to the full armory ⚜', 'ok');
       if(err){ err.className='pro-ok'; err.textContent = 'Unlocked — Pro is active on this browser.'; }
       setTimeout(closeProModal, 700);
       return;
@@ -4861,7 +4935,7 @@
   });
 
   document.getElementById('btn-changelog')?.addEventListener('click', ()=>{
-    alert('Graphic Maker v2.1\n\n• Command palette (Ctrl+K)\n• Onboarding tour\n• Nation packs\n• Classification / watermark / serial\n• +12 document presets\n• Propaganda filters & map legend\n• Nation ID cards\n• Export 2×–4×\n• Witnesses, borders, languages');
+    alert('Graphic Maker v2.4\n\n• App-feel polish: spring animations, ripples, haptics\n• Subtle UI sounds (tab clicks, exports, Pro unlock)\n• Toast feedback on every export\n• Command palette (Ctrl+K) · Onboarding tour · Nation packs\n• Classification / watermark / serial · +12 doc presets\n• Propaganda filters & map legend · Nation ID cards\n• Export 2×–4× · Witnesses, borders, languages');
   });
   document.getElementById('btn-shortcuts')?.addEventListener('click', ()=>{
     alert('Shortcuts\n\nCtrl+K — Command palette\n1–6 — Jump modes (via palette)\nEsc — Close palette\n\nClick any text on the document to edit live.');
@@ -5078,6 +5152,36 @@
       }
       return _alert.apply(this, arguments);
     };
+
+    // ---- v2.4 app-feel layer: global click FX + ripple ----
+    document.addEventListener('click', e=>{
+      try{
+        const btn = e.target.closest('.btn-primary,.btn-secondary,.mode-tab,.icon-btn,.file-btn,.add-btn,.tiny-btn,.swatch');
+        if(btn){
+          gmSfx('click');
+          if(navigator.vibrate) navigator.vibrate(8);
+          if(getComputedStyle(btn).position === 'static') btn.style.position = 'relative';
+          const r = btn.getBoundingClientRect();
+          const d = Math.max(r.width, r.height);
+          const sp = document.createElement('span');
+          sp.className = 'gm-ripple';
+          sp.style.width = sp.style.height = d + 'px';
+          sp.style.left = (e.clientX - r.left - d/2) + 'px';
+          sp.style.top = (e.clientY - r.top - d/2) + 'px';
+          btn.appendChild(sp);
+          setTimeout(()=>sp.remove(), 550);
+        }
+      }catch(err){}
+    }, true);
+
+    // Export buttons -> celebratory toast + sound
+    document.querySelectorAll('.export-bar button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(!b.classList.contains('btn-primary')) return;
+        gmSfx('export');
+        gmToast((b.textContent||'').trim() + ' — rendering…', 'ok');
+      });
+    });
 
     // Clause library
     const CLAUSES = {
@@ -5503,7 +5607,7 @@
 </div>
 
 <div class="app-footer">
-  Graphic Maker v2.1 · <button type="button" id="btn-changelog">Changelog</button> · <button type="button" id="btn-shortcuts">Shortcuts</button> · <button type="button" id="btn-a11y">A11y</button>
+  Graphic Maker v2.4 · <button type="button" id="btn-changelog">Changelog</button> · <button type="button" id="btn-shortcuts">Shortcuts</button> · <button type="button" id="btn-a11y">A11y</button>
 </div>
 
 <style media="print">
