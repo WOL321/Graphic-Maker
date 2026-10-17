@@ -345,6 +345,24 @@
   #document.border-ornate::after{
     content:""; position:absolute; inset:18px; border:1px solid rgba(169,129,47,.35); pointer-events:none;
   }
+  /* v2.5: filigree corner frame — double hairline + SVG corner curls via data URI */
+  #document.border-filigree::before{
+    content:""; position:absolute; inset:16px; border:1px solid var(--gold); pointer-events:none; opacity:.8;
+  }
+  #document.border-filigree::after{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.9;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E%3Cg fill='none' stroke='%23a9812f' stroke-width='2'%3E%3Cpath d='M8 62 Q8 8 62 8'/%3E%3Cpath d='M16 56 Q16 16 56 16' stroke-width='1'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23a9812f'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:top left,top right,bottom left,bottom right;
+    background-size:70px 70px;
+  }
+  /* v2.5: guilloche engraved border band like real banknote stock */
+  #document.border-guilloche::before{
+    content:""; position:absolute; inset:10px; pointer-events:none; opacity:.5;
+    border:14px solid transparent;
+    border-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect x='2' y='2' width='56' height='56' fill='none' stroke='%23a9812f' stroke-width='1'/%3E%3Crect x='6' y='6' width='48' height='48' fill='none' stroke='%23a9812f' stroke-width='.6' stroke-dasharray='3 2'/%3E%3Crect x='10' y='10' width='40' height='40' fill='none' stroke='%23a9812f' stroke-width='1'/%3E%3C/svg%3E") 30 stretch;
+  }
+  #document.border-guilloche::after{ display:none; }
   #document.border-none::before{ display:none; }
   #document.paper-parchment, #document.paper-cream, #document.paper-dark, #document.paper-navy, #document.paper-crimson{
     /* border handled by border-* classes */
@@ -737,7 +755,45 @@
   }
   .gm-toast.ok{ border-color:rgba(120,180,100,0.5); }
   .gm-toast.err{ border-color:rgba(200,80,80,0.55); }
-  @keyframes gm-toast-in{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes gm-toast-in{ from{opacity:0; transform:translateY(8px) scale(.96);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+  /* ===== v2.4 "make it feel like an app" polish layer ===== */
+  :root{ --ease-spring:cubic-bezier(.34,1.56,.64,1); }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(1200px 700px at 75% -10%, rgba(199,154,62,.07), transparent 60%),
+               radial-gradient(900px 600px at -10% 110%, rgba(122,35,35,.06), transparent 55%);
+  }
+  .app{position:relative; z-index:1;}
+  .mode-tab{position:relative; overflow:hidden;}
+  .mode-tab.active{box-shadow:0 3px 10px rgba(199,154,62,.35), inset 0 1px 0 rgba(255,255,255,.35);}
+  .mode-tab.active::after{
+    content:""; position:absolute; left:20%; right:20%; bottom:3px; height:2px; border-radius:2px;
+    background:#241c12; opacity:.35;
+  }
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block; animation:gm-panel-in .26s var(--ease-spring);}
+  @keyframes gm-panel-in{ from{opacity:0; transform:translateX(-10px);} to{opacity:1; transform:none;} }
+  button.btn-primary, .btn-primary, button.btn-secondary, .btn-secondary, .file-btn, .add-btn, .tiny-btn, .icon-btn{
+    transition:transform .13s var(--ease-spring), box-shadow .15s ease, border-color .15s ease, filter .15s ease;
+  }
+  button.btn-primary:hover, .btn-primary:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(199,154,62,.35);}
+  button.btn-primary:active, .btn-primary:active, button.btn-secondary:active, .btn-secondary:active{transform:translateY(1px) scale(.98);}
+  button.btn-secondary:hover, .btn-secondary:hover{transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,.3);}
+  .icon-btn:hover{transform:scale(1.08);}
+  .swatch.active{transition:box-shadow .25s var(--ease-spring), transform .12s ease;}
+  .field input[type=text], .field textarea, .field select, .field input[type=number]{transition:border-color .15s ease, box-shadow .15s ease;}
+  .field input:focus, .field textarea:focus, .field select:focus{box-shadow:0 0 0 3px rgba(199,154,62,.18);}
+  .gm-toast{animation:gm-toast-in .3s var(--ease-spring);}
+  #doc-stage{transition:transform .18s var(--ease-spring);}
+  .gm-ripple{
+    position:absolute; border-radius:50%; pointer-events:none; transform:scale(0);
+    background:rgba(255,255,255,.28); animation:gm-rip .5s ease-out forwards;
+  }
+  @keyframes gm-rip{ to{transform:scale(2.6); opacity:0;} }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001s !important; transition-duration:.001s !important;}
+  }
 
   .article-row{ position:relative; }
   .article-row .drag-handle{
@@ -1029,6 +1085,8 @@
         <label>Border ornament</label>
         <select id="border-select">
           <option value="ornate" selected>Ornate double frame</option>
+          <option value="filigree">Filigree corners</option>
+          <option value="guilloche">Guilloche (engraved)</option>
           <option value="double">Double gold frame</option>
           <option value="single">Single thin frame</option>
           <option value="none">No border</option>
@@ -1328,9 +1386,34 @@
           <option value="crescent">Crescent</option>
           <option value="sun">Sun</option>
           <option value="crown">Crown</option>
-          <option value="eagle">Eagle (simple)</option>
+          <optgroup label="Nature & Land">
+            <option value="tree">Tree</option>
+            <option value="mountain">Mountains</option>
+            <option value="wave">Waves</option>
+            <option value="wheat">Wheat</option>
+            <option value="laurel">Laurel Wreath</option>
+          </optgroup>
+          <optgroup label="Power & Craft">
+            <option value="eagle">Eagle (heraldic)</option>
+            <option value="anchor">Anchor</option>
+            <option value="trident">Trident</option>
+            <option value="key">Key</option>
+            <option value="wheel">Ship Wheel</option>
+            <option value="gear">Gear</option>
+            <option value="hammer">Hammer</option>
+            <option value="bolt">Lightning Bolt</option>
+          </optgroup>
+          <optgroup label="Ideals & Mystery">
+            <option value="compass">Compass Rose</option>
+            <option value="flame">Flame</option>
+            <option value="atom">Atom</option>
+            <option value="eye">All-Seeing Eye</option>
+          </optgroup>
           <option value="text">Text / Initials</option>
         </select>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="flag-finish" style="width:auto;vertical-align:middle;"> Premium finish (sheen, vignette, fabric folds)</label>
       </div>
       <div class="field">
         <label>Symbol placement</label>
@@ -1383,6 +1466,10 @@
       <div class="field">
         <label>Center initials / symbol</label>
         <input type="text" id="emblem-center" value="HK" maxlength="4">
+      </div>
+      <div class="field">
+        <label>Center emoji (optional — draws over the disc)</label>
+        <input type="text" id="emblem-emoji" placeholder="e.g. 🦅 ⚜️ 🌙" maxlength="4">
       </div>
       <div class="field">
         <label>Supporters</label>
@@ -1979,15 +2066,48 @@
     maps: { panel: 'mode-maps', stage: 'maps-stage' },
     discord: { panel: 'mode-discord', stage: 'discord-stage' }
   };
+  // ---- v2.4 app-feel FX helpers (sound + shake) ----
+  window.gmSfx = function(type){
+    try{
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      gmSfx._c = gmSfx._c || new AC();
+      const c = gmSfx._c;
+      if(c.state === 'suspended') c.resume();
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      const t = c.currentTime;
+      let f0 = 620, f1 = 840, dur = 0.07, vol = 0.035, wave = 'triangle';
+      if(type === 'unlock'){ f0 = 520; f1 = 1040; dur = 0.16; vol = 0.05; }
+      if(type === 'error'){ f0 = 220; f1 = 150; dur = 0.14; vol = 0.045; wave = 'sawtooth'; }
+      if(type === 'export'){ f0 = 700; f1 = 1100; dur = 0.1; vol = 0.04; }
+      o.type = wave;
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(Math.max(40,f1), t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.03);
+      o.start(t); o.stop(t + dur + 0.05);
+    }catch(e){/* silent */}
+  };
+  window.gmShake = function(el){
+    try{
+      if(!el || !el.animate) return;
+      el.animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(-3px)'},{transform:'translateX(0)'}],{duration:280,easing:'ease-in-out'});
+    }catch(e){}
+  };
+  window.gmClickFx = function(){ gmSfx('click'); };
   document.querySelectorAll('.mode-tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
       const key = tab.dataset.mode;
       const m = modes[key];
       if(!m) return;
       if(PRO_MODES.has(key) && !isPro()){
+        gmShake(tab);
         openProModal('Free is a small demo only. Flags, Emblems, Propaganda, Maps, and Discord need Pro — pay gold in-game, then DM 4nt.exe.');
         return;
       }
+      gmClickFx();
       document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
       document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
       Object.values(modes).forEach(mm=>{
@@ -2030,9 +2150,12 @@
       const ok = await verifyProKey(key);
       if(!ok){
         if(err){ err.className='pro-err'; err.textContent = 'Invalid key. Check spelling or DM 4nt.exe.'; }
+        gmShake(input); gmSfx('error');
         return;
       }
       applyProUI();
+      gmSfx('unlock');
+      if(window.gmToast) gmToast('Pro unlocked — welcome to the full armory ⚜', 'ok');
       if(err){ err.className='pro-ok'; err.textContent = 'Unlocked — Pro is active on this browser.'; }
       setTimeout(closeProModal, 700);
       return;
@@ -2946,7 +3069,7 @@
   });
   document.getElementById('border-select').addEventListener('change', e=>{
     const doc = document.getElementById('document');
-    doc.classList.remove('border-double','border-single','border-ornate','border-none');
+    doc.classList.remove('border-double','border-single','border-ornate','border-filigree','border-guilloche','border-none');
     doc.classList.add('border-'+e.target.value);
   });
   const langPacks = {
@@ -3492,7 +3615,7 @@
     }
     if(s.border){
       setVal('border-select', s.border);
-      doc.classList.remove('border-double','border-single','border-ornate','border-none');
+      doc.classList.remove('border-double','border-single','border-ornate','border-filigree','border-guilloche','border-none');
       doc.classList.add('border-'+s.border);
     }
     renderArticleInputs(); renderArticleDoc(); renderPartyInputs(); renderSignatures();
@@ -3593,6 +3716,8 @@
   document.getElementById('flag-text').addEventListener('input', renderFlag);
   const flagSymPos = document.getElementById('flag-sym-pos');
   if(flagSymPos) flagSymPos.addEventListener('change', renderFlag);
+  const flagFinish = document.getElementById('flag-finish');
+  if(flagFinish) flagFinish.addEventListener('change', renderFlag);
 
   function getFlagSize(){
     const ratio = document.getElementById('flag-ratio').value;
@@ -3603,6 +3728,123 @@
     return [base, base];
   }
 
+  // ---------- v2.5 shared drawing helpers (used by flags, emblems, ID cards) ----------
+  function mixColor(hexA, hexB, t){
+    const p = h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+    try{
+      const a=p(hexA), b=p(hexB);
+      const c=a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+      return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');
+    }catch(e){ return hexA; }
+  }
+  function luminance(hex){
+    const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');
+    if(!m) return 0.5;
+    const n=parseInt(m[1],16);
+    return (0.2126*((n>>16)&255)+0.7152*((n>>8)&255)+0.0722*(n&255))/255;
+  }
+  function autoOutline(color){ return luminance(color)>0.55 ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.5)'; }
+
+  // Metallic vertical gradient for borders/frames — makes seals & crests look embossed
+  function metalGrad(ctx, x, yTop, yBot, base){
+    let gold = '#d4af37', hi = '#fff3b0', lo = '#8a6d1f';
+    if(base==='silver'||base==='#c0c0c0'){ gold='#c9ced6'; hi='#ffffff'; lo='#7d838c'; }
+    else if(base==='bronze'||base==='#cd7f32'){ gold='#cd7f32'; hi='#f0c08a'; lo='#7a4a1a'; }
+    const g = ctx.createLinearGradient(x, yTop, x, yBot);
+    g.addColorStop(0, hi); g.addColorStop(0.35, gold); g.addColorStop(0.65, lo); g.addColorStop(1, gold);
+    return g;
+  }
+
+  // Soft drop shadow around an arbitrary path
+  function withShadow(ctx, fn, opts){
+    opts = opts || {};
+    ctx.save();
+    ctx.shadowColor = opts.color || 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = opts.blur != null ? opts.blur : (opts.size||100)*0.06;
+    ctx.shadowOffsetY = opts.offsetY != null ? opts.offsetY : (opts.size||100)*0.02;
+    fn();
+    ctx.restore();
+  }
+
+  // Fanciful guilloche / engraved line fill (clipped to current path or rect)
+  function guilloche(ctx, x, y, w, h, color, density){
+    density = density || 26;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+    ctx.strokeStyle = color; ctx.lineWidth = Math.max(0.6, h/density*0.12);
+    ctx.globalAlpha = 0.14;
+    const amp = h/(density*1.6);
+    for(let i=0;i<=density;i++){
+      const yy = y + h*i/density;
+      ctx.beginPath();
+      for(let xx=x; xx<=x+w; xx+=Math.max(4,w/60)){
+        const t = (xx-x)/w;
+        const off = Math.sin(t*Math.PI*density*0.5 + i*0.7)*amp;
+        if(xx===x) ctx.moveTo(xx, yy+off); else ctx.lineTo(xx, yy+off);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Ornamental flourish divider (centered at cx, width w)
+  function flourish(ctx, cx, cy, w, color){
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, w*0.006); ctx.lineCap='round';
+    ctx.globalAlpha = 0.85;
+    // center diamond
+    const d = w*0.02;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy-d); ctx.lineTo(cx+d*1.6, cy); ctx.lineTo(cx, cy+d); ctx.lineTo(cx-d*1.6, cy);
+    ctx.closePath(); ctx.fill();
+    [-1,1].forEach(sgn=>{
+      ctx.beginPath();
+      ctx.moveTo(cx + sgn*d*2.2, cy);
+      ctx.lineTo(cx + sgn*w*0.42, cy);
+      ctx.stroke();
+      // curls
+      ctx.beginPath();
+      ctx.arc(cx + sgn*w*0.45, cy, w*0.028, sgn>0?Math.PI*0.5:Math.PI*1.5, sgn>0?Math.PI*1.5:Math.PI*2.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx + sgn*w*0.30, cy - w*0.012, w*0.012, 0, Math.PI*2);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  // Corner filigree bracket for frames
+  function cornerFiligree(ctx, x, y, s, rot, color){
+    ctx.save();
+    ctx.translate(x,y); ctx.rotate(rot);
+    ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.2, s*0.06); ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(0, s); ctx.quadraticCurveTo(0,0, s, 0);
+    ctx.stroke();
+    ctx.lineWidth = Math.max(0.8, s*0.035);
+    ctx.beginPath();
+    ctx.moveTo(s*0.12, s*0.62); ctx.quadraticCurveTo(s*0.12, s*0.12, s*0.62, s*0.12);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(s*0.12, s*0.12, s*0.05, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Five-point star path helper (for canton stars etc.)
+  function starPath(ctx, cx, cy, r, points){
+    points = points || 5;
+    const inner = r * (points===6 ? 0.5 : 0.42);
+    ctx.beginPath();
+    for(let i=0;i<points*2;i++){
+      const rr = i%2===0 ? r : inner;
+      const a = (i*Math.PI/points) - Math.PI/2;
+      const px = cx+Math.cos(a)*rr, py = cy+Math.sin(a)*rr;
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+  }
+
   function drawSymbol(ctx, type, cx, cy, size, color, text){
     ctx.fillStyle = color;
     ctx.strokeStyle = color;
@@ -3610,15 +3852,8 @@
     if(type==='circle'){
       ctx.beginPath(); ctx.arc(cx,cy,size*0.35,0,Math.PI*2); ctx.fill();
     } else if(type==='star' || type==='star6'){
-      const spikes = type==='star6' ? 6 : 5;
-      const outer=size*0.4, inner=outer*(type==='star6'?0.45:0.4);
-      ctx.beginPath();
-      for(let i=0;i<spikes*2;i++){
-        const r = i%2===0?outer:inner;
-        const a = (i*Math.PI/spikes) - Math.PI/2;
-        ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
-      }
-      ctx.closePath(); ctx.fill();
+      starPath(ctx, cx, cy, size*0.4, type==='star6'?6:5);
+      ctx.fill();
     } else if(type==='cross'){
       const t = size*0.12;
       ctx.fillRect(cx-t, cy-size*0.4, t*2, size*0.8);
@@ -3662,19 +3897,213 @@
       ctx.beginPath(); ctx.arc(cx, cy-s*0.45, s*0.1, 0, Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.arc(cx+s, cy-s*0.1, s*0.1, 0, Math.PI*2); ctx.fill();
     } else if(type==='eagle'){
-      // Simple spread-eagle silhouette
+      // Spread-eagle silhouette with layered feather wings
+      const w = size*0.46;
       ctx.beginPath();
-      ctx.moveTo(cx, cy-size*0.15);
-      ctx.quadraticCurveTo(cx-size*0.45, cy-size*0.05, cx-size*0.4, cy+size*0.15);
-      ctx.quadraticCurveTo(cx-size*0.15, cy+size*0.05, cx, cy+size*0.1);
-      ctx.quadraticCurveTo(cx+size*0.15, cy+size*0.05, cx+size*0.4, cy+size*0.15);
-      ctx.quadraticCurveTo(cx+size*0.45, cy-size*0.05, cx, cy-size*0.15);
+      ctx.moveTo(cx, cy-w*0.32);
+      ctx.quadraticCurveTo(cx-w*0.5, cy-w*0.42, cx-w, cy-w*0.1);
+      // scalloped left wing edge
+      for(let i=0;i<5;i++){
+        const t0=i/5, t1=(i+1)/5;
+        const x0=cx-w+t0*w*0.8, x1=cx-w+t1*w*0.8;
+        ctx.quadraticCurveTo((x0+x1)/2, cy+w*0.18+Math.sin(t0*Math.PI)*w*0.08, x1, cy+w*0.02+t1*w*0.12);
+      }
+      ctx.quadraticCurveTo(cx-w*0.2, cy+w*0.12, cx, cy+w*0.22);
+      ctx.quadraticCurveTo(cx+w*0.2, cy+w*0.12, cx+w*0.86, cy+w*0.02);
+      for(let i=4;i>=0;i--){
+        const t0=i/5, t1=(i+1)/5;
+        const x0=cx+w-w*t0*0.8, x1=cx+w-w*t1*0.8;
+        ctx.quadraticCurveTo((x0+x1)/2, cy+w*0.18+Math.sin(t0*Math.PI)*w*0.08, x1, cy+w*0.02+t0*w*0.12);
+      }
+      ctx.quadraticCurveTo(cx+w*0.5, cy-w*0.42, cx, cy-w*0.32);
       ctx.fill();
+      // head + beak
       ctx.beginPath();
-      ctx.moveTo(cx-size*0.08, cy-size*0.15);
-      ctx.lineTo(cx, cy-size*0.38);
-      ctx.lineTo(cx+size*0.08, cy-size*0.15);
+      ctx.arc(cx, cy-w*0.42, w*0.12, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx+w*0.05, cy-w*0.5); ctx.lineTo(cx+w*0.22, cy-w*0.42); ctx.lineTo(cx+w*0.05, cy-w*0.36);
+      ctx.closePath(); ctx.fill();
+      // tail
+      ctx.beginPath();
+      ctx.moveTo(cx-w*0.12, cy+w*0.2); ctx.lineTo(cx, cy+w*0.48); ctx.lineTo(cx+w*0.12, cy+w*0.2);
+      ctx.closePath(); ctx.fill();
+    } else if(type==='anchor'){
+      ctx.lineCap='round';
+      ctx.lineWidth = Math.max(2.5, size*0.07);
+      ctx.beginPath(); ctx.arc(cx, cy-size*0.3, size*0.09, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy-size*0.2); ctx.lineTo(cx, cy+size*0.28); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-size*0.18, cy-size*0.08); ctx.lineTo(cx+size*0.18, cy-size*0.08); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy+size*0.08, size*0.24, Math.PI*0.15, Math.PI*0.85, false); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx-size*0.235, cy+size*0.16); ctx.lineTo(cx-size*0.30, cy+size*0.22);
+      ctx.moveTo(cx+size*0.235, cy+size*0.16); ctx.lineTo(cx+size*0.30, cy+size*0.22);
+      ctx.stroke();
+    } else if(type==='trident'){
+      ctx.lineCap='round';
+      ctx.lineWidth = Math.max(2.5, size*0.06);
+      ctx.beginPath(); ctx.moveTo(cx, cy-size*0.1); ctx.lineTo(cx, cy+size*0.4); ctx.stroke();
+      [-1,0,1].forEach(s=>{
+        const tipX = cx + s*size*0.22;
+        const baseY = cy - size*0.05 + (s!==0 ? size*0.06 : 0);
+        ctx.beginPath();
+        if(s===0){ ctx.moveTo(cx, baseY); ctx.lineTo(cx, cy-size*0.42); }
+        else { ctx.moveTo(cx + s*size*0.06, baseY); ctx.quadraticCurveTo(tipX, baseY-size*0.12, tipX, cy-size*0.4); }
+        ctx.stroke();
+        ctx.beginPath(); ctx.arc(tipX, cy-size*0.44, size*0.035, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.beginPath(); ctx.arc(cx, cy-size*0.46, size*0.035, 0, Math.PI*2); ctx.fill();
+    } else if(type==='key'){
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(-Math.PI/4);
+      ctx.lineWidth = Math.max(2.5, size*0.07); ctx.strokeStyle=color; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(0, -size*0.22, size*0.14, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-size*0.08); ctx.lineTo(0, size*0.3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, size*0.16); ctx.lineTo(size*0.12, size*0.16); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, size*0.26); ctx.lineTo(size*0.1, size*0.26); ctx.stroke();
+      ctx.restore();
+    } else if(type==='wheel'){
+      ctx.lineWidth = Math.max(2, size*0.045);
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.34,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.08,0,Math.PI*2); ctx.fill();
+      for(let i=0;i<8;i++){
+        const a = i*Math.PI/4;
+        ctx.beginPath();
+        ctx.moveTo(cx+Math.cos(a)*size*0.09, cy+Math.sin(a)*size*0.09);
+        ctx.lineTo(cx+Math.cos(a)*size*0.33, cy+Math.sin(a)*size*0.33);
+        ctx.stroke();
+      }
+    } else if(type==='tree'){
+      ctx.fillRect(cx-size*0.035, cy+size*0.05, size*0.07, size*0.32);
+      [ [0.30,0.16], [0.24,0.02], [0.16,-0.12] ].forEach(p=>{
+        ctx.beginPath();
+        ctx.moveTo(cx, cy+p[1]*size - size*0.14);
+        ctx.lineTo(cx+p[0]*size, cy+p[1]*size + size*0.06);
+        ctx.lineTo(cx-p[0]*size, cy+p[1]*size + size*0.06);
+        ctx.closePath(); ctx.fill();
+      });
+    } else if(type==='wheat'){
+      ctx.lineCap='round'; ctx.lineWidth=Math.max(2,size*0.045);
+      ctx.beginPath(); ctx.moveTo(cx, cy+size*0.42); ctx.lineTo(cx, cy-size*0.1); ctx.stroke();
+      for(let i=0;i<5;i++){
+        const yy = cy - size*0.08 + i*size*0.1;
+        [-1,1].forEach(s=>{
+          ctx.beginPath();
+          ctx.moveTo(cx, yy);
+          ctx.quadraticCurveTo(cx+s*size*0.12, yy-size*0.02, cx+s*size*0.1, yy-size*0.12);
+          ctx.stroke();
+        });
+      }
+      ctx.beginPath(); ctx.moveTo(cx, cy-size*0.08); ctx.lineTo(cx, cy-size*0.3); ctx.stroke();
+    } else if(type==='gear'){
+      ctx.save(); ctx.translate(cx,cy);
+      const R=size*0.34, teeth=8;
+      ctx.beginPath();
+      for(let i=0;i<teeth;i++){
+        const a0=i*Math.PI*2/teeth;
+        for(const [r0,r1,d0,d1] of [[R*0.8,R,a0-0.18,a0+0.18],[R,R*0.8,a0+Math.PI/teeth-0.18,a0+Math.PI/teeth+0.18]]){}
+      }
+      // simpler: alternating radius polygon
+      ctx.beginPath();
+      const steps=teeth*2;
+      for(let i=0;i<=steps;i++){
+        const a=i*Math.PI/steps - Math.PI/2;
+        const rr = (i%2===0)? R : R*0.78;
+        const px=Math.cos(a)*rr, py=Math.sin(a)*rr;
+        if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.globalCompositeOperation='destination-out';
+      ctx.beginPath(); ctx.arc(0,0,R*0.34,0,Math.PI*2); ctx.fill();
+      ctx.globalCompositeOperation='source-over';
+      ctx.restore();
+    } else if(type==='hammer'){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(Math.PI/8);
+      ctx.lineCap='round';
+      ctx.lineWidth = Math.max(3, size*0.07);
+      ctx.strokeStyle=color;
+      ctx.beginPath(); ctx.moveTo(0,-size*0.05); ctx.lineTo(0,size*0.38); ctx.stroke();
+      ctx.fillStyle=color;
+      ctx.fillRect(-size*0.26, -size*0.22, size*0.52, size*0.16);
+      ctx.restore();
+    } else if(type==='compass'){
+      ctx.lineWidth = Math.max(2, size*0.04);
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.36,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.04,0,Math.PI*2); ctx.fill();
+      ctx.save(); ctx.translate(cx,cy);
+      ctx.beginPath(); ctx.moveTo(0,-size*0.3); ctx.lineTo(size*0.09,0); ctx.lineTo(0,size*0.3); ctx.lineTo(-size*0.09,0); ctx.closePath(); ctx.fill();
+      ctx.rotate(Math.PI/2);
+      ctx.globalAlpha=0.55;
+      ctx.beginPath(); ctx.moveTo(0,-size*0.3); ctx.lineTo(size*0.09,0); ctx.lineTo(0,size*0.3); ctx.lineTo(-size*0.09,0); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if(type==='flame'){
+      ctx.beginPath();
+      ctx.moveTo(cx, cy-size*0.42);
+      ctx.bezierCurveTo(cx+size*0.28, cy-size*0.16, cx+size*0.22, cy+size*0.12, cx, cy+size*0.3);
+      ctx.bezierCurveTo(cx-size*0.22, cy+size*0.12, cx-size*0.28, cy-size*0.16, cx, cy-size*0.42);
       ctx.fill();
+      ctx.save();
+      ctx.globalCompositeOperation='destination-out';
+      ctx.beginPath();
+      ctx.moveTo(cx-size*0.02, cy-size*0.1);
+      ctx.bezierCurveTo(cx+size*0.12, cy+size*0.02, cx+size*0.06, cy+size*0.2, cx-size*0.02, cy+size*0.24);
+      ctx.bezierCurveTo(cx-size*0.1, cy+size*0.14, cx-size*0.08, cy, cx-size*0.02, cy-size*0.1);
+      ctx.fill();
+      ctx.restore();
+    } else if(type==='atom'){
+      ctx.lineWidth = Math.max(2, size*0.035);
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.07,0,Math.PI*2); ctx.fill();
+      [0, Math.PI/3, -Math.PI/3].forEach(rot=>{
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
+        ctx.beginPath(); ctx.ellipse(0,0,size*0.38,size*0.15,0,0,Math.PI*2); ctx.stroke();
+        ctx.restore();
+      });
+    } else if(type==='laurel'){
+      ctx.lineWidth = Math.max(2, size*0.03);
+      [-1,1].forEach(s=>{
+        ctx.save(); ctx.translate(cx,cy); ctx.scale(s,1);
+        ctx.beginPath(); ctx.arc(0,0,size*0.34, Math.PI*0.25, Math.PI*0.75, false); ctx.stroke();
+        for(let i=0;i<6;i++){
+          const a = Math.PI*0.28 + i*Math.PI*0.09;
+          const lx = Math.cos(a)*size*0.34, ly = Math.sin(a)*size*0.34;
+          ctx.save(); ctx.translate(lx,ly); ctx.rotate(a+Math.PI/2);
+          ctx.beginPath(); ctx.ellipse(size*0.05, 0, size*0.07, size*0.025, 0, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+        ctx.restore();
+      });
+    } else if(type==='bolt'){
+      ctx.beginPath();
+      ctx.moveTo(cx+size*0.12, cy-size*0.4);
+      ctx.lineTo(cx-size*0.16, cy+size*0.06);
+      ctx.lineTo(cx-0.01*size, cy+size*0.06);
+      ctx.lineTo(cx-size*0.1, cy+size*0.4);
+      ctx.lineTo(cx+size*0.18, cy-size*0.08);
+      ctx.lineTo(cx+size*0.02, cy-size*0.08);
+      ctx.closePath(); ctx.fill();
+    } else if(type==='eye'){
+      ctx.lineWidth = Math.max(2, size*0.035);
+      ctx.beginPath();
+      ctx.moveTo(cx-size*0.38, cy);
+      ctx.quadraticCurveTo(cx, cy-size*0.3, cx+size*0.38, cy);
+      ctx.quadraticCurveTo(cx, cy+size*0.3, cx-size*0.38, cy);
+      ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.11,0,Math.PI*2); ctx.fill();
+    } else if(type==='mountain'){
+      ctx.beginPath();
+      ctx.moveTo(cx-size*0.42, cy+size*0.28);
+      ctx.lineTo(cx-size*0.08, cy-size*0.32);
+      ctx.lineTo(cx+size*0.08, cy-size*0.08);
+      ctx.lineTo(cx+size*0.2, cy-size*0.24);
+      ctx.lineTo(cx+size*0.42, cy+size*0.28);
+      ctx.closePath(); ctx.fill();
+    } else if(type==='wave'){
+      ctx.lineWidth = Math.max(2.5, size*0.06); ctx.lineCap='round';
+      [-0.18, 0.02, 0.22].forEach(o=>{
+        ctx.beginPath();
+        ctx.moveTo(cx-size*0.36, cy+size*o);
+        ctx.bezierCurveTo(cx-size*0.12, cy+size*(o-0.16), cx+size*0.12, cy+size*(o+0.16), cx+size*0.36, cy+size*o);
+        ctx.stroke();
+      });
     } else if(type==='text' && text){
       ctx.font = `bold ${Math.round(size*0.35)}px Cinzel, serif`;
       ctx.textAlign = 'center';
@@ -3782,6 +4211,16 @@
       ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
     }
 
+    // Thin light "fimbriation" edges on horizontal bands for a printed-cloth look
+    if(['h2','h3','h4','h5'].includes(layout)){
+      const n = layout==='h2'?2:layout==='h3'?3:layout==='h4'?4:5;
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = '#ffffff';
+      for(let i=1;i<n;i++) ctx.fillRect(0, h*i/n - Math.max(1,h*0.004), w, Math.max(1,h*0.008));
+      ctx.restore();
+    }
+
     // Symbol placement
     if(sym!=='none'){
       const pos = (document.getElementById('flag-sym-pos')||{}).value || 'center';
@@ -3792,7 +4231,32 @@
         sx=w*0.28; sy=h/2; ss=Math.min(w,h)*0.42;
       }
       if(layout==='canton' && pos==='center'){ sx=w*0.2; sy=h*0.22; ss=Math.min(w,h)*0.32; }
+      // subtle shadow behind symbol so it pops on any field
+      ctx.save();
+      ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=Math.min(w,h)*0.03; ctx.shadowOffsetY=Math.min(w,h)*0.012;
       drawSymbol(ctx, sym, sx, sy, ss, symColor, text);
+      ctx.restore();
+    }
+
+    // ---- Premium finish: sheen sweep, corner vignette, gentle fabric folds ----
+    if(document.getElementById('flag-finish')?.checked){
+      ctx.save();
+      const sheen = ctx.createLinearGradient(0,0,w,h);
+      sheen.addColorStop(0,'rgba(255,255,255,0.10)');
+      sheen.addColorStop(0.45,'rgba(255,255,255,0.02)');
+      sheen.addColorStop(0.7,'rgba(0,0,0,0.05)');
+      sheen.addColorStop(1,'rgba(0,0,0,0.14)');
+      ctx.fillStyle=sheen; ctx.fillRect(0,0,w,h);
+      const vig = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.4,w/2,h/2,Math.max(w,h)*0.75);
+      vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.22)');
+      ctx.fillStyle=vig; ctx.fillRect(0,0,w,h);
+      ctx.globalAlpha=0.05;
+      for(let x=w*0.12;x<w;x+=w*0.16){
+        const g=ctx.createLinearGradient(x-2,0,x+2,0);
+        g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(0.5,'rgba(255,255,255,0.9)');g.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=g; ctx.fillRect(x-w*0.01,0,w*0.02,h);
+      }
+      ctx.restore();
     }
 
     document.getElementById('flag-ratio-note').textContent =
@@ -3801,15 +4265,21 @@
 
   document.getElementById('btn-flag-png').addEventListener('click', ()=>{
     const canvas = document.getElementById('flag-canvas');
-    // render at higher res
+    // v2.5: true high-res export — temporarily swap the preview canvas for a 4x canvas,
+    // run the real renderFlag() into it (crisp vectors), then restore.
     const [rw,rh] = getFlagSize();
-    const scale = 3;
+    const scale = 4;
     const hi = document.createElement('canvas');
     hi.width = rw*scale; hi.height = rh*scale;
-    const hctx = hi.getContext('2d');
-    hctx.scale(scale,scale);
-    // re-draw by temporarily using the same logic would be ideal; for simplicity upscale
-    hctx.drawImage(canvas,0,0);
+    const origId = 'flag-canvas';
+    canvas.id = 'flag-canvas-tmp';
+    hi.id = origId;
+    canvas.parentNode.insertBefore(hi, canvas.nextSibling);
+    try{ renderFlag(); }finally{
+      hi.remove();
+      canvas.id = origId;
+      renderFlag(); // restore preview pixels
+    }
     const link = document.createElement('a');
     link.download = 'nation-flag.png';
     link.href = hi.toDataURL('image/png');
@@ -3839,7 +4309,7 @@
       });
     }
   });
-  ['emblem-style','emblem-title','emblem-sub','emblem-center','emblem-size','emblem-supporters'].forEach(id=>{
+  ['emblem-style','emblem-title','emblem-sub','emblem-center','emblem-emoji','emblem-size','emblem-supporters'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
     el.addEventListener('input', renderEmblem);
@@ -3864,15 +4334,46 @@
     ctx.clearRect(0,0,size,size);
     const cx = size/2, cy = size/2, r = size*0.46;
 
+    // v2.5: soft drop shadow under the whole badge so it lifts off any background
+    const shapePath = ()=>{
+      if(style==='circle' || style==='rounded'){
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      } else {
+        const top=size*0.08, bot=(style==='banner'?size*0.72:size*0.92), left=size*0.18, right=size*0.82;
+        ctx.beginPath();
+        ctx.moveTo(left,top); ctx.lineTo(right,top);
+        ctx.quadraticCurveTo(right+size*0.05,size*0.45,cx,bot);
+        ctx.quadraticCurveTo(left-size*0.05,size*0.45,left,top);
+        ctx.closePath();
+      }
+    };
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=size*0.05; ctx.shadowOffsetY=size*0.02;
+    shapePath(); ctx.fillStyle = bg; ctx.fill();
+    ctx.restore();
+
+    // v2.5: subtle depth gradient over the field (light from top)
+    ctx.save();
+    shapePath(); ctx.clip();
+    const depth = ctx.createLinearGradient(0, 0, 0, size);
+    depth.addColorStop(0,'rgba(255,255,255,0.10)');
+    depth.addColorStop(0.5,'rgba(255,255,255,0)');
+    depth.addColorStop(1,'rgba(0,0,0,0.16)');
+    ctx.fillStyle=depth; ctx.fillRect(0,0,size,size);
+    ctx.restore();
+
     if(style==='circle' || style==='rounded'){
       // outer ring
       ctx.beginPath();
       ctx.arc(cx,cy,r,0,Math.PI*2);
-      ctx.fillStyle = bg;
-      ctx.fill();
       ctx.lineWidth = size*0.035;
-      ctx.strokeStyle = border;
+      ctx.strokeStyle = metalGrad(ctx, cx, cy-r, cy+r, border); // v2.5 metallic rim
       ctx.stroke();
+      // v2.5: engraved guilloche band between rings
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx,cy,r*0.78,0,Math.PI*2); ctx.arc(cx,cy,r*0.62,0,Math.PI*2,true); ctx.clip();
+      guilloche(ctx, 0, 0, size, size, textCol, 34);
+      ctx.restore();
 
       // inner ring
       ctx.beginPath();
@@ -3880,14 +4381,24 @@
       ctx.lineWidth = size*0.012;
       ctx.strokeStyle = border;
       ctx.stroke();
-
-      // center disc
       ctx.beginPath();
-      ctx.arc(cx,cy,r*0.38,0,Math.PI*2);
-      ctx.fillStyle = centerCol;
+      ctx.arc(cx,cy,r*0.62,0,Math.PI*2);
+      ctx.lineWidth = size*0.008;
+      ctx.strokeStyle = border;
+      ctx.stroke();
+
+      // center disc with radial embossing
+      const discR = r*0.38;
+      const dg = ctx.createRadialGradient(cx-discR*0.35, cy-discR*0.35, discR*0.1, cx, cy, discR);
+      dg.addColorStop(0, mixColor(centerCol,'#ffffff',0.35));
+      dg.addColorStop(0.6, centerCol);
+      dg.addColorStop(1, mixColor(centerCol,'#000000',0.35));
+      ctx.beginPath();
+      ctx.arc(cx,cy,discR,0,Math.PI*2);
+      ctx.fillStyle = dg;
       ctx.fill();
       ctx.lineWidth = size*0.01;
-      ctx.strokeStyle = border;
+      ctx.strokeStyle = metalGrad(ctx, cx, cy-discR, cy+discR, border);
       ctx.stroke();
     } else if(style==='shield' || style==='heater' || style==='banner'){
       // heater shield
@@ -3901,22 +4412,35 @@
       ctx.quadraticCurveTo(right+size*0.05, size*0.45, cx, bot);
       ctx.quadraticCurveTo(left-size*0.05, size*0.45, left, top);
       ctx.closePath();
-      ctx.fillStyle = bg;
-      ctx.fill();
       ctx.lineWidth = size*0.03;
-      ctx.strokeStyle = border;
+      ctx.strokeStyle = metalGrad(ctx, cx, top, bot, border); // v2.5 metallic edge
       ctx.stroke();
 
-      // inner shield
-      ctx.beginPath();
+      // inner shield — two-tone field with embossed center disc
+      ctx.save();
       const pad = size*0.08;
+      ctx.beginPath();
       ctx.moveTo(left+pad, top+pad);
       ctx.lineTo(right-pad, top+pad);
       ctx.quadraticCurveTo(right-pad+size*0.03, size*0.42, cx, bot-pad);
       ctx.quadraticCurveTo(left+pad-size*0.03, size*0.42, left+pad, top+pad);
       ctx.closePath();
-      ctx.fillStyle = centerCol;
-      ctx.fill();
+      ctx.clip();
+      ctx.fillStyle = bg; ctx.fillRect(0,0,size,size);
+      // per-chevron division of the lower half for heraldic interest
+      ctx.fillStyle = mixColor(centerCol,bg,0.25);
+      ctx.beginPath();
+      ctx.moveTo(left, size*0.55); ctx.lineTo(cx, size*0.42); ctx.lineTo(right, size*0.55);
+      ctx.lineTo(right, size); ctx.lineTo(left, size); ctx.closePath(); ctx.fill();
+      // center medallion
+      const mr = size*0.16;
+      const mg = ctx.createRadialGradient(cx-mr*0.3, cy-mr*0.3, mr*0.1, cx, cy, mr);
+      mg.addColorStop(0, mixColor(centerCol,'#ffffff',0.4));
+      mg.addColorStop(1, centerCol);
+      ctx.beginPath(); ctx.arc(cx, cy-size*0.02, mr, 0, Math.PI*2);
+      ctx.fillStyle = mg; ctx.fill();
+      ctx.lineWidth = size*0.008; ctx.strokeStyle = border; ctx.stroke();
+      ctx.restore();
 
       if(style==='banner' && sub){
         // motto ribbon under shield
@@ -3970,12 +4494,37 @@
       drawBeast(size*0.88, true);
     }
 
-    // Center text
-    ctx.fillStyle = textCol;
+    // Center text — v2.5: auto outline so initials read on any disc color
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `bold ${Math.round(size*0.14)}px Cinzel, serif`;
-    ctx.fillText(center, cx, cy);
+    const centerEmojiEl = document.getElementById('emblem-emoji');
+    const centerEmoji = centerEmojiEl ? centerEmojiEl.value.trim() : '';
+    if(centerEmoji){
+      ctx.font = `${Math.round(size*0.2)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+      ctx.fillText(centerEmoji, cx, cy);
+    } else if(center){
+      ctx.font = `bold ${Math.round(size*0.14)}px Cinzel, serif`;
+      ctx.lineWidth = Math.max(2, size*0.008);
+      ctx.strokeStyle = autoOutline(centerCol);
+      ctx.strokeText(center, cx, cy);
+      ctx.fillStyle = textCol;
+      ctx.fillText(center, cx, cy);
+    }
+
+    // v2.5: little star ring between the arcs for circle seals
+    if(style==='circle' || style==='rounded'){
+      ctx.save();
+      ctx.fillStyle = textCol;
+      ctx.globalAlpha = 0.9;
+      const nStars = 8;
+      for(let i=0;i<nStars;i++){
+        const a = Math.PI*0.62 + i*(Math.PI*0.76/(nStars-1)); // along bottom arc zone
+        const sxp = cx + Math.cos(a)*r*0.995, syp = cy + Math.sin(a)*r*0.995;
+        starPath(ctx, sxp, syp, size*0.012, 5);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
 
     // Curved text for circle styles
     if(style==='circle' || style==='rounded'){
@@ -4861,7 +5410,7 @@
   });
 
   document.getElementById('btn-changelog')?.addEventListener('click', ()=>{
-    alert('Graphic Maker v2.1\n\n• Command palette (Ctrl+K)\n• Onboarding tour\n• Nation packs\n• Classification / watermark / serial\n• +12 document presets\n• Propaganda filters & map legend\n• Nation ID cards\n• Export 2×–4×\n• Witnesses, borders, languages');
+    alert('Graphic Maker v2.4\n\n• App-feel polish: spring animations, ripples, haptics\n• Subtle UI sounds (tab clicks, exports, Pro unlock)\n• Toast feedback on every export\n• Command palette (Ctrl+K) · Onboarding tour · Nation packs\n• Classification / watermark / serial · +12 doc presets\n• Propaganda filters & map legend · Nation ID cards\n• Export 2×–4× · Witnesses, borders, languages');
   });
   document.getElementById('btn-shortcuts')?.addEventListener('click', ()=>{
     alert('Shortcuts\n\nCtrl+K — Command palette\n1–6 — Jump modes (via palette)\nEsc — Close palette\n\nClick any text on the document to edit live.');
@@ -4871,6 +5420,33 @@
     document.body.classList.toggle('reduce-motion');
     alert(hc ? 'High contrast + reduced motion on' : 'Accessibility modes toggled');
   });
+
+  // ---- v2.4: Mute sounds toggle (persisted) ----
+  (function addMuteBtn(){
+    if(window.gmSfx && !window.gmSfx._orig) window.gmSfx._orig = window.gmSfx;
+    if(localStorage.getItem('gm-muted') === '1'){
+      const orig = window.gmSfx._orig || window.gmSfx;
+      window.gmSfx = function(){ void orig; };
+    }
+    const footer = document.querySelector('#btn-a11y')?.parentElement;
+    if(!footer || document.getElementById('btn-mute')) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'btn-mute';
+    b.textContent = localStorage.getItem('gm-muted') === '1' ? '🔇 Sound off' : '🔊 Sound on';
+    b.style.cssText = 'background:none;border:none;color:rgba(199,154,62,0.8);cursor:pointer;font-size:inherit;text-decoration:underline;padding:0;font-family:inherit;';
+    b.addEventListener('click', ()=>{
+      const muted = localStorage.getItem('gm-muted') !== '1';
+      localStorage.setItem('gm-muted', muted ? '1' : '0');
+      b.textContent = muted ? '🔇 Sound off' : '🔊 Sound on';
+      if(muted){
+        if(window.gmSfx._orig) window.gmSfx = function(){ void window.gmSfx._orig; };
+      } else {
+        if(window.gmSfx._orig) window.gmSfx = window.gmSfx._orig;
+      }
+      try{ window.gmToast && window.gmToast(muted ? 'Sound muted' : 'Sound on', 'ok'); }catch(e){}
+    });
+    footer.insertBefore(b, document.getElementById('btn-a11y').nextSibling);
+  })();
 
   // ---- Safety re-bind critical buttons (survives earlier listener failures) ----
   function onBtn(id, fn){
@@ -5078,6 +5654,36 @@
       }
       return _alert.apply(this, arguments);
     };
+
+    // ---- v2.4 app-feel layer: global click FX + ripple ----
+    document.addEventListener('click', e=>{
+      try{
+        const btn = e.target.closest('.btn-primary,.btn-secondary,.mode-tab,.icon-btn,.file-btn,.add-btn,.tiny-btn,.swatch');
+        if(btn){
+          gmSfx('click');
+          if(navigator.vibrate) navigator.vibrate(8);
+          if(getComputedStyle(btn).position === 'static') btn.style.position = 'relative';
+          const r = btn.getBoundingClientRect();
+          const d = Math.max(r.width, r.height);
+          const sp = document.createElement('span');
+          sp.className = 'gm-ripple';
+          sp.style.width = sp.style.height = d + 'px';
+          sp.style.left = (e.clientX - r.left - d/2) + 'px';
+          sp.style.top = (e.clientY - r.top - d/2) + 'px';
+          btn.appendChild(sp);
+          setTimeout(()=>sp.remove(), 550);
+        }
+      }catch(err){}
+    }, true);
+
+    // Export buttons -> celebratory toast + sound
+    document.querySelectorAll('.export-bar button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(!b.classList.contains('btn-primary')) return;
+        gmSfx('export');
+        gmToast((b.textContent||'').trim() + ' — rendering…', 'ok');
+      });
+    });
 
     // Clause library
     const CLAUSES = {
@@ -5503,7 +6109,7 @@
 </div>
 
 <div class="app-footer">
-  Graphic Maker v2.1 · <button type="button" id="btn-changelog">Changelog</button> · <button type="button" id="btn-shortcuts">Shortcuts</button> · <button type="button" id="btn-a11y">A11y</button>
+  Graphic Maker v2.4 · <button type="button" id="btn-changelog">Changelog</button> · <button type="button" id="btn-shortcuts">Shortcuts</button> · <button type="button" id="btn-a11y">A11y</button>
 </div>
 
 <style media="print">
