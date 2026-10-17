@@ -1855,6 +1855,24 @@
     return safeStorage.getItem(PRO_VERIFIED_STORAGE) === '1';
   }
 
+  // Re-validates the stored key against the baked-in hash list on every page load,
+  // so a revoked/removed hash takes effect immediately (the verified flag alone
+  // is never trusted without a matching hash).
+  async function revalidateStoredKey(){
+    const k = normalizeKey(safeStorage.getItem(PRO_KEY_STORAGE));
+    if(!k){ safeStorage.removeItem(PRO_VERIFIED_STORAGE); applyProUI(); return false; }
+    const hashes = await loadKeyHashes();
+    const hash = await sha256Hex(k);
+    if(hashes.has(hash)){
+      safeStorage.setItem(PRO_VERIFIED_STORAGE, '1');
+    } else {
+      safeStorage.removeItem(PRO_VERIFIED_STORAGE);
+      safeStorage.removeItem(PRO_KEY_STORAGE);
+    }
+    applyProUI();
+    return isPro();
+  }
+
   // Actually checks a key against the published hash list in pro-keys.json.
   async function verifyProKey(k){
     const key = normalizeKey(k);
@@ -2034,11 +2052,9 @@
     }
   });
   applyProUI();
-  (async function revalidateProOnLoad(){
-    const saved = safeStorage.getItem(PRO_KEY_STORAGE);
-    if(saved) await verifyProKey(saved);
-    applyProUI();
-  })();
+  // Re-validate any stored key against the hash list on every load, so keys
+  // whose hashes were removed from PRO_KEY_HASHES lose Pro access immediately.
+  try { revalidateStoredKey(); } catch(e){}
 
   // ========== DOCUMENTS (original logic, cleaned) ==========
   const themes = {
