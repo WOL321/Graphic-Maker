@@ -4946,6 +4946,33 @@
     alert(hc ? 'High contrast + reduced motion on' : 'Accessibility modes toggled');
   });
 
+  // ---- v2.4: Mute sounds toggle (persisted) ----
+  (function addMuteBtn(){
+    if(window.gmSfx && !window.gmSfx._orig) window.gmSfx._orig = window.gmSfx;
+    if(localStorage.getItem('gm-muted') === '1'){
+      const orig = window.gmSfx._orig || window.gmSfx;
+      window.gmSfx = function(){ void orig; };
+    }
+    const footer = document.querySelector('#btn-a11y')?.parentElement;
+    if(!footer || document.getElementById('btn-mute')) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'btn-mute';
+    b.textContent = localStorage.getItem('gm-muted') === '1' ? '🔇 Sound off' : '🔊 Sound on';
+    b.style.cssText = 'background:none;border:none;color:rgba(199,154,62,0.8);cursor:pointer;font-size:inherit;text-decoration:underline;padding:0;font-family:inherit;';
+    b.addEventListener('click', ()=>{
+      const muted = localStorage.getItem('gm-muted') !== '1';
+      localStorage.setItem('gm-muted', muted ? '1' : '0');
+      b.textContent = muted ? '🔇 Sound off' : '🔊 Sound on';
+      if(muted){
+        if(window.gmSfx._orig) window.gmSfx = function(){ void window.gmSfx._orig; };
+      } else {
+        if(window.gmSfx._orig) window.gmSfx = window.gmSfx._orig;
+      }
+      try{ window.gmToast && window.gmToast(muted ? 'Sound muted' : 'Sound on', 'ok'); }catch(e){}
+    });
+    footer.insertBefore(b, document.getElementById('btn-a11y').nextSibling);
+  })();
+
   // ---- Safety re-bind critical buttons (survives earlier listener failures) ----
   function onBtn(id, fn){
     const el = document.getElementById(id);
